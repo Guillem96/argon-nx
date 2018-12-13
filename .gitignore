@@ -1,0 +1,8 @@
+# Visual Studio Code
+.vs/
+.vscode/
+
+# Build files
+build/
+*.elf
+*.bin
