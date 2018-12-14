@@ -16,20 +16,20 @@ include $(DEVKITARM)/base_rules
 # DATA is a list of directories containing data files
 # INCLUDES is a list of directories containing header files
 #---------------------------------------------------------------------------------
-TARGET		:=	$(notdir $(CURDIR))
-BUILD			:=	build
+TARGET		:=	out/$(notdir $(CURDIR))
+BUILD		:=	build
 SOURCES		:=	src \
-							src/memory src/memory/sdmmc \
-							src/lib src/lib/fatfs \
-							src/gfx src/gfx/display \
-							src/panic \
-							src/utils \
-							src/power \
-							src/security \
-							src/hardware \
-							src/handlers
+				src/memory src/memory/sdmmc \
+				src/lib src/lib/fatfs \
+				src/gfx src/gfx/display \
+				src/panic \
+				src/utils \
+				src/power \
+				src/security \
+				src/hardware \
+				src/handlers
 							
-DATA			:=	data
+DATA		:=	data
 INCLUDES	:=	include
 
 #---------------------------------------------------------------------------------
@@ -77,7 +77,7 @@ export OUTPUT	:=	$(CURDIR)/$(TARGET)
 export TOPDIR	:=	$(CURDIR)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
