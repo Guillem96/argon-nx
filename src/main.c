@@ -25,6 +25,7 @@
 #include "lib/log.h"
 #include "lib/vsprintf.h"
 #include "gfx/display/video_fb.h"
+#include "gfx/gfx.h"
 
 extern void (*__program_exit_callback)(int rc);
 
@@ -68,28 +69,34 @@ static void cleanup_env(void) {
     display_end();
 }
 
+static void setup_gfx(gfx_ctxt_t* ctxt, gfx_con_t* con)
+{
+    gfx_init_ctxt(ctxt, g_framebuffer, 720, 1280, 768);
+    gfx_clear_color(ctxt, 0xFF000000);
+    gfx_con_init(con, ctxt);
+    gfx_con_setcol(con, 0xFFFFFFFF, 0, 0);
+}
+
 int main(void) {
     ScreenLogLevel log_level = SCREEN_LOG_LEVEL_MANDATORY;
+    gfx_ctxt_t gfx_ctxt;
+    gfx_con_t gfx_con;
 
     /* Override the global logging level. */
     log_set_log_level(log_level);
     
     /* Initialize the display, console, etc. */
     setup_env();
-    
+    setup_gfx(&gfx_ctxt, &gfx_con);
+
     /* Say hello. */
-    video_set_col(20);
-    video_set_row(20);
-    
-    print(SCREEN_LOG_LEVEL_MANDATORY, "Hello from ArgonNX!\n");
-    print(SCREEN_LOG_LEVEL_DEBUG, "Using color linear framebuffer at 0x%p!\n", g_framebuffer); 
-        
+    gfx_printf(&gfx_con, "Hello from ArgonNX!\n");
 
     /* Wait a while. */
     mdelay(10000);
     
     /* Deinitialize the display, console, etc. */
     cleanup_env();
-
+    
     return 0;
 }

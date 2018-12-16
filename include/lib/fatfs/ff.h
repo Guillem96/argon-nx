@@ -64,8 +64,8 @@ typedef WCHAR TCHAR;
 #define _TEXT(x) L ## x
 #elif FF_USE_LFN && FF_LFN_UNICODE == 2	/* Unicode in UTF-8 encoding */
 typedef char TCHAR;
-#define _T(x) u8 ## x
-#define _TEXT(x) u8 ## x
+#define _T(x) unsigned char ## x
+#define _TEXT(x) unsigned char ## x
 #elif FF_USE_LFN && FF_LFN_UNICODE == 3	/* Unicode in UTF-32 encoding */
 typedef DWORD TCHAR;
 #define _T(x) U ## x
