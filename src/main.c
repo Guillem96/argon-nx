@@ -1,7 +1,6 @@
 /*
- * Copyright (c) 2018 Atmosphère-NX
  * Copyright (c) 2018 Guillem96
- * 
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
  * version 2, as published by the Free Software Foundation.
@@ -14,89 +13,57 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
-#include "handlers/exception_handlers.h"
-#include "panic/panic.h"
-#include "hwinit.h"
+
+#include <string.h>
+#include <stdlib.h>
+
 #include "gfx/di.h"
-#include "utils/timers.h"
-#include "utils/fs_utils.h"
-#include "memory/sdmmc/sdmmc.h"
-#include "lib/log.h"
-#include "lib/vsprintf.h"
-#include "gfx/display/video_fb.h"
 #include "gfx/gfx.h"
 
-extern void (*__program_exit_callback)(int rc);
+#include "mem/heap.h"
+#include "soc/hw_init.h"
+#include "soc/t210.h"
+#include "core/launcher.h"
+#include "utils/util.h"
+#include "utils/fs_utils.h"
 
-static void *g_framebuffer;
+extern void pivot_stack(u32 stack_top);
 
-
-static void setup_env(void) {
-    g_framebuffer = (void *)0xC0000000;
-
-    /* Initialize hardware. */
-    nx_hwinit();
-
-    /* Check for panics. */
-    check_and_display_panic();
-
-    /* Zero-fill the framebuffer and register it as printk provider. */
-    video_init(g_framebuffer);
-    
-    /* Initialize the display. */
-    display_init();
-
-    /* Set the framebuffer. */
-    display_init_framebuffer(g_framebuffer);
-
-    /* Turn on the backlight after initializing the lfb */
-    /* to avoid flickering. */
-    display_backlight(true);
-
-    /* Set up the exception handlers. */
-    setup_exception_handlers();
-    
-    /* Mount the SD card. */
-    mount_sd();
-}
-
-static void cleanup_env(void) {
-    /* Unmount the SD card. */
-    unmount_sd();
-
-    display_backlight(false);
-    display_end();
-}
-
-static void setup_gfx(gfx_ctxt_t* ctxt, gfx_con_t* con)
+static inline void setup_gfx()
 {
-    gfx_init_ctxt(ctxt, g_framebuffer, 720, 1280, 768);
-    gfx_clear_color(ctxt, 0xFF000000);
-    gfx_con_init(con, ctxt);
-    gfx_con_setcol(con, 0xFFFFFFFF, 0, 0);
+    u32 *fb = display_init_framebuffer();
+	gfx_init_ctxt(&g_gfx_ctxt, fb, 720, 1280, 720);
+	gfx_con_init(&g_gfx_con, &g_gfx_ctxt);
+    gfx_con_setcol(&g_gfx_con, 0xFFCCCCCC, 1, 0xFF1B1B1B);
+    gfx_con_setpos(&g_gfx_con, 0, 0);
 }
 
-int main(void) {
-    ScreenLogLevel log_level = SCREEN_LOG_LEVEL_MANDATORY;
-    gfx_ctxt_t gfx_ctxt;
-    gfx_con_t gfx_con;
+void ipl_main()
+{
+    /* Configure Switch Hardware (thanks to hekate project) */
+    config_hw();
 
-    /* Override the global logging level. */
-    log_set_log_level(log_level);
-    
-    /* Initialize the display, console, etc. */
-    setup_env();
-    setup_gfx(&gfx_ctxt, &gfx_con);
+    /* Init the stack and the heap */
+	pivot_stack(0x90010000);
+	heap_init(0x90020000);
 
-    /* Say hello. */
-    gfx_printf(&gfx_con, "Hello from ArgonNX!\n");
+    /* Init display and gfx module */
+	display_init();
+    setup_gfx();
+    display_backlight_pwm_init();
+	display_backlight_brightness(100, 1000);
 
-    /* Wait a while. */
-    mdelay(10000);
-    
-    /* Deinitialize the display, console, etc. */
-    cleanup_env();
-    
-    return 0;
+    /* Mount Sd card and launch payload */
+    if(sd_mount())
+    {
+        gfx_printf(&g_gfx_con, "Hello from ArgonNX\n\n");
+        if(launch_payload("payload.bin"))
+        {
+            gfx_printf(&g_gfx_con, "Error loading the payload\n\n");
+        }
+    }
+
+    /* If payload launch fails wait for user input to reboot the switch */
+    gfx_printf(&g_gfx_con, "Press power button to reboot into RCM...\n\n");
+	wait_for_button_and_reboot();
 }

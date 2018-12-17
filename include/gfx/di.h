@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2018 naehrwert
- * Copyright (c) 2018 CTCaer
- * Copyright (c) 2018 Atmosphère-NX
+ * Copyright (C) 2018 CTCaer
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -15,25 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
-#ifndef FUSEE_DI_H_
-#define FUSEE_DI_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#ifndef _DI_H_
+#define _DI_H_
 
-#define HOST1X_BASE 0x50000000
-#define DI_BASE  0x54200000
-#define DSI_BASE 0x54300000
-#define VIC_BASE 0x54340000
-#define MIPI_CAL_BASE 0x700E3000
-#define MAKE_HOST1X_REG(n) MAKE_REG32(HOST1X_BASE + n)
-#define MAKE_DI_REG(n) MAKE_REG32(DI_BASE + n * 4)
-#define MAKE_DSI_REG(n) MAKE_REG32(DSI_BASE + n * 4)
-#define MAKE_MIPI_CAL_REG(n) MAKE_REG32(MIPI_CAL_BASE + n)
-#define MAKE_VIC_REG(n) MAKE_REG32(VIC_BASE + n)
+#include "utils/types.h"
 
-/* Display registers. */
+/*! Display registers. */
+#define _DIREG(reg) ((reg) * 4)
+
 #define DC_CMD_GENERAL_INCR_SYNCPT 0x00
 
 #define DC_CMD_GENERAL_INCR_SYNCPT_CNTRL 0x01
@@ -158,8 +147,8 @@
 #define  BASE_COLOR_SIZE_888    (8 << 0)
 
 #define DC_DISP_SHIFT_CLOCK_OPTIONS 0x431
-#define  SC1_H_QUALIFIER_NONE   (1 << 16)
-#define  SC0_H_QUALIFIER_NONE   (1 <<  0)
+#define  SC1_H_QUALIFIER_NONE	(1 << 16)
+#define  SC0_H_QUALIFIER_NONE	(1 <<  0)
 
 #define DC_DISP_DATA_ENABLE_OPTIONS 0x432
 #define  DE_SELECT_ACTIVE_BLANK  (0 << 0)
@@ -172,6 +161,8 @@
 #define  DE_CONTROL_ACTIVE_BLANK (4 << 2)
 
 #define DC_DISP_DC_MCCIF_FIFOCTRL 0x480
+#define DC_DISP_SD_BL_PARAMETERS 0x4D7
+#define DC_DISP_SD_BL_CONTROL 0x4DC
 #define DC_DISP_BLEND_BACKGROUND_COLOR 0x4E4
 
 #define DC_WIN_CSC_YOF 0x611
@@ -186,10 +177,11 @@
 #define DC_WIN_BD_WIN_OPTIONS 0xD80
 #define DC_WIN_CD_WIN_OPTIONS 0xF80
 
-/* The following registers are A/B/C shadows of the 0xB80/0xD80/0xF80 registers (see DISPLAY_WINDOW_HEADER). */
+// The following registers are A/B/C shadows of the 0xB80/0xD80/0xF80 registers (see DISPLAY_WINDOW_HEADER).
 #define DC_WIN_WIN_OPTIONS 0x700
 #define  H_DIRECTION  (1 <<  0)
 #define  V_DIRECTION  (1 <<  2)
+#define  SCAN_COLUMN  (1 <<  4)
 #define  COLOR_EXPAND (1 <<  6)
 #define  CSC_ENABLE   (1 << 18)
 #define  WIN_ENABLE   (1 << 30)
@@ -237,15 +229,19 @@
 #define  V_DDA_INC(x) (((x) & 0xffff) << 16)
 
 #define DC_WIN_LINE_STRIDE 0x70A
+#define  LINE_STRIDE(x)	   (x)
+#define  UV_LINE_STRIDE(x) (((x) & 0xffff) << 16)
 #define DC_WIN_DV_CONTROL 0x70E
 
-/* The following registers are A/B/C shadows of the 0xBC0/0xDC0/0xFC0 registers (see DISPLAY_WINDOW_HEADER). */
+// The following registers are A/B/C shadows of the 0xBC0/0xDC0/0xFC0 registers (see DISPLAY_WINDOW_HEADER).
 #define DC_WINBUF_START_ADDR 0x800
 #define DC_WINBUF_ADDR_H_OFFSET 0x806
 #define DC_WINBUF_ADDR_V_OFFSET 0x808
 #define DC_WINBUF_SURFACE_KIND 0x80B
 
-/* Display serial interface registers. */
+/*! Display serial interface registers. */
+#define _DSIREG(reg) ((reg) * 4)
+
 #define DSI_RD_DATA 0x9
 #define DSI_WR_DATA 0xA
 
@@ -346,23 +342,25 @@
 #define  DSI_PAD_PREEMP_PU(x)     (((x) & 0x3) << 0)
 
 #define DSI_PAD_CONTROL_4 0x52
+#define DSI_INIT_SEQ_DATA_15 0x5F
 
-typedef struct _cfg_op_t
-{
-    uint32_t off;
-    uint32_t val;
-} cfg_op_t;
+#define MIPI_CAL_MIPI_BIAS_PAD_CFG2 0x60
+
+/*! Display backlight related PWM registers. */
+#define PWM_CONTROLLER_PWM_CSR 0x00
 
 void display_init();
+void display_backlight_pwm_init();
 void display_end();
 
-/* Show one single color on the display. */
-void display_color_screen(uint32_t color);
+/*! Show one single color on the display. */
+void display_color_screen(u32 color);
 
-/* Switches screen backlight ON/OFF. */
+/*! Switches screen backlight ON/OFF. */
 void display_backlight(bool enable);
+void display_backlight_brightness(u32 brightness, u32 step_delay);
 
-/* Init display in full 1280x720 resolution (B8G8R8A8, line stride 768, framebuffer size = 1280*768*4 bytes). */
-uint32_t *display_init_framebuffer(void *address);
+/*! Init display in full 1280x720 resolution (B8G8R8A8, line stride 768, framebuffer size = 1280*768*4 bytes). */
+u32 *display_init_framebuffer();
 
 #endif

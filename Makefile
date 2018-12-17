@@ -1,165 +1,90 @@
-#---------------------------------------------------------------------------------
-.SUFFIXES:
-#---------------------------------------------------------------------------------
-
 ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
 
-TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/base_rules
 
-#---------------------------------------------------------------------------------
-# TARGET is the name of the output
-# BUILD is the directory where object files & intermediate files will be placed
-# SOURCES is a list of directories containing source code
-# DATA is a list of directories containing data files
-# INCLUDES is a list of directories containing header files
-#---------------------------------------------------------------------------------
-TARGET		:=	out/$(notdir $(CURDIR))
-BUILD		:=	build
-SOURCES		:=	src \
-				src/memory src/memory/sdmmc \
-				src/lib src/lib/fatfs \
-				src/gfx src/gfx/display \
-				src/panic \
-				src/utils \
-				src/power \
-				src/security \
-				src/hardware \
-				src/handlers
-							
-DATA		:=	data
-INCLUDES	:=	include
+TARGET 					:= argon-nx
+BLVERSION_MAJOR := 0
+BLVERSION_MINOR := 1
+BUILD 					:= build
+OUTPUT 					:= output
+SOURCEDIR 			= src
+INCLUDES				:= include
+VPATH = $(dir $(wildcard ./$(SOURCEDIR)/*/)) $(dir $(wildcard ./$(SOURCEDIR)/*/*/))
 
-#---------------------------------------------------------------------------------
-# options for code generation
-#---------------------------------------------------------------------------------
-ARCH	:=	-march=armv4t -mtune=arm7tdmi -mthumb -mthumb-interwork
-DEFINES :=	-D__BPMP__
+OBJS = $(addprefix $(BUILD)/$(TARGET)/, \
+	start.o \
+	main.o \
+	btn.o \
+	clock.o \
+	cluster.o \
+	fuse.o \
+	gpio.o \
+	heap.o \
+	launcher.o \
+	i2c.o \
+	max7762x.o \
+	max17050.o \
+	mc.o \
+	nx_emmc.o \
+	sdmmc.o \
+	sdmmc_driver.o \
+	sdram.o \
+	fs_utils.o \
+	util.o \
+	di.o \
+	gfx.o \
+	pinmux.o \
+	se.o \
+	uart.o \
+	hw_init.o \
+	dirlist.o \
+	smmu.o \
+)
 
-CFLAGS	:= \
-	-g \
-	-O2 \
-	-fomit-frame-pointer \
-	-ffunction-sections \
-	-fdata-sections \
-	-std=gnu11 \
-	-Werror \
-	-Wall \
-	-fstrict-volatile-bitfields \
-	$(ARCH) $(DEFINES)
-
-CFLAGS	+=	$(INCLUDE)
-
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
-
-ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-specs=$(TOPDIR)/linker.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
-
-LIBS	:=
-
-#---------------------------------------------------------------------------------
-# list of directories containing libraries, this must be the top level containing
-# include and lib
-#---------------------------------------------------------------------------------
-LIBDIRS	:=
+OBJS += $(addprefix $(BUILD)/$(TARGET)/, \
+	lz.o blz.o \
+	diskio.o ff.o ffunicode.o ffsystem.o \
+)
 
 
-#---------------------------------------------------------------------------------
-# no real need to edit anything past this point unless you need to add additional
-# rules for different file extensions
-#---------------------------------------------------------------------------------
-ifneq ($(BUILD),$(notdir $(CURDIR)))
-#---------------------------------------------------------------------------------
-
-export OUTPUT	:=	$(CURDIR)/$(TARGET)
-export TOPDIR	:=	$(CURDIR)
-
-export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
-
-export DEPSDIR	:=	$(CURDIR)/$(BUILD)
-
-CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
-CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
-SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
-
-#---------------------------------------------------------------------------------
-# use CXX for linking C++ projects, CC for standard C
-#---------------------------------------------------------------------------------
-ifeq ($(strip $(CPPFILES)),)
-#---------------------------------------------------------------------------------
-	export LD	:=	$(CC)
-#---------------------------------------------------------------------------------
-else
-#---------------------------------------------------------------------------------
-	export LD	:=	$(CXX)
-#---------------------------------------------------------------------------------
-endif
-#---------------------------------------------------------------------------------
-
-export OFILES_BIN	:=	$(addsuffix .o,$(BINFILES))
-export OFILES_SRC	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
-export OFILES 		:=	$(OFILES_BIN) $(OFILES_SRC)
-export HFILES_BIN	:=	$(addsuffix .h,$(subst .,_,$(BINFILES)))
+ARCH := -march=armv4t -mtune=arm7tdmi -mthumb -mthumb-interwork
+CFLAGS = $(INCLUDE) $(ARCH) -O2 -nostdlib -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-inline -std=gnu11 -Wall
+LDFLAGS = $(ARCH) -nostartfiles -lgcc -Wl,--nmagic,--gc-sections
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 			-I$(CURDIR)/$(BUILD)
 
-export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+.PHONY: all clean
 
-.PHONY: $(BUILD) clean all
+all: $(TARGET).bin
+	@echo -n "Payload size is "
+	@wc -c < $(OUTPUT)/$(TARGET).bin
+	@echo "Max size is 126296 Bytes."
 
-#---------------------------------------------------------------------------------
-all: $(BUILD)
-
-$(BUILD):
-	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
-
-#---------------------------------------------------------------------------------
 clean:
-	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).bin $(TARGET).elf
+	@rm -rf $(OBJS)
+	@rm -rf $(BUILD)
+	@rm -rf $(OUTPUT)
 
+$(MODULEDIRS):
+	$(MAKE) -C $@ $(MAKECMDGOALS)
 
-#---------------------------------------------------------------------------------
-else
-.PHONY:	all
+$(TARGET).bin: $(BUILD)/$(TARGET)/$(TARGET).elf $(MODULEDIRS)
+	$(OBJCOPY) -S -O binary $< $(OUTPUT)/$@
+	@printf ICTC$(BLVERSION_MAJOR)$(BLVERSION_MINOR) >> $(OUTPUT)/$@
 
-DEPENDS	:=	$(OFILES:.o=.d)
+$(BUILD)/$(TARGET)/$(TARGET).elf: $(OBJS)
+	$(CC) $(LDFLAGS) -T $(SOURCEDIR)/link.ld $^ -o $@
 
-#---------------------------------------------------------------------------------
-# main targets
-#---------------------------------------------------------------------------------
-all	:	$(OUTPUT).bin
+$(BUILD)/$(TARGET)/%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OUTPUT).bin	:	$(OUTPUT).elf
-	$(OBJCOPY) -S -O binary $< $@
-	@echo built ... $(notdir $@)
+$(BUILD)/$(TARGET)/%.o: %.S
+	@mkdir -p "$(BUILD)"
+	@mkdir -p "$(BUILD)/$(TARGET)"
+	@mkdir -p "$(OUTPUT)"
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OUTPUT).elf	:	$(OFILES)
-
-%.elf: $(OFILES)
-	@echo linking $(notdir $@)
-	@$(LD) $(LDFLAGS) $(OFILES) $(LIBPATHS) $(LIBS) -o $@
-	@$(NM) -CSn $@ > $(notdir $*.lst)
-
-$(OFILES_SRC)	: $(HFILES_BIN)
-
-#---------------------------------------------------------------------------------
-# you need a rule like this for each extension you use as binary data
-#---------------------------------------------------------------------------------
-%.bin.o	:	%.bin
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
-
--include $(DEPENDS)
-
-#---------------------------------------------------------------------------------------
-endif
-#---------------------------------------------------------------------------------------

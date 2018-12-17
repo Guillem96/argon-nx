@@ -4,5 +4,4 @@
 
 # Build files
 build/
-*.elf
-*.bin
+output/

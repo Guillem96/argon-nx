@@ -1,136 +1,87 @@
-/*
- * Copyright (c) 2018 Atmosphère-NX
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms and conditions of the GNU General Public License,
- * version 2, as published by the Free Software Foundation.
- *
- * This program is distributed in the hope it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "utils/fs_utils.h"
-#include "memory/mc.h"
-#include "lib/fatfs/ff.h"
-#include "lib/log.h"
 
-FATFS sd_fs;
-static bool g_sd_mounted = false;
-static bool g_sd_initialized = false;
-static bool g_ahb_redirect_enabled = false;
+#include "mem/heap.h"
+#include "gfx/gfx.h"
 
-bool mount_sd(void)
+bool sd_mount()
 {
-    /* Already mounted. */
-    if (g_sd_mounted)
-        return true;
-    
-    /* Enable AHB redirection if necessary. */
-    if (!g_ahb_redirect_enabled) {
-        mc_enable_ahb_redirect();
-        g_ahb_redirect_enabled = true;
-    }
+	if (g_sd_mounted)
+		return true;
 
-    if (!g_sd_initialized) {
-        /* Initialize SD. */
-        if (sdmmc_device_sd_init(&g_sd_device, &g_sd_sdmmc, SDMMC_BUS_WIDTH_4BIT, SDMMC_SPEED_SDR104))
-        {
-            g_sd_initialized = true;
-            
-            /* Mount SD. */
-            if (f_mount(&sd_fs, "", 1) == FR_OK) {
-                print(SCREEN_LOG_LEVEL_INFO, "Mounted SD card!\n");
-                g_sd_mounted = true;
-            }
-        }
-        else
-            fatal_error("Failed to initialize the SD card!.\n");
-    }
+	if (!sdmmc_storage_init_sd(&g_sd_storage, &g_sd_sdmmc, SDMMC_1, SDMMC_BUS_WIDTH_4, 11))
+	{
+        gfx_printf(&g_gfx_con, "%kFailed to init SD card.\nMake sure that it is inserted.\nOr that SD reader is properly seated!%k\n", 0xFFFFDD00, 0xFFCCCCCC);
+	}
+	else
+	{
+		int res = 0;
+		res = f_mount(&g_sd_fs, "", 1);
+		if (res == FR_OK)
+		{
+			g_sd_mounted = 1;
+			return true;
+		}
+		else
+		{
+            gfx_printf(&g_gfx_con, "%kFailed to mount SD card (FatFS Error %d).\nMake sure that a FAT partition exists..%k\n", 0xFFFFDD00, res, 0xFFCCCCCC);
+		}
+	}
 
-    return g_sd_mounted;
+	return false;
 }
 
-void unmount_sd(void)
+void sd_unmount()
 {
-    if (g_sd_mounted)
-    {
-        f_mount(NULL, "", 1);
-        sdmmc_device_finish(&g_sd_device);
-        g_sd_mounted = false;
-    }
-    
-    /* Disable AHB redirection if necessary. */
-    if (g_ahb_redirect_enabled) {
-        mc_disable_ahb_redirect();
-        g_ahb_redirect_enabled = false;
-    }
+	if (g_sd_mounted)
+	{
+		f_mount(NULL, "", 1);
+		sdmmc_storage_end(&g_sd_storage);
+		g_sd_mounted = false;
+	}
 }
 
-uint32_t get_file_size(const char *filename)
+void *sd_file_read(char *path)
 {
-    /* SD card hasn't been mounted yet. */
-    if (!g_sd_mounted)
-        return 0;
+	FIL fp;
+	if (f_open(&fp, path, FA_READ) != FR_OK)
+		return NULL;
 
-    /* Open the file for reading. */
-    FIL f;
-    if (f_open(&f, filename, FA_READ) != FR_OK)
-        return 0;
-    
-    /* Get the file size. */
-    uint32_t file_size = f_size(&f);
-    
-    /* Close the file. */
-    f_close(&f);
-    
-    return file_size;
+	u32 size = f_size(&fp);
+	void *buf = malloc(size);
+
+	u8 *ptr = buf;
+	while (size > 0)
+	{
+		u32 rsize = MIN(size, 512 * 512);
+		if (f_read(&fp, ptr, rsize, NULL) != FR_OK)
+		{
+			free(buf);
+			return NULL;
+		}
+
+		ptr += rsize;
+		size -= rsize;
+	}
+
+	f_close(&fp);
+
+	return buf;
 }
 
-int read_from_file(void *dst, uint32_t dst_size, const char *filename)
+int sd_save_to_file(void *buf, u32 size, const char *filename)
 {
-    /* SD card hasn't been mounted yet. */
-    if (!g_sd_mounted)
-        return 0;
+	FIL fp;
+	u32 res = 0;
+	res = f_open(&fp, filename, FA_CREATE_ALWAYS | FA_WRITE);
+	if (res)
+	{
+        gfx_printf(&g_gfx_con, "%kError (%d) creating file\n%s.\n%k\n", 0xFFFFDD00, res, filename, 0xFFCCCCCC);
+		return 1;
+	}
 
-    /* Open the file for reading. */
-    FIL f;
-    if (f_open(&f, filename, FA_READ) != FR_OK)
-        return 0;
-    
-    /* Sync. */
-    f_sync(&f);
-        
-    /* Read from file. */
-    UINT br = 0;
-    int res = f_read(&f, dst, dst_size, &br);
-    f_close(&f);
+	f_sync(&fp);
+	f_write(&fp, buf, size, NULL);
+	f_close(&fp);
 
-    return (res == FR_OK) ? (int)br : 0;
-}
-
-int write_to_file(void *src, uint32_t src_size, const char *filename)
-{
-    /* SD card hasn't been mounted yet. */
-    if (!g_sd_mounted)
-        return 0;
-    
-    /* Open the file for writing. */
-    FIL f;
-    if (f_open(&f, filename, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK)
-        return 0;
-
-    /* Sync. */
-    f_sync(&f);
-
-    /* Write to file. */
-    UINT bw = 0;
-    int res = f_write(&f, src, src_size, &bw);
-    f_close(&f);
-
-    return (res == FR_OK) ? (int)bw : 0;
+	return 0;
 }

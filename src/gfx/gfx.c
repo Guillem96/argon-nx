@@ -19,7 +19,7 @@
 #include <string.h>
 #include "gfx/gfx.h"
 
-static const unsigned char _gfx_font[] = {
+static const u8 _gfx_font[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Char 032 ( )
 	0x00, 0x30, 0x30, 0x18, 0x18, 0x00, 0x0C, 0x00, // Char 033 (!)
 	0x00, 0x22, 0x22, 0x22, 0x00, 0x00, 0x00, 0x00, // Char 034 (")
@@ -117,7 +117,7 @@ static const unsigned char _gfx_font[] = {
 	0x00, 0x00, 0x00, 0x4C, 0x32, 0x00, 0x00, 0x00  // Char 126 (~)
 };
 
-void gfx_init_ctxt(gfx_ctxt_t *ctxt, unsigned int *fb, unsigned int width, unsigned int height, unsigned int stride)
+void gfx_init_ctxt(gfx_ctxt_t *ctxt, u32 *fb, u32 width, u32 height, u32 stride)
 {
 	ctxt->fb = fb;
 	ctxt->width = width;
@@ -125,18 +125,18 @@ void gfx_init_ctxt(gfx_ctxt_t *ctxt, unsigned int *fb, unsigned int width, unsig
 	ctxt->stride = stride;
 }
 
-void gfx_clear_grey(gfx_ctxt_t *ctxt, unsigned char color)
+void gfx_clear_grey(gfx_ctxt_t *ctxt, u8 color)
 {
 	memset(ctxt->fb, color, 0x3C0000);
 }
 
-void gfx_clear_color(gfx_ctxt_t *ctxt, unsigned int color)
+void gfx_clear_color(gfx_ctxt_t *ctxt, u32 color)
 {
-	for (unsigned int i = 0; i < ctxt->height * ctxt->stride; i++)
+	for (u32 i = 0; i < ctxt->height * ctxt->stride; i++)
 		ctxt->fb[i] = color;
 }
 
-void gfx_clear_partial_grey(gfx_ctxt_t *ctxt, unsigned char color, unsigned int pos_x, unsigned int height)
+void gfx_clear_partial_grey(gfx_ctxt_t *ctxt, u8 color, u32 pos_x, u32 height)
 {
 	memset(ctxt->fb + pos_x * ctxt->stride, color, height * 4 * ctxt->stride);
 }
@@ -155,20 +155,20 @@ void gfx_con_init(gfx_con_t *con, gfx_ctxt_t *ctxt)
 	con->mute = 0;
 }
 
-void gfx_con_setcol(gfx_con_t *con, unsigned int fgcol, int fillbg, unsigned int bgcol)
+void gfx_con_setcol(gfx_con_t *con, u32 fgcol, int fillbg, u32 bgcol)
 {
 	con->fgcol = fgcol;
 	con->fillbg = fillbg;
 	con->bgcol = bgcol;
 }
 
-void gfx_con_getpos(gfx_con_t *con, unsigned int *x, unsigned int *y)
+void gfx_con_getpos(gfx_con_t *con, u32 *x, u32 *y)
 {
 	*x = con->x;
 	*y = con->y;
 }
 
-void gfx_con_setpos(gfx_con_t *con, unsigned int x, unsigned int y)
+void gfx_con_setpos(gfx_con_t *con, u32 x, u32 y)
 {
 	con->x = x;
 	con->y = y;
@@ -182,15 +182,15 @@ void gfx_putc(gfx_con_t *con, char c)
 	case 16:
 		if (c >= 32 && c <= 126)
 		{
-			unsigned char *cbuf = (unsigned char *)&_gfx_font[8 * (c - 32)];
-			unsigned int *fb = con->gfx_ctxt->fb + con->x + con->y * con->gfx_ctxt->stride;
+			u8 *cbuf = (u8 *)&_gfx_font[8 * (c - 32)];
+			u32 *fb = con->gfx_ctxt->fb + con->x + con->y * con->gfx_ctxt->stride;
 
-			for (unsigned int i = 0; i < 16; i+=2)
+			for (u32 i = 0; i < 16; i+=2)
 			{
-				unsigned char v = *cbuf++;
-				for (unsigned int k = 0; k < 2; k++)
+				u8 v = *cbuf++;
+				for (u32 k = 0; k < 2; k++)
 				{
-					for (unsigned int j = 0; j < 8; j++)
+					for (u32 j = 0; j < 8; j++)
 					{
 						if (v & 1)
 						{
@@ -227,12 +227,12 @@ void gfx_putc(gfx_con_t *con, char c)
 	default:
 		if (c >= 32 && c <= 126)
 		{
-			unsigned char *cbuf = (unsigned char *)&_gfx_font[8 * (c - 32)];
-			unsigned int *fb = con->gfx_ctxt->fb + con->x + con->y * con->gfx_ctxt->stride;
-			for (unsigned int i = 0; i < 8; i++)
+			u8 *cbuf = (u8 *)&_gfx_font[8 * (c - 32)];
+			u32 *fb = con->gfx_ctxt->fb + con->x + con->y * con->gfx_ctxt->stride;
+			for (u32 i = 0; i < 8; i++)
 			{
-				unsigned char v = *cbuf++;
-				for (unsigned int j = 0; j < 8; j++)
+				u8 v = *cbuf++;
+				for (u32 j = 0; j < 8; j++)
 				{
 					if (v & 1)
 						*fb = con->fgcol;
@@ -266,7 +266,7 @@ void gfx_puts(gfx_con_t *con, const char *s)
 		gfx_putc(con, *s);
 }
 
-static void _gfx_putn(gfx_con_t *con, unsigned int v, int base, char fill, int fcnt)
+static void _gfx_putn(gfx_con_t *con, u32 v, int base, char fill, int fcnt)
 {
 	char buf[65];
 	static const char digits[] = "0123456789ABCDEFghijklmnopqrstuvwxyz";
@@ -299,7 +299,7 @@ static void _gfx_putn(gfx_con_t *con, unsigned int v, int base, char fill, int f
 
 void gfx_put_small_sep(gfx_con_t *con)
 {
-	unsigned char prevFontSize = con->fntsz;
+	u8 prevFontSize = con->fntsz;
 	con->fntsz = 8;
 	gfx_putc(con, '\n');
 	con->fntsz = prevFontSize;
@@ -307,7 +307,7 @@ void gfx_put_small_sep(gfx_con_t *con)
 
 void gfx_put_big_sep(gfx_con_t *con)
 {
-	unsigned char prevFontSize = con->fntsz;
+	u8 prevFontSize = con->fntsz;
 	con->fntsz = 16;
 	gfx_putc(con, '\n');
 	con->fntsz = prevFontSize;
@@ -348,25 +348,25 @@ void gfx_printf(gfx_con_t *con, const char *fmt, ...)
 			switch(*fmt)
 			{
 			case 'c':
-				gfx_putc(con, va_arg(ap, unsigned int));
+				gfx_putc(con, va_arg(ap, u32));
 				break;
 			case 's':
 				gfx_puts(con, va_arg(ap, char *));
 				break;
 			case 'd':
-				_gfx_putn(con, va_arg(ap, unsigned int), 10, fill, fcnt);
+				_gfx_putn(con, va_arg(ap, u32), 10, fill, fcnt);
 				break;
 			case 'p':
 			case 'P':
 			case 'x':
 			case 'X':
-				_gfx_putn(con, va_arg(ap, unsigned int), 16, fill, fcnt);
+				_gfx_putn(con, va_arg(ap, u32), 16, fill, fcnt);
 				break;
 			case 'k':
-				con->fgcol = va_arg(ap, unsigned int);
+				con->fgcol = va_arg(ap, u32);
 				break;
 			case 'K':
-				con->bgcol = va_arg(ap, unsigned int);
+				con->bgcol = va_arg(ap, u32);
 				con->fillbg = 1;
 				break;
 			case '%':
@@ -389,23 +389,23 @@ void gfx_printf(gfx_con_t *con, const char *fmt, ...)
 	va_end(ap);
 }
 
-void gfx_hexdump(gfx_con_t *con, unsigned int base, const unsigned char *buf, unsigned int len)
+void gfx_hexdump(gfx_con_t *con, u32 base, const u8 *buf, u32 len)
 {
 	if (con->mute)
 		return;
 
-	unsigned char prevFontSize = con->fntsz;
+	u8 prevFontSize = con->fntsz;
 	con->fntsz = 8;
-	for(unsigned int i = 0; i < len; i++)
+	for(u32 i = 0; i < len; i++)
 	{
 		if(i % 0x10 == 0)
 		{
 			if(i != 0)
 			{
 				gfx_puts(con, "| ");
-				for(unsigned int j = 0; j < 0x10; j++)
+				for(u32 j = 0; j < 0x10; j++)
 				{
-					unsigned char c = buf[i - 0x10 + j];
+					u8 c = buf[i - 0x10 + j];
 					if(c >= 32 && c <= 126)
 						gfx_putc(con, c);
 					else
@@ -419,17 +419,17 @@ void gfx_hexdump(gfx_con_t *con, unsigned int base, const unsigned char *buf, un
 		if (i == len - 1)
 		{
 			int ln = len % 0x10 != 0;
-			unsigned int k = 0x10 - 1;
+			u32 k = 0x10 - 1;
 			if (ln)
 			{
 				k = (len & 0xF) - 1;
-				for (unsigned int j = 0; j < 0x10 - k; j++)
+				for (u32 j = 0; j < 0x10 - k; j++)
 					gfx_puts(con, "   ");
 			}
 			gfx_puts(con, "| ");
-			for(unsigned int j = 0; j < (ln ? k : k + 1); j++)
+			for(u32 j = 0; j < (ln ? k : k + 1); j++)
 			{
-				unsigned char c = buf[i - k + j];
+				u8 c = buf[i - k + j];
 				if(c >= 32 && c <= 126)
 					gfx_putc(con, c);
 				else
@@ -449,12 +449,12 @@ static int abs(int x)
 	return x;
 }
 
-void gfx_set_pixel(gfx_ctxt_t *ctxt, unsigned int x, unsigned int y, unsigned int color)
+void gfx_set_pixel(gfx_ctxt_t *ctxt, u32 x, u32 y, u32 color)
 {
 	ctxt->fb[x + y * ctxt->stride] = color;
 }
 
-void gfx_line(gfx_ctxt_t *ctxt, int x0, int y0, int x1, int y1, unsigned int color)
+void gfx_line(gfx_ctxt_t *ctxt, int x0, int y0, int x1, int y1, u32 color)
 {
 	int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
 	int dy = abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
@@ -479,12 +479,12 @@ void gfx_line(gfx_ctxt_t *ctxt, int x0, int y0, int x1, int y1, unsigned int col
 	}
 }
 
-void gfx_set_rect_grey(gfx_ctxt_t *ctxt, const unsigned char *buf, unsigned int size_x, unsigned int size_y, unsigned int pos_x, unsigned int pos_y)
+void gfx_set_rect_grey(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
 {
-	unsigned int pos = 0;
-	for (unsigned int y = pos_y; y < (pos_y + size_y); y++)
+	u32 pos = 0;
+	for (u32 y = pos_y; y < (pos_y + size_y); y++)
 	{
-		for (unsigned int x = pos_x; x < (pos_x + size_x); x++)
+		for (u32 x = pos_x; x < (pos_x + size_x); x++)
 		{
 			memset(&ctxt->fb[x + y*ctxt->stride], buf[pos], 4);
 			pos++;
@@ -493,12 +493,12 @@ void gfx_set_rect_grey(gfx_ctxt_t *ctxt, const unsigned char *buf, unsigned int 
 }
 
 
-void gfx_set_rect_rgb(gfx_ctxt_t *ctxt, const unsigned char *buf, unsigned int size_x, unsigned int size_y, unsigned int pos_x, unsigned int pos_y)
+void gfx_set_rect_rgb(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
 {
-	unsigned int pos = 0;
-	for (unsigned int y = pos_y; y < (pos_y + size_y); y++)
+	u32 pos = 0;
+	for (u32 y = pos_y; y < (pos_y + size_y); y++)
 	{
-		for (unsigned int x = pos_x; x < (pos_x + size_x); x++)
+		for (u32 x = pos_x; x < (pos_x + size_x); x++)
 		{
 			ctxt->fb[x + y*ctxt->stride] = buf[pos + 2] | (buf[pos + 1] << 8) | (buf[pos] << 16);
 			pos+=3;
@@ -506,19 +506,19 @@ void gfx_set_rect_rgb(gfx_ctxt_t *ctxt, const unsigned char *buf, unsigned int s
 	}
 }
 
-void gfx_set_rect_argb(gfx_ctxt_t *ctxt, const unsigned int *buf, unsigned int size_x, unsigned int size_y, unsigned int pos_x, unsigned int pos_y)
+void gfx_set_rect_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
 {
-	unsigned int *ptr = (unsigned int *)buf;
-	for (unsigned int y = pos_y; y < (pos_y + size_y); y++)
-		for (unsigned int x = pos_x; x < (pos_x + size_x); x++)
+	u32 *ptr = (u32 *)buf;
+	for (u32 y = pos_y; y < (pos_y + size_y); y++)
+		for (u32 x = pos_x; x < (pos_x + size_x); x++)
 			ctxt->fb[x + y * ctxt->stride] = *ptr++;
 }
 
-void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const unsigned int *buf, unsigned int size_x, unsigned int size_y, unsigned int pos_x, unsigned int pos_y)
+void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
 {
-	for (unsigned int y = pos_y; y < (pos_y + size_y); y++)
+	for (u32 y = pos_y; y < (pos_y + size_y); y++)
 	{
-		for (unsigned int x = pos_x; x < (pos_x + size_x); x++)
+		for (u32 x = pos_x; x < (pos_x + size_x); x++)
 			ctxt->fb[x + y * ctxt->stride] = buf[(size_y + pos_y - 1 - y ) * size_x + x - pos_x];
 	}
 }

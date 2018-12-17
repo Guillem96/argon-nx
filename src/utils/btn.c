@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2018 naehrwert
- * Copyright (c) 2018 CTCaer
- * Copyright (c) 2018 Atmosphère-NX
+ * Copyright (C) 2018 CTCaer
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -16,67 +15,60 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdint.h>
-
 #include "utils/btn.h"
-#include "hardware/i2c.h"
-#include "hardware/gpio.h"
-#include "utils/timers.h"
+#include "soc/i2c.h"
+#include "soc/gpio.h"
+#include "soc/t210.h"
+#include "utils/util.h"
+#include "power/max77620.h"
 
-uint32_t btn_read()
+u32 btn_read()
 {
-    uint32_t res = 0;
-    
-    if (!gpio_read(GPIO_BUTTON_VOL_DOWN))
-        res |= BTN_VOL_DOWN;
-    
-    if (!gpio_read(GPIO_BUTTON_VOL_UP))
-        res |= BTN_VOL_UP;
-    
-    uint32_t val = 0;
-    if (i2c_query(I2C_5, MAX77620_PWR_I2C_ADDR, 0x15, &val, 1))
-    {
-        if (val & 0x4)
-            res |= BTN_POWER;
-    }
-    
-    return res;
+	u32 res = 0;
+	if (!gpio_read(GPIO_PORT_X, GPIO_PIN_7))
+		res |= BTN_VOL_DOWN;
+	if (!gpio_read(GPIO_PORT_X, GPIO_PIN_6))
+		res |= BTN_VOL_UP;
+	if (i2c_recv_byte(4, MAX77620_I2C_ADDR, 0x15) & 0x4)
+		res |= BTN_POWER;
+	return res;
 }
 
-uint32_t btn_wait()
+u32 btn_wait()
 {
-    uint32_t res = 0, btn = btn_read();
-    int pwr = 0;
+	u32 res = 0, btn = btn_read();
+	bool pwr = false;
 
-    if (btn & BTN_POWER)
-    {
-        pwr = 1;
-        btn &= ~BTN_POWER;
-    }
+	//Power button down, raise a filter.
+	if (btn & BTN_POWER)
+	{
+		pwr = true;
+		btn &= ~BTN_POWER;
+	}
 
-    do
-    {
-        res = btn_read();
+	do
+	{
+		res = btn_read();
+		//Power button up, remove filter.
+		if (!(res & BTN_POWER) && pwr)
+			pwr = false;
+		else if (pwr) //Power button still down.
+			res &= ~BTN_POWER;
+	} while (btn == res);
 
-        if (!(res & BTN_POWER) && pwr)
-            pwr = 0;
-        else if (pwr)
-            res &= ~BTN_POWER;
-    } while (btn == res);
-
-    return res;
+	return res;
 }
 
-uint32_t btn_wait_timeout(uint32_t time_ms, uint32_t mask)
+u32 btn_wait_timeout(u32 time_ms, u32 mask)
 {
-    uint32_t timeout = get_time_ms() + time_ms;
-    uint32_t res = btn_read() & mask;
+	u32 timeout = get_tmr_ms() + time_ms;
+	u32 res = btn_read() & mask;
 
-    do
-    {
-        if (!(res & mask))
-            res = btn_read() & mask;
-    } while (get_time_ms() < timeout);
+	do
+	{
+		if (!(res & mask))
+			res = btn_read() & mask;
+	} while (get_tmr_ms() < timeout);
 
-    return res;
+	return res;
 }

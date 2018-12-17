@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2018 naehrwert
- * Copyright (c) 2018 CTCaer
- * Copyright (c) 2018 Atmosphère-NX
+ * Copyright (C) 2018 CTCaer
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -15,253 +14,248 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #include <string.h>
 
 #include "gfx/di.h"
-#include "utils/timers.h"
-#include "hardware/i2c.h"
-#include "hardware/pmc.h"
+#include "soc/t210.h"
+#include "utils/util.h"
+#include "soc/i2c.h"
+#include "soc/pmc.h"
 #include "power/max77620.h"
-#include "hardware/gpio.h"
-#include "hardware/pinmux.h"
-#include "hardware/car.h"
+#include "soc/gpio.h"
+#include "soc/pinmux.h"
+#include "soc/clock.h"
 
 #include "gfx/di.inl"
 
-static uint32_t _display_ver = 0;
+static u32 _display_ver = 0;
 
-static void exec_cfg(uint32_t *base, const cfg_op_t *ops, uint32_t num_ops)
+static void _display_dsi_wait(u32 timeout, u32 off, u32 mask)
 {
-    for (uint32_t i = 0; i < num_ops; i++)
-        base[ops[i].off] = ops[i].val;
-}
-
-static void _display_dsi_wait(uint32_t timeout, uint32_t off, uint32_t mask)
-{
-    uint32_t end = get_time_us() + timeout;
-    while ((get_time_us() < end) && (MAKE_DSI_REG(off) & mask)) {
-        /* Wait. */
-    }
-    udelay(5);
+	u32 end = get_tmr_us() + timeout;
+	while (get_tmr_us() < end && DSI(off) & mask)
+		;
+	usleep(5);
 }
 
 void display_init()
 {
-    volatile tegra_car_t *car = car_get_regs();
-    volatile tegra_pmc_t *pmc = pmc_get_regs();
-    volatile tegra_pinmux_t *pinmux = pinmux_get_regs();
-    
-    /* Power on. */
-    uint8_t val = 0xD0;
-    i2c_send(I2C_5, MAX77620_PWR_I2C_ADDR, MAX77620_REG_LDO0_CFG, &val, 1);
-    val = 0x09;
-    i2c_send(I2C_5, MAX77620_PWR_I2C_ADDR, MAX77620_REG_GPIO7, &val, 1);
-    
-    /* Enable MIPI CAL, DSI, DISP1, HOST1X, UART_FST_MIPI_CAL, DSIA LP clocks. */
-    car->rst_dev_h_clr = 0x1010000;
-    car->clk_enb_h_set = 0x1010000;
-    car->rst_dev_l_clr = 0x18000000;
-    car->clk_enb_l_set = 0x18000000;
-    car->clk_enb_x_set = 0x20000;
-    car->clk_source_uart_fst_mipi_cal = 0xA;
-    car->clk_enb_w_set = 0x80000;
-    car->clk_source_dsia_lp = 0xA;
+	// Power on.
+	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_LDO0_CFG, 0xD0); // Configure to 1.2V.
+	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_GPIO7, 0x09);
 
-    /* DPD idle. */
-    pmc->io_dpd_req = 0x40000000;
-    pmc->io_dpd2_req = 0x40000000;
+	// Enable MIPI CAL, DSI, DISP1, HOST1X, UART_FST_MIPI_CAL, DSIA LP clocks.
+	CLOCK(CLK_RST_CONTROLLER_RST_DEV_H_CLR) = 0x1010000;
+	CLOCK(CLK_RST_CONTROLLER_CLK_ENB_H_SET) = 0x1010000;
+	CLOCK(CLK_RST_CONTROLLER_RST_DEV_L_CLR) = 0x18000000;
+	CLOCK(CLK_RST_CONTROLLER_CLK_ENB_L_SET) = 0x18000000;
+	CLOCK(CLK_RST_CONTROLLER_CLK_ENB_X_SET) = 0x20000;
+	CLOCK(CLK_RST_CONTROLLER_CLK_SOURCE_UART_FST_MIP_CAL) = 0xA;
+	CLOCK(CLK_RST_CONTROLLER_CLK_ENB_W_SET) = 0x80000;
+	CLOCK(CLK_RST_CONTROLLER_CLK_SOURCE_DSIA_LP) = 0xA;
 
-    /* Configure pins. */
-    pinmux->nfc_en &= ~PINMUX_TRISTATE;
-    pinmux->nfc_int &= ~PINMUX_TRISTATE;
-    pinmux->lcd_bl_pwm &= ~PINMUX_TRISTATE;
-    pinmux->lcd_bl_en &= ~PINMUX_TRISTATE;
-    pinmux->lcd_rst &= ~PINMUX_TRISTATE;
-    
-    /* Configure Backlight +-5V GPIOs. */
-    gpio_configure_mode(GPIO_LCD_BL_P5V, GPIO_MODE_GPIO);
-    gpio_configure_mode(GPIO_LCD_BL_N5V, GPIO_MODE_GPIO);
-    gpio_configure_direction(GPIO_LCD_BL_P5V, GPIO_DIRECTION_OUTPUT);
-    gpio_configure_direction(GPIO_LCD_BL_N5V, GPIO_DIRECTION_OUTPUT);
-        
-    /* Enable Backlight +5V. */
-    gpio_write(GPIO_LCD_BL_P5V, GPIO_LEVEL_HIGH); 
+	// DPD idle.
+	PMC(APBDEV_PMC_IO_DPD_REQ) = 0x40000000;
+	PMC(APBDEV_PMC_IO_DPD2_REQ) = 0x40000000;
 
-    udelay(10000);
+	// Config pins.
+	PINMUX_AUX(PINMUX_AUX_NFC_EN) &= ~PINMUX_TRISTATE;
+	PINMUX_AUX(PINMUX_AUX_NFC_INT) &= ~PINMUX_TRISTATE;
+	PINMUX_AUX(PINMUX_AUX_LCD_BL_PWM) &= ~PINMUX_TRISTATE;
+	PINMUX_AUX(PINMUX_AUX_LCD_BL_EN) &= ~PINMUX_TRISTATE;
+	PINMUX_AUX(PINMUX_AUX_LCD_RST) &= ~PINMUX_TRISTATE;
 
-    /* Enable Backlight -5V. */
-    gpio_write(GPIO_LCD_BL_N5V, GPIO_LEVEL_HIGH); 
+	gpio_config(GPIO_PORT_I, GPIO_PIN_0 | GPIO_PIN_1, GPIO_MODE_GPIO); // Backlight +-5V.
+	gpio_output_enable(GPIO_PORT_I, GPIO_PIN_0 | GPIO_PIN_1, GPIO_OUTPUT_ENABLE); // Backlight +-5V.
+	gpio_write(GPIO_PORT_I, GPIO_PIN_0, GPIO_HIGH); // Backlight +5V enable.
 
-    udelay(10000);
+	usleep(10000);
 
-    /* Configure Backlight PWM, EN and RST GPIOs. */
-    gpio_configure_mode(GPIO_LCD_BL_PWM, GPIO_MODE_GPIO);
-    gpio_configure_mode(GPIO_LCD_BL_EN, GPIO_MODE_GPIO);
-    gpio_configure_mode(GPIO_LCD_BL_RST, GPIO_MODE_GPIO);    
-    gpio_configure_direction(GPIO_LCD_BL_PWM, GPIO_DIRECTION_OUTPUT);
-    gpio_configure_direction(GPIO_LCD_BL_EN, GPIO_DIRECTION_OUTPUT);
-    gpio_configure_direction(GPIO_LCD_BL_RST, GPIO_DIRECTION_OUTPUT);
-    
-    /* Enable Backlight EN. */
-    gpio_write(GPIO_LCD_BL_EN, GPIO_LEVEL_HIGH);
+	gpio_write(GPIO_PORT_I, GPIO_PIN_1, GPIO_HIGH); // Backlight -5V enable.
 
-    /* Configure display interface and display. */
-    MAKE_MIPI_CAL_REG(0x60) = 0;
+	usleep(10000);
 
-    exec_cfg((uint32_t *)CAR_BASE, _display_config_1, 4);
-    exec_cfg((uint32_t *)DI_BASE, _display_config_2, 94);
-    exec_cfg((uint32_t *)DSI_BASE, _display_config_3, 60);
+	gpio_config(GPIO_PORT_V, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2, GPIO_MODE_GPIO); // Backlight PWM, Enable, Reset.
+	gpio_output_enable(GPIO_PORT_V, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2, GPIO_OUTPUT_ENABLE);
+	gpio_write(GPIO_PORT_V, GPIO_PIN_1, GPIO_HIGH); // Backlight Enable enable.
 
-    udelay(10000);
-    
-    /* Enable Backlight RST. */
-    gpio_write(GPIO_LCD_BL_RST, GPIO_LEVEL_HIGH);
+	// Config display interface and display.
+	MIPI_CAL(MIPI_CAL_MIPI_BIAS_PAD_CFG2) = 0;
 
-    udelay(60000);
+	exec_cfg((u32 *)CLOCK_BASE, _display_config_1, 4);
+	exec_cfg((u32 *)DISPLAY_A_BASE, _display_config_2, 94);
+	exec_cfg((u32 *)DSI_BASE, _display_config_3, 61);
 
-    MAKE_DSI_REG(DSI_BTA_TIMING) = 0x50204;
-    MAKE_DSI_REG(DSI_WR_DATA) = 0x337;
-    MAKE_DSI_REG(DSI_TRIGGER) = DSI_TRIGGER_HOST;
-    _display_dsi_wait(250000, DSI_TRIGGER, (DSI_TRIGGER_HOST | DSI_TRIGGER_VIDEO));
+	usleep(10000);
 
-    MAKE_DSI_REG(DSI_WR_DATA) = 0x406;
-    MAKE_DSI_REG(DSI_TRIGGER) = DSI_TRIGGER_HOST;
-    _display_dsi_wait(250000, DSI_TRIGGER, (DSI_TRIGGER_HOST | DSI_TRIGGER_VIDEO));
+	gpio_write(GPIO_PORT_V, GPIO_PIN_2, GPIO_HIGH); // Backlight Reset enable.
 
-    MAKE_DSI_REG(DSI_HOST_CONTROL) = (DSI_HOST_CONTROL_TX_TRIG_HOST | DSI_HOST_CONTROL_IMM_BTA | DSI_HOST_CONTROL_CS | DSI_HOST_CONTROL_ECC);
-    _display_dsi_wait(150000, DSI_HOST_CONTROL, DSI_HOST_CONTROL_IMM_BTA);
+	usleep(60000);
 
-    udelay(5000);
+	DSI(_DSIREG(DSI_BTA_TIMING)) = 0x50204;
+	DSI(_DSIREG(DSI_WR_DATA)) = 0x337; // MIPI_DSI_SET_MAXIMUM_RETURN_PACKET_SIZE
+	DSI(_DSIREG(DSI_TRIGGER)) = DSI_TRIGGER_HOST;
+	_display_dsi_wait(250000, _DSIREG(DSI_TRIGGER), DSI_TRIGGER_HOST | DSI_TRIGGER_VIDEO);
 
-    _display_ver = MAKE_DSI_REG(DSI_RD_DATA);
-    
-    if (_display_ver == 0x10)
-        exec_cfg((uint32_t *)DSI_BASE, _display_config_4, 43);
+	DSI(_DSIREG(DSI_WR_DATA)) = 0x406; // MIPI_DCS_GET_DISPLAY_ID
+	DSI(_DSIREG(DSI_TRIGGER)) = DSI_TRIGGER_HOST;
+	_display_dsi_wait(250000, _DSIREG(DSI_TRIGGER), DSI_TRIGGER_HOST | DSI_TRIGGER_VIDEO);
 
-    MAKE_DSI_REG(DSI_WR_DATA) = 0x1105;
-    MAKE_DSI_REG(DSI_TRIGGER) = DSI_TRIGGER_HOST;
+	DSI(_DSIREG(DSI_HOST_CONTROL)) = DSI_HOST_CONTROL_TX_TRIG_HOST | DSI_HOST_CONTROL_IMM_BTA | DSI_HOST_CONTROL_CS | DSI_HOST_CONTROL_ECC;
+	_display_dsi_wait(150000, _DSIREG(DSI_HOST_CONTROL), DSI_HOST_CONTROL_IMM_BTA);
 
-    udelay(180000);
+	usleep(5000);
 
-    MAKE_DSI_REG(DSI_WR_DATA) = 0x2905;
-    MAKE_DSI_REG(DSI_TRIGGER) = DSI_TRIGGER_HOST;
+	_display_ver = DSI(_DSIREG(DSI_RD_DATA));
+	if (_display_ver == 0x10)
+		exec_cfg((u32 *)DSI_BASE, _display_config_4, 43);
 
-    udelay(20000);
+	DSI(_DSIREG(DSI_WR_DATA)) = 0x1105; // MIPI_DCS_EXIT_SLEEP_MODE
+	DSI(_DSIREG(DSI_TRIGGER)) = DSI_TRIGGER_HOST;
 
-    exec_cfg((uint32_t *)DSI_BASE, _display_config_5, 21);
-    exec_cfg((uint32_t *)CAR_BASE, _display_config_6, 3);
-    
-    MAKE_DI_REG(DC_DISP_DISP_CLOCK_CONTROL) = 4;
-    exec_cfg((uint32_t *)DSI_BASE, _display_config_7, 10);
+	usleep(180000);
 
-    udelay(10000);
+	DSI(_DSIREG(DSI_WR_DATA)) = 0x2905; // MIPI_DCS_SET_DISPLAY_ON
+	DSI(_DSIREG(DSI_TRIGGER)) = DSI_TRIGGER_HOST;
 
-    exec_cfg((uint32_t *)MIPI_CAL_BASE, _display_config_8, 6);
-    exec_cfg((uint32_t *)DSI_BASE, _display_config_9, 4);
-    exec_cfg((uint32_t *)MIPI_CAL_BASE, _display_config_10, 16);
+	usleep(20000);
 
-    udelay(10000);
+	exec_cfg((u32 *)CLOCK_BASE, _display_config_6, 3);
+	exec_cfg((u32 *)DSI_BASE, _display_config_5, 21);
+	DISPLAY_A(_DIREG(DC_DISP_DISP_CLOCK_CONTROL)) = 4;
+	exec_cfg((u32 *)DSI_BASE, _display_config_7, 10);
 
-    exec_cfg((uint32_t *)DI_BASE, _display_config_11, 113);
+	usleep(10000);
+
+	exec_cfg((u32 *)MIPI_CAL_BASE, _display_config_8, 6);
+	exec_cfg((u32 *)DSI_BASE, _display_config_9, 4);
+	exec_cfg((u32 *)MIPI_CAL_BASE, _display_config_10, 16);
+
+	usleep(10000);
+
+	exec_cfg((u32 *)DISPLAY_A_BASE, _display_config_11, 113);
+}
+
+void display_backlight_pwm_init()
+{
+	clock_enable_pwm();
+
+	PWM(PWM_CONTROLLER_PWM_CSR) = (1 << 31); // Enable PWM
+
+	PINMUX_AUX(PINMUX_AUX_LCD_BL_PWM) = (PINMUX_AUX(PINMUX_AUX_LCD_BL_PWM) >> 2) << 2 | 1; // PWM clock source.
+	gpio_config(GPIO_PORT_V, GPIO_PIN_0, GPIO_MODE_SPIO); // Backlight power mode.
+	
 }
 
 void display_backlight(bool enable)
 {
-    /* Enable Backlight PWM. */
-    gpio_write(GPIO_LCD_BL_PWM, enable ? GPIO_LEVEL_HIGH : GPIO_LEVEL_LOW);
+	gpio_write(GPIO_PORT_V, GPIO_PIN_0, enable ? GPIO_HIGH : GPIO_LOW); // Backlight PWM GPIO.
+}
+
+void display_backlight_brightness(u32 brightness, u32 step_delay)
+{
+	u32 old_value = (PWM(PWM_CONTROLLER_PWM_CSR) >> 16) & 0xFF;
+	if (brightness == old_value)
+		return;
+
+	if (brightness > 255)
+		brightness = 255;
+
+	if (old_value < brightness)
+	{
+		for (u32 i = old_value; i < brightness + 1; i++)
+		{
+			PWM(PWM_CONTROLLER_PWM_CSR) = (1 << 31) | (i << 16); // Enable PWM
+			usleep(step_delay);
+		}
+	}
+	else
+	{
+		for (u32 i = old_value; i > brightness; i--)
+		{
+			PWM(PWM_CONTROLLER_PWM_CSR) = (1 << 31) | (i << 16); // Enable PWM
+			usleep(step_delay);
+		}
+	}
+	if (!brightness)
+	    PWM(PWM_CONTROLLER_PWM_CSR) = 0;
 }
 
 void display_end()
 {
-    volatile tegra_car_t *car = car_get_regs();
-    volatile tegra_pinmux_t *pinmux = pinmux_get_regs();
-    
-    /* Disable Backlight. */
-    display_backlight(false);
-    
-    MAKE_DSI_REG(DSI_VIDEO_MODE_CONTROL) = 1;
-    MAKE_DSI_REG(DSI_WR_DATA) = 0x2805;
+	display_backlight_brightness(0, 1000);
 
-    MAKE_DI_REG(DC_CMD_STATE_ACCESS) = (READ_MUX | WRITE_MUX);
-    MAKE_DSI_REG(DSI_VIDEO_MODE_CONTROL) = 0;
+	DSI(_DSIREG(DSI_VIDEO_MODE_CONTROL)) = 1;
+	DSI(_DSIREG(DSI_WR_DATA)) = 0x2805; // MIPI_DCS_SET_DISPLAY_OFF
 
-    exec_cfg((uint32_t *)DI_BASE, _display_config_12, 17);
-    exec_cfg((uint32_t *)DSI_BASE, _display_config_13, 16);
+	DISPLAY_A(_DIREG(DC_CMD_STATE_ACCESS)) = READ_MUX | WRITE_MUX;
+	DSI(_DSIREG(DSI_VIDEO_MODE_CONTROL)) = 0;
 
-    udelay(10000);
+	exec_cfg((u32 *)DISPLAY_A_BASE, _display_config_12, 17);
+	exec_cfg((u32 *)DSI_BASE, _display_config_13, 16);
 
-    if (_display_ver == 0x10)
-        exec_cfg((uint32_t *)DSI_BASE, _display_config_14, 22);
+	usleep(10000);
 
-    MAKE_DSI_REG(DSI_WR_DATA) = 0x1005;
-    MAKE_DSI_REG(DSI_TRIGGER) = DSI_TRIGGER_HOST;
+	if (_display_ver == 0x10)
+		exec_cfg((u32 *)DSI_BASE, _display_config_14, 22);
 
-    udelay(50000);
-    
-    /* Disable Backlight RST. */
-    gpio_write(GPIO_LCD_BL_RST, GPIO_LEVEL_LOW); 
+	DSI(_DSIREG(DSI_WR_DATA)) = 0x1005; // MIPI_DCS_ENTER_SLEEP_MODE
+	DSI(_DSIREG(DSI_TRIGGER)) = DSI_TRIGGER_HOST;
 
-    udelay(10000);
-    
-    /* Disable Backlight -5V. */
-    gpio_write(GPIO_LCD_BL_N5V, GPIO_LEVEL_LOW); 
+	usleep(50000);
 
-    udelay(10000);
+	gpio_write(GPIO_PORT_V, GPIO_PIN_2, GPIO_LOW); //Backlight Reset disable.
 
-    /* Disable Backlight +5V. */
-    gpio_write(GPIO_LCD_BL_P5V, GPIO_LEVEL_LOW); 
+	usleep(10000);
 
-    udelay(10000);
+	gpio_write(GPIO_PORT_I, GPIO_PIN_1, GPIO_LOW); //Backlight -5V disable.
 
-    /* Disable clocks. */
-    car->rst_dev_h_set = 0x1010000;
-    car->clk_enb_h_clr = 0x1010000;
-    car->rst_dev_l_set = 0x18000000;
-    car->clk_enb_l_clr = 0x18000000;
+	usleep(10000);
 
-    MAKE_DSI_REG(DSI_PAD_CONTROL_0) = (DSI_PAD_CONTROL_VS1_PULLDN_CLK | DSI_PAD_CONTROL_VS1_PULLDN(0xF) | DSI_PAD_CONTROL_VS1_PDIO_CLK | DSI_PAD_CONTROL_VS1_PDIO(0xF));
-    MAKE_DSI_REG(DSI_POWER_CONTROL) = 0;
-    
-    /* Backlight PWM. */
-    gpio_configure_mode(GPIO_LCD_BL_PWM, GPIO_MODE_SFIO);
-    
-    pinmux->lcd_bl_pwm = ((pinmux->lcd_bl_pwm & ~PINMUX_TRISTATE) | PINMUX_TRISTATE);
-    pinmux->lcd_bl_pwm = (((pinmux->lcd_bl_pwm >> 2) << 2) | 1);
+	gpio_write(GPIO_PORT_I, GPIO_PIN_0, GPIO_LOW); //Backlight +5V disable.
+
+	usleep(10000);
+
+	// Disable clocks.
+	CLOCK(CLK_RST_CONTROLLER_RST_DEV_H_SET) = 0x1010000;
+	CLOCK(CLK_RST_CONTROLLER_CLK_ENB_H_CLR) = 0x1010000;
+	CLOCK(CLK_RST_CONTROLLER_RST_DEV_L_SET) = 0x18000000;
+	CLOCK(CLK_RST_CONTROLLER_CLK_ENB_L_CLR) = 0x18000000;
+
+	DSI(_DSIREG(DSI_PAD_CONTROL_0)) = DSI_PAD_CONTROL_VS1_PULLDN_CLK | DSI_PAD_CONTROL_VS1_PULLDN(0xF) | DSI_PAD_CONTROL_VS1_PDIO_CLK | DSI_PAD_CONTROL_VS1_PDIO(0xF);
+	DSI(_DSIREG(DSI_POWER_CONTROL)) = 0;
+
+	gpio_config(GPIO_PORT_V, GPIO_PIN_0, GPIO_MODE_SPIO); // Backlight PWM.
+
+	PINMUX_AUX(PINMUX_AUX_LCD_BL_PWM) = (PINMUX_AUX(PINMUX_AUX_LCD_BL_PWM) & ~PINMUX_TRISTATE) | PINMUX_TRISTATE;
+	PINMUX_AUX(PINMUX_AUX_LCD_BL_PWM) = (PINMUX_AUX(PINMUX_AUX_LCD_BL_PWM) >> 2) << 2 | 1;
 }
 
-void display_color_screen(uint32_t color)
+void display_color_screen(u32 color)
 {
-    exec_cfg((uint32_t *)DI_BASE, cfg_display_one_color, 8);
+	exec_cfg((u32 *)DISPLAY_A_BASE, cfg_display_one_color, 8);
 
-    /* Configure display to show single color. */
-    MAKE_DI_REG(DC_WIN_AD_WIN_OPTIONS) = 0;
-    MAKE_DI_REG(DC_WIN_BD_WIN_OPTIONS) = 0;
-    MAKE_DI_REG(DC_WIN_CD_WIN_OPTIONS) = 0;
-    MAKE_DI_REG(DC_DISP_BLEND_BACKGROUND_COLOR) = color;
-    MAKE_DI_REG(DC_CMD_STATE_CONTROL) = ((MAKE_DI_REG(DC_CMD_STATE_CONTROL) & 0xFFFFFFFE) | GENERAL_ACT_REQ);
+	// Configure display to show single color.
+	DISPLAY_A(_DIREG(DC_WIN_AD_WIN_OPTIONS)) = 0;
+	DISPLAY_A(_DIREG(DC_WIN_BD_WIN_OPTIONS)) = 0;
+	DISPLAY_A(_DIREG(DC_WIN_CD_WIN_OPTIONS)) = 0;
+	DISPLAY_A(_DIREG(DC_DISP_BLEND_BACKGROUND_COLOR)) = color;
+	DISPLAY_A(_DIREG(DC_CMD_STATE_CONTROL)) = (DISPLAY_A(_DIREG(DC_CMD_STATE_CONTROL)) & 0xFFFFFFFE) | GENERAL_ACT_REQ;
 
-    udelay(35000);
+	usleep(35000);
 
-    display_backlight(true);
+	display_backlight(true);
 }
 
-uint32_t *display_init_framebuffer(void *address)
+u32 *display_init_framebuffer()
 {
-    static cfg_op_t conf[sizeof(cfg_display_framebuffer)/sizeof(cfg_op_t)] = {0};
-    if (conf[0].val == 0) {
-        for (uint32_t i = 0; i < sizeof(cfg_display_framebuffer)/sizeof(cfg_op_t); i++) {
-            conf[i] = cfg_display_framebuffer[i];
-        }
-    }
+	// Sanitize framebuffer area.
+	memset((u32 *)0xC0000000, 0, 0x3C0000);
+	// This configures the framebuffer @ 0xC0000000 with a resolution of 1280x720 (line stride 768).
+	exec_cfg((u32 *)DISPLAY_A_BASE, cfg_display_framebuffer, 32);
 
-    uint32_t *lfb_addr = (uint32_t *)address;
-    conf[19].val = (uint32_t)address;
-    
-    /* This configures the framebuffer @ address with a resolution of 1280x720 (line stride 768). */
-    exec_cfg((uint32_t *)DI_BASE, conf, 32);
+	usleep(35000);
 
-    udelay(35000);
-
-    return lfb_addr;
+	return (u32 *)0xC0000000;
 }

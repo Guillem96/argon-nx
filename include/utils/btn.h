@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2018 naehrwert
- * Copyright (c) 2018 CTCaer
- * Copyright (c) 2018 Atmosphère-NX
+ * Copyright (C) 2018 CTCaer
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -15,16 +14,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
-#ifndef FUSEE_BTN_H_
-#define FUSEE_BTN_H_
+
+#ifndef _BTN_H_
+#define _BTN_H_
+
+#include "utils/types.h"
 
 #define BTN_POWER 0x1
 #define BTN_VOL_DOWN 0x2
 #define BTN_VOL_UP 0x4
 
-uint32_t btn_read();
-uint32_t btn_wait();
-uint32_t btn_wait_timeout(uint32_t time_ms, uint32_t mask);
+u32 btn_read();
+u32 btn_wait();
+u32 btn_wait_timeout(u32 time_ms, u32 mask);
 
 #endif

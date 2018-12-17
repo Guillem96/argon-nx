@@ -16,19 +16,24 @@
  
 #include "panic/panic.h"
 #include "gfx/di.h"
-#include "hardware/pmc.h"
-#include "hardware/fuse.h"
-#include "utils/utils.h"
+#include "soc/pmc.h"
+#include "soc/fuse.h"
+#include "utils/util.h"
+#include "soc/t210.h"
 
 static uint32_t g_panic_code = 0;
+
+#define BIT(n) (1u << (n))
+#define BITL(n)     (1ull << (n))
+#define MASK(n) (BIT(n) - 1)
 
 void check_and_display_panic(void) {
     /* We also handle our own panics. */
     /* In the case of our own panics, we assume that the display has already been initialized. */
-    bool has_panic = APBDEV_PMC_RST_STATUS_0 != 0 || g_panic_code != 0;
-    uint32_t code = g_panic_code == 0 ? APBDEV_PMC_SCRATCH200_0 : g_panic_code;
+    bool has_panic = PMC(APBDEV_PMC_RST_STATUS) != 0 || g_panic_code != 0;
+    uint32_t code = g_panic_code == 0 ? PMC(APBDEV_PMC_SCRATCH200) : g_panic_code;
 
-    has_panic = has_panic && !(APBDEV_PMC_RST_STATUS_0 != 1 && code == PANIC_CODE_SAFEMODE);
+    has_panic = has_panic && !(PMC(APBDEV_PMC_RST_STATUS) != 1 && code == PANIC_CODE_SAFEMODE);
 
     if (has_panic) {
         uint32_t color;
@@ -79,7 +84,7 @@ void check_and_display_panic(void) {
         wait_for_button_and_reboot();
     } else {
         g_panic_code = 0;
-        APBDEV_PMC_SCRATCH200_0 = 0;
+        PMC(APBDEV_PMC_SCRATCH200) = 0;
     }
 }
 
@@ -87,11 +92,11 @@ __attribute__ ((noreturn)) void panic(uint32_t code) {
     /* Set panic code. */
     if (g_panic_code == 0) {
         g_panic_code = code;
-        APBDEV_PMC_SCRATCH200_0 = code;
+        PMC(APBDEV_PMC_SCRATCH200) = code;
     }
 
-    fuse_disable_programming();
-    APBDEV_PMC_CRYPTO_OP_0 = 1; /* Disable all SE operations. */
+    fuse_disable_program();
+    PMC(APBDEV_PMC_CRYPTO_OP) = 1; /* Disable all SE operations. */
 
     check_and_display_panic();
     while(true);
