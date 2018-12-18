@@ -1,7 +1,8 @@
 /*
  * Copyright (c) 2018 naehrwert
  * Copyright (C) 2018 CTCaer
- *
+ * Copyright (C) 2018 Guillem96
+ * 
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
  * version 2, as published by the Free Software Foundation.
@@ -117,6 +118,9 @@ static const u8 _gfx_font[] = {
 	0x00, 0x00, 0x00, 0x4C, 0x32, 0x00, 0x00, 0x00  // Char 126 (~)
 };
 
+#define CHAR_WIDTH 8
+#define CHAR_HEIGHT 8
+
 void gfx_init_ctxt(gfx_ctxt_t *ctxt, u32 *fb, u32 width, u32 height, u32 stride)
 {
 	ctxt->fb = fb;
@@ -144,7 +148,7 @@ void gfx_clear_partial_grey(gfx_ctxt_t *ctxt, u8 color, u32 pos_x, u32 height)
 void gfx_con_init(gfx_con_t *con, gfx_ctxt_t *ctxt)
 {
 	con->gfx_ctxt = ctxt;
-	con->fntsz = 16;
+	con->scale = 2;
 	con->x = 0;
 	con->y = 0;
 	con->savedx = 0;
@@ -174,87 +178,62 @@ void gfx_con_setpos(gfx_con_t *con, u32 x, u32 y)
 	con->y = y;
 }
 
+u32* draw_pixel(gfx_con_t *con, u32 *dstBuffer, u8 pixel)
+{
+    if (pixel & 1)
+    {
+        for (u32 z = 0; z < con->scale; z++)
+        {
+            *dstBuffer = con->fgcol;
+            if (z != con->scale - 1)
+                dstBuffer++;
+        }
+    }
+    else if (con->fillbg)
+    {
+        for (u32 z = 0; z < con->scale; z++)
+        {
+            *dstBuffer = con->bgcol;
+            if (z != con->scale - 1)
+                dstBuffer++;
+        }
+    }
+    else
+        dstBuffer++;
+    return dstBuffer;
+}
+
 void gfx_putc(gfx_con_t *con, char c)
 {
-	// Duplicate code for performance reasons.
-	switch (con->fntsz)
-	{
-	case 16:
-		if (c >= 32 && c <= 126)
-		{
-			u8 *cbuf = (u8 *)&_gfx_font[8 * (c - 32)];
-			u32 *fb = con->gfx_ctxt->fb + con->x + con->y * con->gfx_ctxt->stride;
+    if (c >= 32 && c <= 126)
+    {
+        u8 *cbuf = (u8 *)&_gfx_font[CHAR_WIDTH * (c - 32)];
+        u32 *fb = con->gfx_ctxt->fb + con->x + con->y * con->gfx_ctxt->stride;
 
-			for (u32 i = 0; i < 16; i+=2)
-			{
-				u8 v = *cbuf++;
-				for (u32 k = 0; k < 2; k++)
-				{
-					for (u32 j = 0; j < 8; j++)
-					{
-						if (v & 1)
-						{
-							*fb = con->fgcol;
-							fb++;
-							*fb = con->fgcol;
-						}
-						else if (con->fillbg)
-						{
-							*fb = con->bgcol;
-							fb++;
-							*fb = con->bgcol;
-						}
-						else
-							fb++;
-						v >>= 1;
-						fb++;
-					}
-					fb += con->gfx_ctxt->stride - 16;
-					v = *cbuf;
-				}
-			}
-			con->x += 16;
-		}
-		else if (c == '\n')
-		{
-			con->x = 0;
-			con->y +=16;
-			if (con->y > con->gfx_ctxt->height - 16)
-				con->y = 0;
-		}
-		break;
-	case 8:
-	default:
-		if (c >= 32 && c <= 126)
-		{
-			u8 *cbuf = (u8 *)&_gfx_font[8 * (c - 32)];
-			u32 *fb = con->gfx_ctxt->fb + con->x + con->y * con->gfx_ctxt->stride;
-			for (u32 i = 0; i < 8; i++)
-			{
-				u8 v = *cbuf++;
-				for (u32 j = 0; j < 8; j++)
-				{
-					if (v & 1)
-						*fb = con->fgcol;
-					else if (con->fillbg)
-						*fb = con->bgcol;
-					v >>= 1;
-					fb++;
-				}
-				fb += con->gfx_ctxt->stride - 8;
-			}
-			con->x += 8;
-		}
-		else if (c == '\n')
-		{
-			con->x = 0;
-			con->y += 8;
-			if (con->y > con->gfx_ctxt->height - 8)
-				con->y = 0;
-		}
-		break;
-	}
-	
+        for (u32 i = 0; i < CHAR_WIDTH * con->scale; i+=con->scale)
+        {
+            u8 v = *cbuf++;
+            for (u32 k = 0; k < con->scale; k++)
+            {
+                for (u32 j = 0; j < CHAR_HEIGHT; j++)
+                {
+                    fb = draw_pixel(con, fb, v);
+                    v >>= 1;
+                    fb++;
+                }
+                fb += con->gfx_ctxt->stride - CHAR_HEIGHT * con->scale;
+                v = *cbuf;
+            }
+        }
+        con->x += CHAR_WIDTH * con->scale;
+    }
+    else if (c == '\n')
+    {
+        con->x = 0;
+        con->y += CHAR_HEIGHT * con->scale;
+        if (con->y > con->gfx_ctxt->height - CHAR_HEIGHT * con->scale)
+            con->y = 0;
+    }
 }
 
 void gfx_puts(gfx_con_t *con, const char *s)
@@ -299,18 +278,18 @@ static void _gfx_putn(gfx_con_t *con, u32 v, int base, char fill, int fcnt)
 
 void gfx_put_small_sep(gfx_con_t *con)
 {
-	u8 prevFontSize = con->fntsz;
-	con->fntsz = 8;
+	u8 prevFontSize = con->scale;
+	con->scale = 1;
 	gfx_putc(con, '\n');
-	con->fntsz = prevFontSize;
+	con->scale = prevFontSize;
 }
 
 void gfx_put_big_sep(gfx_con_t *con)
 {
-	u8 prevFontSize = con->fntsz;
-	con->fntsz = 16;
+	u8 prevFontSize = con->scale;
+	con->scale = 2;
 	gfx_putc(con, '\n');
-	con->fntsz = prevFontSize;
+	con->scale = prevFontSize;
 }
 
 void gfx_printf(gfx_con_t *con, const char *fmt, ...)
@@ -394,8 +373,8 @@ void gfx_hexdump(gfx_con_t *con, u32 base, const u8 *buf, u32 len)
 	if (con->mute)
 		return;
 
-	u8 prevFontSize = con->fntsz;
-	con->fntsz = 8;
+	u8 prevFontSize = con->scale;
+	con->scale = 1;
 	for(u32 i = 0; i < len; i++)
 	{
 		if(i % 0x10 == 0)
@@ -439,7 +418,7 @@ void gfx_hexdump(gfx_con_t *con, u32 base, const u8 *buf, u32 len)
 		}
 	}
 	gfx_putc(con, '\n');
-	con->fntsz = prevFontSize;
+	con->scale = prevFontSize;
 }
 
 static int abs(int x)

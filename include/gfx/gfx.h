@@ -33,7 +33,7 @@ typedef struct _gfx_ctxt_t
 typedef struct _gfx_con_t
 {
 	gfx_ctxt_t *gfx_ctxt;
-	u32 fntsz;
+    u8 scale;
 	u32 x;
 	u32 y;
 	u32 savedx;
