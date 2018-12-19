@@ -14,10 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "menu/argon_menu.h"
-#include "menu/menu.h"
-#include "menu/menu_pool.h"
-#include "menu/menu_entry.h"
+#include "menu/console/argon_menu.h"
+#include "menu/console/menu.h"
+#include "menu/console/menu_pool.h"
+#include "menu/console/menu_entry.h"
 #include "gfx/gfx.h"
 #include "core/launcher.h"
 #include "mem/heap.h"

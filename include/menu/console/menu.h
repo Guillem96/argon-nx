@@ -18,7 +18,7 @@
 #define _MENU_H_
 
 #include "utils/types.h"
-#include "menu_entry.h"
+#include "menu/console/menu_entry.h"
 
 #define MAX_ENTRIES 0x10
 

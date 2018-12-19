@@ -19,6 +19,8 @@
 #include <stdarg.h>
 #include <string.h>
 #include "gfx/gfx.h"
+#include "utils/fs_utils.h"
+#include "mem/heap.h"
 
 static const u8 _gfx_font[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Char 032 ( )
@@ -500,4 +502,52 @@ void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_
 		for (u32 x = pos_x; x < (pos_x + size_x); x++)
 			ctxt->fb[x + y * ctxt->stride] = buf[(size_y + pos_y - 1 - y ) * size_x + x - pos_x];
 	}
+}
+
+void gfx_render_bmp_arg_file(gfx_ctxt_t *ctxt, char *path, u32 x, u32 y, u32 width, u32 height)
+{
+    bmp_data_t bmp_data;
+    u8 *bitmap = (u8 *)sd_file_read(path);
+	u8 *image = NULL;
+    bool bootlogo_found = false;
+
+    if (bitmap != NULL)
+    {
+        // Get values manually to avoid unaligned access.
+        bmp_data.size = bitmap[2] | bitmap[3] << 8 |
+            bitmap[4] << 16 | bitmap[5] << 24;
+        bmp_data.offset = bitmap[10] | bitmap[11] << 8 |
+            bitmap[12] << 16 | bitmap[13] << 24;
+        bmp_data.size_x = bitmap[18] | bitmap[19] << 8 |
+            bitmap[20] << 16 | bitmap[21] << 24;
+        bmp_data.size_y = bitmap[22] | bitmap[23] << 8 |
+            bitmap[24] << 16 | bitmap[25] << 24;
+        // Sanity check.
+        if (bitmap[0] == 'B' &&
+            bitmap[1] == 'M' &&
+            bitmap[28] == 32 && //
+            bmp_data.size_x <= width &&
+            bmp_data.size_y <= height)
+        {
+            if ((bmp_data.size - bmp_data.offset) <= 0x400000)
+            {
+                // Avoid unaligned access from BM 2-byte MAGIC and remove header.
+                image = (u8 *)malloc(0x400000);
+                memcpy(image, bitmap + bmp_data.offset, bmp_data.size - bmp_data.offset);
+                free(bitmap);
+                bmp_data.pos_x = (width  - bmp_data.size_x) >> 1;
+                bmp_data.pos_y = (height - bmp_data.size_y) >> 1;
+
+                bootlogo_found = true;
+            }
+        }
+        else
+            free(bitmap);
+    }
+    if (bootlogo_found)
+	{
+		gfx_render_bmp_argb(&g_gfx_ctxt, (u32 *)image, bmp_data.size_x, bmp_data.size_y,
+			bmp_data.pos_x + x, bmp_data.pos_y + y);
+    }
+    free(image);
 }

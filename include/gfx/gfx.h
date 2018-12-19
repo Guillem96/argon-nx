@@ -54,6 +54,15 @@ typedef struct _gfx_con_t
 	bool mute;
 } gfx_con_t;
 
+typedef struct 
+{
+    u32 size;
+    u32 size_x;
+    u32 size_y;
+    u32 offset;
+    u32 pos_x;
+    u32 pos_y;
+} bmp_data_t;
 
 gfx_ctxt_t g_gfx_ctxt;
 gfx_con_t g_gfx_con;
@@ -84,5 +93,6 @@ void gfx_set_rect_grey(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, 
 void gfx_set_rect_rgb(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y);
 void gfx_set_rect_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y);
 void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y);
+void gfx_render_bmp_arg_file(gfx_ctxt_t *ctxt, char *path, u32 x, u32 y, u32 width, u32 height);
 
 #endif

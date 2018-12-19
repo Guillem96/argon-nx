@@ -15,22 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "menu/menu_entry.h"
-#include "mem/heap.h"
+#include "menu/gui/gui_argon_menu.h"
+#include "gfx/gfx.h"
+#include "utils/types.h"
 #include <string.h>
 
-menu_entry_t *create_menu_entry(const char *text, u32 color, int (*handler)(void *), void *param)
+void setup_gfx_gui()
 {
-	menu_entry_t *menu_entry = (menu_entry_t *)malloc(sizeof(menu_entry_t));
-	strcpy(menu_entry->text, text);
-	menu_entry->color = color;
-	menu_entry->handler = handler;
-	menu_entry->param = param;
-	return menu_entry;
+    u32 clear_color = 0xFFF7F7F7;
+    gfx_con_setcol(&g_gfx_con, BLACK, 1, clear_color);
+    gfx_clear_color(&g_gfx_ctxt, clear_color);
 }
 
-int cancel(void *param)
+/* Init needed menus for ArgonNX */
+void gui_init_argon_menu(void)
 {
-	/* Return always -1 because it will force to go back to menu */
-	return -1;
+    setup_gfx_gui();
+    gfx_printf(&g_gfx_con, "Hello from ArgonNX");
+
+    gfx_render_bmp_arg_file(&g_gfx_ctxt, "argon/logos/fusee-primary.bmp", 100, 100, 200, 200);
 }
+

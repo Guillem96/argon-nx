@@ -17,7 +17,7 @@
 #ifndef _MENU_POOL_H_
 #define _MENU_POOL_H_
 
-#include "menu/menu.h"
+#include "menu/console/menu.h"
 
 typedef struct {
     int max_items;

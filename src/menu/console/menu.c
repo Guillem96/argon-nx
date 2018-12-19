@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "menu/menu.h"
-#include "menu/menu_pool.h"
+#include "menu/console/menu.h"
+#include "menu/console/menu_pool.h"
 #include "utils/btn.h"
 #include "gfx/gfx.h"
 #include "mem/heap.h"

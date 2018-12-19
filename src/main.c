@@ -29,7 +29,8 @@
 #include "utils/util.h"
 #include "utils/fs_utils.h"
 
-#include "menu/argon_menu.h"
+#include "menu/console/argon_menu.h"
+#include "menu/gui/gui_argon_menu.h"
 
 extern void pivot_stack(u32 stack_top);
 
@@ -66,7 +67,7 @@ void ipl_main()
         // {
         //     gfx_printf(&g_gfx_con, "Error loading the payload\n\n");
         // }
-        init_argon_menu();
+        gui_init_argon_menu();
     }
 
     /* If payload launch fails wait for user input to reboot the switch */
