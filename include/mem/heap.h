@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018 naehrwert
+ * Copyright (c) 2018 Guillem96
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -38,5 +39,6 @@ void *malloc(u32 size);
 void *calloc(u32 num, u32 size);
 void free(void *buf);
 void *memalign(u32 align, u32 size);
+void *m_realloc(void* ptr, u32 current_size, u32 new_size);
 
 #endif

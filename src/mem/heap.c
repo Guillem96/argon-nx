@@ -126,3 +126,34 @@ void free(void *buf)
 	if ((buf != NULL) || ((u32)buf > (_heap.start - 1)))
 		_heap_free(&_heap, (u32)buf);
 }
+
+void *m_realloc(void* ptr, u32 current_size, u32 new_size)
+{
+    if (new_size == 0)
+    {
+      free(ptr);
+      return NULL;
+    }
+    else if (!ptr)
+    {
+        return malloc(new_size);
+    }
+    else if (new_size <= current_size)
+    {
+        return ptr;
+    }
+    else
+    {
+        if ((ptr) && (new_size > current_size))
+        {
+            void *ptrNew = malloc(new_size);
+            if (ptrNew)
+            {
+                memcpy(ptrNew, ptr, current_size);
+                free(ptr);
+            }
+            return ptrNew;
+        }
+        return NULL;
+    }
+}
