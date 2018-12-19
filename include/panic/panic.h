@@ -19,6 +19,7 @@
 #define FUSEE_PANIC_H
 
 #include <stdint.h>
+#include "utils/types.h"
 
 #define PANIC_COLOR_KERNEL              0x0000FF
 #define PANIC_COLOR_SECMON_EXCEPTION    0xFF7700
@@ -30,6 +31,6 @@
 #define PANIC_CODE_SAFEMODE 0x00000020
 
 void check_and_display_panic(void);
-__attribute__ ((noreturn)) void panic(uint32_t code);
+void panic(u32 code);
 
 #endif

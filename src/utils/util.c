@@ -118,17 +118,15 @@ __attribute__((noreturn)) void wait_for_button_and_reboot(void) {
     }
 }
 
-int reboot_normal()
+void reboot_normal()
 {
 	sd_unmount();
 
 	display_end();
 	panic(0x21); // Bypass fuse programming in package1.
-
-	return 0;
 }
 
-int reboot_rcm()
+void reboot_rcm()
 {
 	sd_unmount();
 	display_end();
@@ -136,13 +134,11 @@ int reboot_rcm()
 	PMC(APBDEV_PMC_CNTRL) |= PMC_CNTRL_MAIN_RST;
 	while (true)
 		usleep(1);
-	return 0;
 }
 
-int power_off()
+void power_off()
 {
 	sd_unmount();
 	//TODO: we should probably make sure all regulators are powered off properly.
 	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_ONOFFCNFG1, MAX77620_ONOFFCNFG1_PWR_OFF);
-	return 0;
 }

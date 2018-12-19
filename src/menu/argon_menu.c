@@ -20,14 +20,20 @@
 #include "menu/menu_entry.h"
 #include "gfx/gfx.h"
 #include "core/launcher.h"
+#include "mem/heap.h"
 #include "utils/util.h"
+#include "utils/dirlist.h"
+
+#include <string.h>
+
+int tool_reboot_normal(void*);
+int tool_reboot_rcm(void*);
+int tool_power_off(void*);
 
 void init_argon_menu()
 {
-    // TODO: Read payloads using dirlist("argon/payloads", "*.bin", false)
-    char* payloads[] = { "fusee.bin", "Reinx.bin", "hekate.bin", "fusee-primary.bin" };
-    u32 num_payloads = 4;
-
+    char* dir = "argon/payloads";
+    const char* payloads = dirlist(dir, "*.bin", false);
     /* Init pool for menu */
     menu_pool_init();
 
@@ -36,18 +42,31 @@ void init_argon_menu()
 
     /* Create menu to launch payloads */
 	menu_entry_t *launch_separator = create_menu_entry("--- Payloads ---", 0xFF7AADFF, NULL, NULL);
-    for(s8 i = 0; i < num_payloads; i++)
+    menu_append_entry(argon_menu, launch_separator);
+    
+    /* Generate dinamycally the entries */
+    u32 i = 0;
+    while(payloads[i * 256])
     {
-        menu_entry_t *current_payload = create_menu_entry("Launch ReiNX", WHITE, launch_payload, payloads[i]);
-        menu_append_entry(argon_menu, current_payload);
+        char* payload = (char*)malloc(256);
+        strcpy(payload, dir);
+        strcat(payload, "/");
+        strcat(payload, &payloads[i * 256]);
+
+        char buff[64];
+        strcpy(buff, "Launch ");
+        strcat(buff,  &payloads[i * 256]);
+        menu_append_entry(argon_menu, create_menu_entry(buff, WHITE, (int (*)(void *))launch_payload, (void*)payload));
+        i++;
     }
     
     /* Create menu to reboot or power off nx */
 	menu_entry_t *utils_separator = create_menu_entry("--- Reboot Options ---", 0xFF7AADFF, NULL, NULL);
-	menu_entry_t *reboot_rcm_entry = create_menu_entry("Reboot into RCM", WHITE, reboot_rcm, NULL);
-    menu_entry_t *launc_ofw_entry = create_menu_entry("Reboot normal (won't work with AutoRCM)", WHITE, reboot_normal, NULL);
-	menu_entry_t *shutdown_entry = create_menu_entry("Power Off", WHITE, power_off, NULL);
+	menu_entry_t *reboot_rcm_entry = create_menu_entry("Reboot into RCM", WHITE, tool_reboot_rcm, NULL);
+    menu_entry_t *launc_ofw_entry = create_menu_entry("Reboot normal (won't work with AutoRCM)", WHITE, tool_reboot_normal, NULL);
+	menu_entry_t *shutdown_entry = create_menu_entry("Power Off", WHITE, tool_power_off, NULL);
 
+	menu_append_entry(argon_menu, utils_separator);
 	menu_append_entry(argon_menu, reboot_rcm_entry);
     menu_append_entry(argon_menu, launc_ofw_entry);
 	menu_append_entry(argon_menu, shutdown_entry);
@@ -57,4 +76,21 @@ void init_argon_menu()
 
     /* Clear all entries and menus */
     menu_pool_cleanup();
+}
+
+int tool_reboot_normal(void* param)
+{
+    reboot_normal();
+    return 0;
+}
+int tool_reboot_rcm(void* param)
+{
+    reboot_rcm();
+    return 0;
+}
+
+int tool_power_off(void* param)
+{
+    power_off();
+    return 0;
 }

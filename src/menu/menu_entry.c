@@ -16,6 +16,7 @@
  */
 
 #include "menu/menu_entry.h"
+#include "mem/heap.h"
 #include <string.h>
 
 menu_entry_t *create_menu_entry(const char *text, u32 color, int (*handler)(void *), void *param)

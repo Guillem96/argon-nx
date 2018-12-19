@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "menu/menu_pool.h"
+#include "mem/heap.h"
 
 void menu_pool_init()
 {
@@ -31,8 +32,9 @@ void menu_push_to_pool(menu_t *menu)
         if (g_menu_pool->current_items == g_menu_pool->max_items - 1)
         {
             // Resize the pool
-            g_menu_pool->max_items = g_menu_pool->max_items << 1;
-            g_menu_pool->menus = (menu_t **)realloc(g_menu_pool->menus, sizeof(menu_t *) * g_menu_pool->max_items);
+            u32 new_size = g_menu_pool->max_items << 1;
+            g_menu_pool->menus = (menu_t **)m_realloc(g_menu_pool->menus, sizeof(menu_t *) * g_menu_pool->max_items, new_size);
+            g_menu_pool->max_items = new_size;
         }
         g_menu_pool->menus[g_menu_pool->current_items] = menu;
         g_menu_pool->current_items++;

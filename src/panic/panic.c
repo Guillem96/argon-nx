@@ -89,7 +89,7 @@ void check_and_display_panic(void) {
     }
 }
 
-__attribute__ ((noreturn)) void panic(uint32_t code) {
+void panic(u32 code) {
     /* Set panic code. */
     if (g_panic_code == 0) {
         g_panic_code = code;

@@ -15,7 +15,6 @@
  */
 
 #include <string.h>
-#include <stdlib.h>
 
 #include "libs/fatfs/ff.h"
 #include "mem/heap.h"

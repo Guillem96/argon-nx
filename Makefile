@@ -41,6 +41,11 @@ OBJS = $(addprefix $(BUILD)/$(TARGET)/, \
 	hw_init.o \
 	dirlist.o \
 	smmu.o \
+	menu.o \
+	menu_entry.o \
+	menu_pool.o \
+	argon_menu.o \
+	panic.o \
 )
 
 OBJS += $(addprefix $(BUILD)/$(TARGET)/, \

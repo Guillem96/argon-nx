@@ -37,9 +37,9 @@ void msleep(u32 milliseconds);
 void exec_cfg(u32 *base, const cfg_op_t *ops, u32 num_ops);
 u32 crc32c(const void *buf, u32 len);
 
-int reboot_normal(void);
-int reboot_rcm(void);
-int power_off(void);
+void reboot_normal(void);
+void reboot_rcm(void);
+void power_off(void);
 
 /* This is a faster implementation of memcmp that checks two u32 values */
 /* every 128 Bytes block. Intented only for Backup and Restore          */

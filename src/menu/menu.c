@@ -15,10 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "menu.h"
-#include "menu_pool.h"
+#include "menu/menu.h"
+#include "menu/menu_pool.h"
 #include "utils/btn.h"
 #include "gfx/gfx.h"
+#include "mem/heap.h"
+#include <string.h>
 
 /* Render the menu */
 void menu_draw(menu_t *menu);
@@ -75,7 +77,7 @@ void menu_draw(menu_t *menu)
 	gfx_printf(&g_gfx_con, "%k----- %s -----%k\n\n", 0xFFF45642, menu->title, WHITE);
 	g_gfx_con.scale = 2;
 
-	for (s8 i = 0; i < menu->next_entry; i++)
+	for (s16 i = 0; i < menu->next_entry; i++)
 	{
 		if (i == menu->selected_index)
 		{
@@ -129,7 +131,7 @@ int menu_update(menu_t *menu)
 		if (entry->handler != NULL)
 		{
 			gfx_clear_color(&g_gfx_ctxt, BLACK);
-            gfx_con_setpos(&g_gfx_ctxt, 20, 50);
+            gfx_con_setpos(&g_gfx_con, 20, 50);
 			if (entry->handler(entry->param) != 0)
 				return 0;
 
