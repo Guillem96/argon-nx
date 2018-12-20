@@ -47,6 +47,9 @@ OBJS = $(addprefix $(BUILD)/$(TARGET)/, \
 	argon_menu.o \
 	panic.o \
 	gui_argon_menu.o \
+	gui_menu.o \
+	gui_menu_entry.o \
+	gui_menu_pool.o \
 )
 
 OBJS += $(addprefix $(BUILD)/$(TARGET)/, \

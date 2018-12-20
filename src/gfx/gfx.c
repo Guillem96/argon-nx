@@ -506,9 +506,14 @@ void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_
 
 void gfx_render_bmp_arg_file(gfx_ctxt_t *ctxt, char *path, u32 x, u32 y, u32 width, u32 height)
 {
-    bmp_data_t bmp_data;
     u8 *bitmap = (u8 *)sd_file_read(path);
-	u8 *image = NULL;
+    gfx_render_bmp_arg_bitmap(ctxt, bitmap, x, y, width, height);
+}
+
+void gfx_render_bmp_arg_bitmap(gfx_ctxt_t *ctxt, u8* bitmap, u32 x, u32 y, u32 width, u32 height)
+{
+    bmp_data_t bmp_data;
+    u8 *image = NULL;
     bool bootlogo_found = false;
 
     if (bitmap != NULL)
@@ -541,8 +546,6 @@ void gfx_render_bmp_arg_file(gfx_ctxt_t *ctxt, char *path, u32 x, u32 y, u32 wid
                 bootlogo_found = true;
             }
         }
-        else
-            free(bitmap);
     }
     if (bootlogo_found)
 	{

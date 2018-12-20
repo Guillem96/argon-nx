@@ -34,7 +34,7 @@ menu_t *menu_create(const char *title)
 	strcpy(menu->title, title);
 	menu->next_entry = 0;
 	menu->selected_index = 0;
-    menu_push_to_pool(menu);
+    menu_push_to_pool((void*)menu);
 	return menu;
 }
 
@@ -56,7 +56,7 @@ menu_t *create_yes_no_menu(const char *action,
 	menu_append_entry(menu, yes_entry);
 	menu_append_entry(menu, no_entry);
 
-    menu_push_to_pool(menu);
+    menu_push_to_pool((void*)menu);
 	return menu;
 }
 

@@ -16,8 +16,18 @@
  */
 
 #include "menu/gui/gui_argon_menu.h"
+#include "menu/gui/gui_menu.h"
+#include "menu/gui/gui_menu_pool.h"
+
 #include "gfx/gfx.h"
 #include "utils/types.h"
+#include "utils/fs_utils.h"
+#include "utils/dirlist.h"
+#include "utils/util.h"
+#include "core/launcher.h"
+
+#include "mem/heap.h"
+
 #include <string.h>
 
 void setup_gfx_gui()
@@ -31,8 +41,37 @@ void setup_gfx_gui()
 void gui_init_argon_menu(void)
 {
     setup_gfx_gui();
-    gfx_printf(&g_gfx_con, "Hello from ArgonNX");
+    // gfx_printf(&g_gfx_con, "Hello from ArgonNX");
 
-    gfx_render_bmp_arg_file(&g_gfx_ctxt, "argon/logos/fusee-primary.bmp", 100, 100, 200, 200);
+    char* dir = "argon/payloads";
+    const char* payloads = dirlist(dir, "*.bin", false);
+
+    /* Init pool for menu */
+    gui_menu_pool_init();
+
+    gui_menu_t* menu = gui_menu_create("ArgonNX");
+
+    /* Generate dinamycally the entries */
+    u32 i = 0;
+    while(payloads[i * 256])
+    {
+        char* payload = (char*)malloc(256);
+        strcpy(payload, dir);
+        strcat(payload, "/");
+        strcat(payload, &payloads[i * 256]);
+
+        gui_menu_append_entry(menu, 
+                            gui_create_menu_entry(&payloads[i * 256], 
+                                                    sd_file_read(payload), 
+                                                    100 * i, 200 *i,
+                                                    200, 200,
+                                                    (int (*)(void *))launch_payload, (void*)payload));
+        i++;
+    }
+
+    // gfx_render_bmp_arg_file(&g_gfx_ctxt, "argon/logos/fusee-primary.bmp", 100, 100, 200, 200);
+
+    /* Clear all entries and menus */
+    gui_menu_pool_cleanup();
 }
 
