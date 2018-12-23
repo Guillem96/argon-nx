@@ -1,7 +1,8 @@
 /*
  * Copyright (c) 2018 naehrwert
  * Copyright (C) 2018 CTCaer
- *
+ * Copyright (C) 2018 Guillem96
+ * 
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
  * version 2, as published by the Free Software Foundation.
@@ -46,5 +47,10 @@ void power_off(void);
 u32 memcmp32sparse(const u32 *buf1, const u32 *buf2, u32 len);
 
 __attribute__((noreturn)) void wait_for_button_and_reboot(void);
+
+/**
+ * Replace a pattern of string for another string
+ */
+char *str_replace(char *orig, char *rep, char *with);
 
 #endif

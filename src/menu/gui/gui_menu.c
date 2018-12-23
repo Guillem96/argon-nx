@@ -58,7 +58,7 @@ int gui_menu_update(gui_menu_t *menu)
 	gui_menu_entry_t *entry = NULL;
 	u32 input;
 
-    menu_draw(menu);
+    gui_menu_draw(menu);
 
     input = btn_wait();
 
@@ -82,7 +82,7 @@ int gui_menu_update(gui_menu_t *menu)
 				return 0;
 
             gfx_clear_color(&g_gfx_ctxt, BLACK);
-            menu_draw(menu);
+            gui_menu_draw(menu);
 		}
 	}
 	return 1;
@@ -90,7 +90,7 @@ int gui_menu_update(gui_menu_t *menu)
 
 int gui_menu_open(gui_menu_t *menu)
 {
-	while (menu_update(menu))
+	while (gui_menu_update(menu))
 		;
 
 	return 0;
@@ -99,7 +99,7 @@ int gui_menu_open(gui_menu_t *menu)
 void gui_menu_destroy(gui_menu_t *menu)
 {
 	for (int i = 0; i < menu->next_entry; i++)
-		free(menu->entries[i]);
+		gui_menu_entry_destroy(menu->entries[i]);
 	free(menu->entries);
 	free(menu);
 }

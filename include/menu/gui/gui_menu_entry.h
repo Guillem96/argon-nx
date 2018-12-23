@@ -41,4 +41,7 @@ gui_menu_entry_t *gui_create_menu_entry(const char *text,
 /* Renders a gfx menu entry */
 void gui_menu_render_entry(gui_menu_entry_t* entry, bool selected);
 
+/* Destroy menu entry */
+void gui_menu_entry_destroy(gui_menu_entry_t*);
+
 #endif

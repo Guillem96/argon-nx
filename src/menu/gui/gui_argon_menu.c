@@ -25,6 +25,7 @@
 #include "utils/dirlist.h"
 #include "utils/util.h"
 #include "core/launcher.h"
+#include "core/payloads.h"
 
 #include "mem/heap.h"
 
@@ -53,19 +54,21 @@ void gui_init_argon_menu(void)
 
     /* Generate dinamycally the entries */
     u32 i = 0;
+    /* For each payload generate its logo, its name and its path */
     while(payloads[i * 256])
     {
-        char* payload = (char*)malloc(256);
-        strcpy(payload, dir);
-        strcat(payload, "/");
-        strcat(payload, &payloads[i * 256]);
+        char* payload_path = (char*)malloc(256);
+        payload_full_path(&payloads[i * 256], payload_path);
+        
+        char payload_logo[256];
+        payload_logo_path(&payloads[i * 256], payload_logo);
 
         gui_menu_append_entry(menu, 
-                            gui_create_menu_entry(&payloads[i * 256], 
-                                                    sd_file_read(payload), 
-                                                    100 * i, 200 *i,
-                                                    200, 200,
-                                                    (int (*)(void *))launch_payload, (void*)payload));
+            gui_create_menu_entry(&payloads[i * 256], 
+                                    sd_file_read(payload_logo), 
+                                    100 * i, 200 *i,
+                                    200, 200,
+                                    (int (*)(void *))launch_payload, (void*)payload_path));
         i++;
     }
 

@@ -9,7 +9,7 @@ BLVERSION_MAJOR := 0
 BLVERSION_MINOR := 1
 BUILD 					:= build
 OUTPUT 					:= output
-SOURCEDIR 			= src
+SOURCEDIR 			:= src
 INCLUDES				:= include
 VPATH = $(dir $(wildcard ./$(SOURCEDIR)/*/)) $(dir $(wildcard ./$(SOURCEDIR)/*/*/))
 
@@ -50,6 +50,7 @@ OBJS = $(addprefix $(BUILD)/$(TARGET)/, \
 	gui_menu.o \
 	gui_menu_entry.o \
 	gui_menu_pool.o \
+	payloads.o \
 )
 
 OBJS += $(addprefix $(BUILD)/$(TARGET)/, \
@@ -57,14 +58,13 @@ OBJS += $(addprefix $(BUILD)/$(TARGET)/, \
 	diskio.o ff.o ffunicode.o ffsystem.o \
 )
 
-
 ARCH := -march=armv4t -mtune=arm7tdmi -mthumb -mthumb-interwork
 CFLAGS = $(INCLUDE) $(ARCH) -O2 -nostdlib -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-inline -std=gnu11 -Wall
 LDFLAGS = $(ARCH) -nostartfiles -lgcc -Wl,--nmagic,--gc-sections
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
-			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-			-I$(CURDIR)/$(BUILD)
+					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+					-I$(CURDIR)/$(BUILD)
 
 .PHONY: all clean
 
@@ -91,7 +91,7 @@ $(BUILD)/$(TARGET)/$(TARGET).elf: $(OBJS)
 $(BUILD)/$(TARGET)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/$(TARGET)/%.o: %.S
+$(BUILD)/$(TARGET)/%.o: %.s
 	@mkdir -p "$(BUILD)"
 	@mkdir -p "$(BUILD)/$(TARGET)"
 	@mkdir -p "$(OUTPUT)"

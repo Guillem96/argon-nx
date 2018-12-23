@@ -47,3 +47,12 @@ void gui_menu_render_entry(gui_menu_entry_t* entry, bool selected)
                                 entry->x, entry->y, 
                                 entry->width, entry->height);
 }
+
+void gui_menu_entry_destroy(gui_menu_entry_t* entry)
+{
+
+    free(entry->bitmap);
+    free(entry->text);
+    free(entry->param);
+    free(entry);
+}
