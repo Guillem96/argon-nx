@@ -37,11 +37,9 @@ extern void pivot_stack(u32 stack_top);
 static inline void setup_gfx()
 {
     u32 *fb = display_init_framebuffer();
-    gfx_init_ctxt(&g_gfx_ctxt, fb, 1280, 720, 768);
-    gfx_init_ctxt(&g_gfx_ctxt, fb, 720, 1280, 720);
-    // gfx_con_init(&g_gfx_con, &g_gfx_ctxt);
+    gfx_init_ctxt(&g_gfx_ctxt, fb, 1280, 720, 720);
+    gfx_con_init(&g_gfx_con, &g_gfx_ctxt);
     gfx_con_setcol(&g_gfx_con, 0xFFCCCCCC, 1, BLACK);
-    gfx_con_setpos(&g_gfx_con, 0, 0);
 }
 
 void ipl_main()
@@ -62,8 +60,9 @@ void ipl_main()
     /* Mount Sd card and launch payload */
     if (sd_mount())
     {
-        g_gfx_con.scale = 3;
-        // gfx_printf(&g_gfx_con, "Hello from ArgonNX!!\n\n");
+        g_gfx_con.scale = 5;
+        gfx_printf(&g_gfx_con, "Hello from ArgonNX!!!\n\n");
+
         // if (launch_payload("payload.bin"))
         // {
         //     gfx_printf(&g_gfx_con, "Error loading the payload\n\n");
@@ -73,6 +72,6 @@ void ipl_main()
 
     /* If payload launch fails wait for user input to reboot the switch */
     g_gfx_con.scale = 2;
-    // gfx_printf(&g_gfx_con, "Press power button to reboot into RCM...\n\n");
+    gfx_printf(&g_gfx_con, "Press power button to reboot into RCM...\n\n");
     wait_for_button_and_reboot();
 }

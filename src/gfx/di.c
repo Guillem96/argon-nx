@@ -257,5 +257,7 @@ u32 *display_init_framebuffer()
 
 	usleep(35000);
 
+    GPIO_6(0x24) = GPIO_6(0x24) & 0xFFFFFFFE | 1;
+
 	return (u32 *)0xC0000000;
 }

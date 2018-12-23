@@ -55,24 +55,24 @@ void gui_init_argon_menu(void)
     /* Generate dinamycally the entries */
     u32 i = 0;
     /* For each payload generate its logo, its name and its path */
-    while(payloads[i * 256])
-    {
-        char* payload_path = (char*)malloc(256);
-        payload_full_path(&payloads[i * 256], payload_path);
+    // while(payloads[i * 256])
+    // {
+    //     char* payload_path = (char*)malloc(256);
+    //     payload_full_path(&payloads[i * 256], payload_path);
         
-        char payload_logo[256];
-        payload_logo_path(&payloads[i * 256], payload_logo);
+    //     char payload_logo[256];
+    //     payload_logo_path(&payloads[i * 256], payload_logo);
 
-        gui_menu_append_entry(menu, 
-            gui_create_menu_entry(&payloads[i * 256], 
-                                    sd_file_read(payload_logo), 
-                                    100 * i, 200 *i,
-                                    200, 200,
-                                    (int (*)(void *))launch_payload, (void*)payload_path));
-        i++;
-    }
+    //     gui_menu_append_entry(menu, 
+    //         gui_create_menu_entry(&payloads[i * 256], 
+    //                                 sd_file_read(payload_logo), 
+    //                                 100 * i, 200 *i,
+    //                                 200, 200,
+    //                                 (int (*)(void *))launch_payload, (void*)payload_path));
+    //     i++;
+    // }
 
-    // gfx_render_bmp_arg_file(&g_gfx_ctxt, "argon/logos/fusee-primary.bmp", 100, 100, 200, 200);
+    gfx_render_bmp_arg_file(&g_gfx_ctxt, "argon/logos/fusee-primary.bmp", 100, 100, 200, 200);
 
     /* Clear all entries and menus */
     gui_menu_pool_cleanup();
