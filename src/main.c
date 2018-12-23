@@ -37,8 +37,9 @@ extern void pivot_stack(u32 stack_top);
 static inline void setup_gfx()
 {
     u32 *fb = display_init_framebuffer();
+    gfx_init_ctxt(&g_gfx_ctxt, fb, 1280, 720, 768);
     gfx_init_ctxt(&g_gfx_ctxt, fb, 720, 1280, 720);
-    gfx_con_init(&g_gfx_con, &g_gfx_ctxt);
+    // gfx_con_init(&g_gfx_con, &g_gfx_ctxt);
     gfx_con_setcol(&g_gfx_con, 0xFFCCCCCC, 1, BLACK);
     gfx_con_setpos(&g_gfx_con, 0, 0);
 }

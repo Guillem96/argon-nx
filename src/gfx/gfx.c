@@ -2,7 +2,7 @@
  * Copyright (c) 2018 naehrwert
  * Copyright (C) 2018 CTCaer
  * Copyright (C) 2018 Guillem96
- * 
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
  * version 2, as published by the Free Software Foundation.
@@ -138,8 +138,11 @@ void gfx_clear_grey(gfx_ctxt_t *ctxt, u8 color)
 
 void gfx_clear_color(gfx_ctxt_t *ctxt, u32 color)
 {
-	for (u32 i = 0; i < ctxt->height * ctxt->stride; i++)
-		ctxt->fb[i] = color;
+	for (u32 x = 0; x < ctxt->width; x++)
+		for (u32 y = 0; y < ctxt->height; y++)
+			gfx_set_pixel(ctxt, x, y, color);
+	// for (u32 i = 0; i < ctxt->height * ctxt->stride; i++)
+	// 	ctxt->fb[i] = color;
 }
 
 void gfx_clear_partial_grey(gfx_ctxt_t *ctxt, u8 color, u32 pos_x, u32 height)
@@ -180,62 +183,65 @@ void gfx_con_setpos(gfx_con_t *con, u32 x, u32 y)
 	con->y = y;
 }
 
-u32* draw_pixel(gfx_con_t *con, u32 *dstBuffer, u8 pixel)
+// TODO: Landscape
+u32 *draw_pixel(gfx_con_t *con, u32 *dstBuffer, u8 pixel, u32 i, u32 j)
 {
-    if (pixel & 1)
-    {
-        for (u32 z = 0; z < con->scale; z++)
-        {
-            *dstBuffer = con->fgcol;
-            if (z != con->scale - 1)
-                dstBuffer++;
-        }
-    }
-    else if (con->fillbg)
-    {
-        for (u32 z = 0; z < con->scale; z++)
-        {
-            *dstBuffer = con->bgcol;
-            if (z != con->scale - 1)
-                dstBuffer++;
-        }
-    }
-    else
-        dstBuffer++;
-    return dstBuffer;
+	if (pixel & 1)
+	{
+		for (u32 z = 0; z < con->scale; z++)
+		{
+			gfx_set_pixel(con->gfx_ctxt, con->x + j, con->y + i + z, con->fgcol);
+			// *dstBuffer = con->fgcol;
+			// if (z != con->scale - 1)
+			// 	dstBuffer++;
+		}
+	}
+	else if (con->fillbg)
+	{
+		for (u32 z = 0; z < con->scale; z++)
+		{
+			gfx_set_pixel(con->gfx_ctxt, con->x + j, con->y + i + z, con->bgcol);
+			// *dstBuffer = con->bgcol;
+			// if (z != con->scale - 1)
+			// 	dstBuffer++;
+		}
+	}
+	else
+		dstBuffer++;
+	return dstBuffer;
 }
 
 void gfx_putc(gfx_con_t *con, char c)
 {
-    if (c >= 32 && c <= 126)
-    {
-        u8 *cbuf = (u8 *)&_gfx_font[CHAR_WIDTH * (c - 32)];
-        u32 *fb = con->gfx_ctxt->fb + con->x + con->y * con->gfx_ctxt->stride;
+	if (c >= 32 && c <= 126)
+	{
+		u8 *cbuf = (u8 *)&_gfx_font[CHAR_WIDTH * (c - 32)];
+		u32 *fb = con->gfx_ctxt->fb + con->x + con->y * con->gfx_ctxt->stride;
 
-        for (u32 i = 0; i < CHAR_WIDTH * con->scale; i+=con->scale)
-        {
-            u8 v = *cbuf++;
-            for (u32 k = 0; k < con->scale; k++)
-            {
-                for (u32 j = 0; j < CHAR_HEIGHT; j++)
-                {
-                    fb = draw_pixel(con, fb, v);
-                    v >>= 1;
-                    fb++;
-                }
-                fb += con->gfx_ctxt->stride - CHAR_HEIGHT * con->scale;
-                v = *cbuf;
-            }
-        }
-        con->x += CHAR_WIDTH * con->scale;
-    }
-    else if (c == '\n')
-    {
-        con->x = 0;
-        con->y += CHAR_HEIGHT * con->scale;
-        if (con->y > con->gfx_ctxt->height - CHAR_HEIGHT * con->scale)
-            con->y = 0;
-    }
+		for (u32 i = 0; i < CHAR_WIDTH * con->scale; i += con->scale)
+		{
+			u8 v = *cbuf++;
+			for (u32 k = 0; k < con->scale; k++)
+			{
+				for (u32 j = 0; j < CHAR_HEIGHT; j++)
+				{
+					fb = draw_pixel(con, fb, v, i, j);
+					v >>= 1;
+					fb++;
+				}
+				fb += con->gfx_ctxt->stride - CHAR_HEIGHT * con->scale;
+				v = *cbuf;
+			}
+		}
+		con->x += CHAR_WIDTH * con->scale;
+	}
+	else if (c == '\n')
+	{
+		con->x = 0;
+		con->y += CHAR_HEIGHT * con->scale;
+		if (con->y > con->gfx_ctxt->height - CHAR_HEIGHT * con->scale)
+			con->y = 0;
+	}
 }
 
 void gfx_puts(gfx_con_t *con, const char *s)
@@ -303,9 +309,9 @@ void gfx_printf(gfx_con_t *con, const char *fmt, ...)
 	int fill, fcnt;
 
 	va_start(ap, fmt);
-	while(*fmt)
+	while (*fmt)
 	{
-		if(*fmt == '%')
+		if (*fmt == '%')
 		{
 			fmt++;
 			fill = 0;
@@ -326,7 +332,7 @@ void gfx_printf(gfx_con_t *con, const char *fmt, ...)
 					fcnt -= '0';
 				}
 			}
-			switch(*fmt)
+			switch (*fmt)
 			{
 			case 'c':
 				gfx_putc(con, va_arg(ap, u32));
@@ -366,7 +372,7 @@ void gfx_printf(gfx_con_t *con, const char *fmt, ...)
 		fmt++;
 	}
 
-	out:
+out:
 	va_end(ap);
 }
 
@@ -377,17 +383,17 @@ void gfx_hexdump(gfx_con_t *con, u32 base, const u8 *buf, u32 len)
 
 	u8 prevFontSize = con->scale;
 	con->scale = 1;
-	for(u32 i = 0; i < len; i++)
+	for (u32 i = 0; i < len; i++)
 	{
-		if(i % 0x10 == 0)
+		if (i % 0x10 == 0)
 		{
-			if(i != 0)
+			if (i != 0)
 			{
 				gfx_puts(con, "| ");
-				for(u32 j = 0; j < 0x10; j++)
+				for (u32 j = 0; j < 0x10; j++)
 				{
 					u8 c = buf[i - 0x10 + j];
-					if(c >= 32 && c <= 126)
+					if (c >= 32 && c <= 126)
 						gfx_putc(con, c);
 					else
 						gfx_putc(con, '.');
@@ -408,10 +414,10 @@ void gfx_hexdump(gfx_con_t *con, u32 base, const u8 *buf, u32 len)
 					gfx_puts(con, "   ");
 			}
 			gfx_puts(con, "| ");
-			for(u32 j = 0; j < (ln ? k : k + 1); j++)
+			for (u32 j = 0; j < (ln ? k : k + 1); j++)
 			{
 				u8 c = buf[i - k + j];
-				if(c >= 32 && c <= 126)
+				if (c >= 32 && c <= 126)
 					gfx_putc(con, c);
 				else
 					gfx_putc(con, '.');
@@ -432,7 +438,8 @@ static int abs(int x)
 
 void gfx_set_pixel(gfx_ctxt_t *ctxt, u32 x, u32 y, u32 color)
 {
-	ctxt->fb[x + y * ctxt->stride] = color;
+	ctxt->fb[y + (ctxt->width - x) * ctxt->stride] = color;
+	//No landscape: ctxt->fb[x + y * ctxt->stride] = color;
 }
 
 void gfx_line(gfx_ctxt_t *ctxt, int x0, int y0, int x1, int y1, u32 color)
@@ -447,7 +454,7 @@ void gfx_line(gfx_ctxt_t *ctxt, int x0, int y0, int x1, int y1, u32 color)
 		if (x0 == x1 && y0 == y1)
 			break;
 		e2 = err;
-		if (e2 >-dx)
+		if (e2 > -dx)
 		{
 			err -= dy;
 			x0 += sx;
@@ -460,6 +467,7 @@ void gfx_line(gfx_ctxt_t *ctxt, int x0, int y0, int x1, int y1, u32 color)
 	}
 }
 
+// TODO: Landscape
 void gfx_set_rect_grey(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
 {
 	u32 pos = 0;
@@ -467,12 +475,11 @@ void gfx_set_rect_grey(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, 
 	{
 		for (u32 x = pos_x; x < (pos_x + size_x); x++)
 		{
-			memset(&ctxt->fb[x + y*ctxt->stride], buf[pos], 4);
+			memset(&ctxt->fb[x + y * ctxt->stride], buf[pos], 4);
 			pos++;
 		}
 	}
 }
-
 
 void gfx_set_rect_rgb(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
 {
@@ -481,8 +488,8 @@ void gfx_set_rect_rgb(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u
 	{
 		for (u32 x = pos_x; x < (pos_x + size_x); x++)
 		{
-			ctxt->fb[x + y*ctxt->stride] = buf[pos + 2] | (buf[pos + 1] << 8) | (buf[pos] << 16);
-			pos+=3;
+			gfx_set_pixel(ctxt, x, y, buf[pos + 2] | (buf[pos + 1] << 8) | (buf[pos] << 16));
+			pos += 3;
 		}
 	}
 }
@@ -492,7 +499,7 @@ void gfx_set_rect_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y,
 	u32 *ptr = (u32 *)buf;
 	for (u32 y = pos_y; y < (pos_y + size_y); y++)
 		for (u32 x = pos_x; x < (pos_x + size_x); x++)
-			ctxt->fb[x + y * ctxt->stride] = *ptr++;
+			gfx_set_pixel(ctxt, x, y, *ptr++);
 }
 
 void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
@@ -500,57 +507,57 @@ void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_
 	for (u32 y = pos_y; y < (pos_y + size_y); y++)
 	{
 		for (u32 x = pos_x; x < (pos_x + size_x); x++)
-			ctxt->fb[x + y * ctxt->stride] = buf[(size_y + pos_y - 1 - y ) * size_x + x - pos_x];
+			gfx_set_pixel(ctxt, x, y, buf[(size_y + pos_y - 1 - y) * size_x + x - pos_x]);
 	}
 }
 
 void gfx_render_bmp_arg_file(gfx_ctxt_t *ctxt, char *path, u32 x, u32 y, u32 width, u32 height)
 {
-    u8 *bitmap = (u8 *)sd_file_read(path);
-    gfx_render_bmp_arg_bitmap(ctxt, bitmap, x, y, width, height);
+	u8 *bitmap = (u8 *)sd_file_read(path);
+	gfx_render_bmp_arg_bitmap(ctxt, bitmap, x, y, width, height);
 }
 
-void gfx_render_bmp_arg_bitmap(gfx_ctxt_t *ctxt, u8* bitmap, u32 x, u32 y, u32 width, u32 height)
+void gfx_render_bmp_arg_bitmap(gfx_ctxt_t *ctxt, u8 *bitmap, u32 x, u32 y, u32 width, u32 height)
 {
-    bmp_data_t bmp_data;
-    u8 *image = NULL;
-    bool bootlogo_found = false;
+	bmp_data_t bmp_data;
+	u8 *image = NULL;
+	bool bootlogo_found = false;
 
-    if (bitmap != NULL)
-    {
-        // Get values manually to avoid unaligned access.
-        bmp_data.size = bitmap[2] | bitmap[3] << 8 |
-            bitmap[4] << 16 | bitmap[5] << 24;
-        bmp_data.offset = bitmap[10] | bitmap[11] << 8 |
-            bitmap[12] << 16 | bitmap[13] << 24;
-        bmp_data.size_x = bitmap[18] | bitmap[19] << 8 |
-            bitmap[20] << 16 | bitmap[21] << 24;
-        bmp_data.size_y = bitmap[22] | bitmap[23] << 8 |
-            bitmap[24] << 16 | bitmap[25] << 24;
-        // Sanity check.
-        if (bitmap[0] == 'B' &&
-            bitmap[1] == 'M' &&
-            bitmap[28] == 32 && //
-            bmp_data.size_x <= width &&
-            bmp_data.size_y <= height)
-        {
-            if ((bmp_data.size - bmp_data.offset) <= 0x400000)
-            {
-                // Avoid unaligned access from BM 2-byte MAGIC and remove header.
-                image = (u8 *)malloc(0x400000);
-                memcpy(image, bitmap + bmp_data.offset, bmp_data.size - bmp_data.offset);
-                free(bitmap);
-                bmp_data.pos_x = (width  - bmp_data.size_x) >> 1;
-                bmp_data.pos_y = (height - bmp_data.size_y) >> 1;
+	if (bitmap != NULL)
+	{
+		// Get values manually to avoid unaligned access.
+		bmp_data.size = bitmap[2] | bitmap[3] << 8 |
+						bitmap[4] << 16 | bitmap[5] << 24;
+		bmp_data.offset = bitmap[10] | bitmap[11] << 8 |
+						  bitmap[12] << 16 | bitmap[13] << 24;
+		bmp_data.size_x = bitmap[18] | bitmap[19] << 8 |
+						  bitmap[20] << 16 | bitmap[21] << 24;
+		bmp_data.size_y = bitmap[22] | bitmap[23] << 8 |
+						  bitmap[24] << 16 | bitmap[25] << 24;
+		// Sanity check.
+		if (bitmap[0] == 'B' &&
+			bitmap[1] == 'M' &&
+			bitmap[28] == 32 && //
+			bmp_data.size_x <= width &&
+			bmp_data.size_y <= height)
+		{
+			if ((bmp_data.size - bmp_data.offset) <= 0x400000)
+			{
+				// Avoid unaligned access from BM 2-byte MAGIC and remove header.
+				image = (u8 *)malloc(0x400000);
+				memcpy(image, bitmap + bmp_data.offset, bmp_data.size - bmp_data.offset);
+				free(bitmap);
+				bmp_data.pos_x = (width - bmp_data.size_x) >> 1;
+				bmp_data.pos_y = (height - bmp_data.size_y) >> 1;
 
-                bootlogo_found = true;
-            }
-        }
-    }
-    if (bootlogo_found)
+				bootlogo_found = true;
+			}
+		}
+	}
+	if (bootlogo_found)
 	{
 		gfx_render_bmp_argb(&g_gfx_ctxt, (u32 *)image, bmp_data.size_x, bmp_data.size_y,
-			bmp_data.pos_x + x, bmp_data.pos_y + y);
-    }
-    free(image);
+							bmp_data.pos_x + x, bmp_data.pos_y + y);
+	}
+	free(image);
 }
