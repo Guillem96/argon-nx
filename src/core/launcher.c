@@ -62,7 +62,6 @@ int launch_payload(char *path)
     if (f_open(&fp, path, FA_READ))
     {
         gfx_printf(&g_gfx_con, "Cannot find %s\n", path);
-        sd_unmount();
         return 1;
     }
 
@@ -79,8 +78,6 @@ int launch_payload(char *path)
     {
         f_close(&fp);
         gfx_printf(&g_gfx_con, "Error loading %s\n", path);
-        sd_unmount();
-
         return 1;
     }
 
