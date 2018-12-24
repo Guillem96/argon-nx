@@ -60,18 +60,14 @@ void ipl_main()
     /* Mount Sd card and launch payload */
     if (sd_mount())
     {
-        g_gfx_con.scale = 5;
-        // gfx_printf(&g_gfx_con, "Hello from ArgonNX!!!\n\n");
-
-        // if (launch_payload("payload.bin"))
-        // {
-        //     gfx_printf(&g_gfx_con, "Error loading the payload\n\n");
-        // }
-        gui_init_argon_menu();
+        if (launch_payload("argon/payload.bin"))
+        {
+            gui_init_argon_menu();
+        }
     }
 
     /* If payload launch fails wait for user input to reboot the switch */
     g_gfx_con.scale = 2;
-    // gfx_printf(&g_gfx_con, "Press power button to reboot into RCM...\n\n");
+    gfx_printf(&g_gfx_con, "Press power button to reboot into RCM...\n\n");
     wait_for_button_and_reboot();
 }

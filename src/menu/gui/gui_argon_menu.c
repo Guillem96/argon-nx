@@ -77,7 +77,7 @@ void gui_init_argon_menu(void)
 
         gui_menu_append_entry(menu, 
             gui_create_menu_entry(&payloads[i * 256], 
-                                    sd_file_read("argon/logos/Reinx.bmp"), 
+                                    sd_file_read(payload_logo), 
                                     x, y,
                                     200, 200,
                                     (int (*)(void *))launch_payload, (void*)payload_path));

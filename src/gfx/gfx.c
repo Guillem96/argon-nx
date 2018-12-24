@@ -22,6 +22,8 @@
 #include "utils/fs_utils.h"
 #include "mem/heap.h"
 
+#define TRANSPARENT_COLOR 0xFFFF00FF
+
 static const u8 _gfx_font[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Char 032 ( )
     0x00, 0x30, 0x30, 0x18, 0x18, 0x00, 0x0C, 0x00, // Char 033 (!)
@@ -483,8 +485,11 @@ void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_
 {
     for (u32 y = pos_y; y < (pos_y + size_y); y++)
     {
-        for (u32 x = pos_x; x < (pos_x + size_x); x++)
-            gfx_set_pixel(ctxt, x, y, buf[(size_y + pos_y - 1 - y) * size_x + x - pos_x]);
+        for (u32 x = pos_x; x < (pos_x + size_x); x++) 
+        {
+            if (buf[(size_y + pos_y - 1 - y) * size_x + x - pos_x] != TRANSPARENT_COLOR)
+                gfx_set_pixel(ctxt, x, y, buf[(size_y + pos_y - 1 - y) * size_x + x - pos_x]);
+        }
     }
 }
 

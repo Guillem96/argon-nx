@@ -18,8 +18,10 @@
 #include "menu/gui/gui_menu_entry.h"
 #include "mem/heap.h"
 #include "gfx/gfx.h"
+#include "utils/fs_utils.h"
 #include <string.h>
 
+#define DEFAULT_LOGO "argon/logos/default.bmp"
 
 /* Creates a menu entry */
 gui_menu_entry_t *gui_create_menu_entry(const char *text, 
@@ -30,7 +32,12 @@ gui_menu_entry_t *gui_create_menu_entry(const char *text,
 {
     gui_menu_entry_t *menu_entry = (gui_menu_entry_t *)malloc(sizeof(gui_menu_entry_t));
 	strcpy(menu_entry->text, text);
-	menu_entry->bitmap = bitmap;
+    
+    if (bitmap != NULL)
+	    menu_entry->bitmap = bitmap;
+    else
+        menu_entry->bitmap = sd_file_read(DEFAULT_LOGO);
+
     menu_entry->x = x;
     menu_entry->y = y;
     menu_entry->width = width;

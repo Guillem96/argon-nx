@@ -3,6 +3,7 @@
 #include "utils/dirlist.h"
 #include "mem/heap.h"
 #include "utils/util.h"
+#include "gfx/gfx.h"
 
 #define PAYLOADS_DIR "argon/payloads"
 #define PAYLOADS_LOGOS_DIR "argon/logos"
@@ -22,6 +23,6 @@ void payload_logo_path(const char* payload, char* result)
     strcat(tmp, "/");
     strcat(tmp, payload);
 
-    strcpy(result, str_replace(result, ".bin", ".bmp"));
+    strcpy(result, str_replace(tmp, ".bin", ".bmp"));
 }
 
