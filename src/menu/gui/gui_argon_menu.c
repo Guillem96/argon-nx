@@ -36,6 +36,8 @@
 #define ELEM_SIZE 230
 #define MARGIN 50
 
+#define MINOR_VERSION 1
+#define MAJOR_VERSION 0
 
 void setup_gfx_gui()
 {
@@ -48,8 +50,9 @@ void setup_gfx_gui()
 void gui_init_argon_menu(void)
 {
     setup_gfx_gui();
+    g_gfx_con.scale = 4;
     gfx_con_setpos(&g_gfx_con, 550, 10);
-    gfx_printf(&g_gfx_con, "ArgonNX");
+    gfx_printf(&g_gfx_con, "ArgonNX V%d.%d", MAJOR_VERSION, MINOR_VERSION);
 
     char* dir = "argon/payloads";
     const char* payloads = dirlist(dir, "*.bin", false);
@@ -98,12 +101,3 @@ void gui_init_argon_menu(void)
     /* Clear all entries and menus */
     gui_menu_pool_cleanup();
 }
-
-// W: 1280
-// H: 720
-// 4 columnes
-// 2 Files
-// 250 cada elem
-
-// W / cols
-// H / 2
