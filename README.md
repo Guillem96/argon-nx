@@ -19,7 +19,7 @@ When Argon NX is injected it automatically launches the `payload.bin` loacted at
 
 If `payload.bin` is not present, Argon NX list all payloads located at `argon/payloads`, and you can select one of theme to launch it.
 
-If you want, you can choose a payload logo by adding a **32 argb bmp file named as the payload** to `argon/logos` directory.
+If you want, you can choose a payload logo by adding a **32 argb bmp(200*200) file named as the payload** to `argon/logos` directory.
 
 Example:
 ```
