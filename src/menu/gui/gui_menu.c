@@ -22,6 +22,8 @@
 #include "mem/heap.h"
 #include <string.h>
 
+bool g_force_render = true;
+
 /* Render the menu */
 void gui_menu_draw(gui_menu_t *menu);
 
@@ -49,7 +51,11 @@ void gui_menu_append_entry(gui_menu_t *menu, gui_menu_entry_t *menu_entry)
 
 void gui_menu_draw(gui_menu_t *menu)
 {
-
+    for (s16 i = 0; i < menu->next_entry; i++)
+	{
+        gui_menu_render_entry(menu->entries[i], i == menu->selected_index, g_force_render);
+	}
+    g_force_render = false;
 }
 
 
@@ -62,11 +68,11 @@ int gui_menu_update(gui_menu_t *menu)
 
     input = btn_wait();
 
-	if ((input & BTN_VOL_UP) && menu->selected_index > 0)
+	if ((input & BTN_VOL_DOWN) && menu->selected_index > 0)
 	{
 		menu->selected_index--;
 	}
-	else if ((input & BTN_VOL_DOWN) && menu->selected_index < menu->next_entry - 1)
+	else if ((input & BTN_VOL_UP) && menu->selected_index < menu->next_entry - 1)
 	{
 		menu->selected_index++;
 	}
@@ -75,13 +81,9 @@ int gui_menu_update(gui_menu_t *menu)
 		entry = menu->entries[menu->selected_index];
 		if (entry->handler != NULL)
 		{
-            // TODO: When select
-			gfx_clear_color(&g_gfx_ctxt, BLACK);
             gfx_con_setpos(&g_gfx_con, 20, 50);
 			if (entry->handler(entry->param) != 0)
 				return 0;
-
-            gfx_clear_color(&g_gfx_ctxt, BLACK);
             gui_menu_draw(menu);
 		}
 	}

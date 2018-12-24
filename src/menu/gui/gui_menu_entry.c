@@ -41,16 +41,23 @@ gui_menu_entry_t *gui_create_menu_entry(const char *text,
 }
 
 /* Renders a gfx menu entry */
-void gui_menu_render_entry(gui_menu_entry_t* entry, bool selected)
+void gui_menu_render_entry(gui_menu_entry_t* entry, bool selected, bool render_bmp)
 {
-    gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, entry->bitmap, 
-                                entry->x, entry->y, 
-                                entry->width, entry->height);
+    if (render_bmp)
+        gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, entry->bitmap, 
+                                    entry->x, entry->y, 
+                                    entry->width, entry->height);
+
+    g_gfx_con.scale = 2;
+    gfx_con_setpos(&g_gfx_con, entry->x, entry->y + entry->height + 20);
+    if (selected)
+        gfx_printf(&g_gfx_con, "%k%s%k", 0xFF1971FF, entry->text, 0);
+    else
+        gfx_printf(&g_gfx_con, "%s", entry->text);
 }
 
 void gui_menu_entry_destroy(gui_menu_entry_t* entry)
 {
-
     free(entry->bitmap);
     free(entry->text);
     free(entry->param);

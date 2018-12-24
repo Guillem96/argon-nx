@@ -61,7 +61,7 @@ void ipl_main()
     if (sd_mount())
     {
         g_gfx_con.scale = 5;
-        gfx_printf(&g_gfx_con, "Hello from ArgonNX!!!\n\n");
+        // gfx_printf(&g_gfx_con, "Hello from ArgonNX!!!\n\n");
 
         // if (launch_payload("payload.bin"))
         // {
@@ -72,6 +72,6 @@ void ipl_main()
 
     /* If payload launch fails wait for user input to reboot the switch */
     g_gfx_con.scale = 2;
-    gfx_printf(&g_gfx_con, "Press power button to reboot into RCM...\n\n");
+    // gfx_printf(&g_gfx_con, "Press power button to reboot into RCM...\n\n");
     wait_for_button_and_reboot();
 }
