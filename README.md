@@ -17,7 +17,7 @@ The purpose of Argon NX is to stay immutable, so you can always inject it, witho
 
 When Argon NX is injected it automatically launches the `payload.bin` loacted at `argon` directory on your SD Card root. 
 
-If `payload.bin` is not present, Argon NX list all payloads located at `argon/payloads`, and you can select one of theme to launch it.
+If `payload.bin` is not present or VOOLUME DOWN button is pressed on payload injection, Argon NX will list all payloads located at `argon/payloads`, and you will be able tp select one of theme to launch it.
 
 If you want, you can choose a payload logo by adding a **32 argb bmp(200*200) file named as the payload** to `argon/logos` directory.
 
