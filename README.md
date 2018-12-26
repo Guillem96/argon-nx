@@ -11,7 +11,7 @@ Argon NX is an immutable payload which is injected to your Nintendo Switch via F
 
 ## Purpose 
 
-The purpose of Argon NX is to stay immutable, so you can always inject it, without caring about other payloads getting updated.
+The purpose of Argon NX is to stay immutable, so you can always inject it, without caring about other payloads getting updated (Always use ArgonNX for TegraSmash, TegraGUI, TrinkedM0 ...).
 
 ## How can it be?
 
