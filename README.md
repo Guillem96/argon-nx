@@ -1,4 +1,6 @@
-# Argon NX
+
+<img src="img/splash.png" alt="banner">
+
 ![License badge](https://img.shields.io/badge/license-GPLv3-blue.svg)
 
 ## What Argon is?
