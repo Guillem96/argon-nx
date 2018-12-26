@@ -55,10 +55,13 @@ void gui_menu_render_entry(gui_menu_entry_t* entry, bool selected, bool render_b
                                     entry->x, entry->y, 
                                     entry->width, entry->height);
 
+    u32 prevColor = g_gfx_con.fgcol;
+
     g_gfx_con.scale = 2;
     gfx_con_setpos(&g_gfx_con, entry->x, entry->y + entry->height + 20);
+    
     if (selected)
-        gfx_printf(&g_gfx_con, "%k%s%k", 0xFF1971FF, entry->text, 0);
+        gfx_printf(&g_gfx_con, "%k%s%k", 0xFF1971FF, entry->text, prevColor);
     else
         gfx_printf(&g_gfx_con, "%s", entry->text);
 }

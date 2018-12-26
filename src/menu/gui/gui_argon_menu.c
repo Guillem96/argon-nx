@@ -41,28 +41,26 @@
 
 void setup_gfx_gui()
 {
-    u32 clear_color = 0xFFF7F7F7;
-    gfx_con_setcol(&g_gfx_con, BLACK, 1, clear_color);
-    gfx_clear_color(&g_gfx_ctxt, clear_color);
+    gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
+    gfx_con_setcol(&g_gfx_con, 0xFFF9F9F9, 0, 0xFF191414);
 }
 
-/* Init needed menus for ArgonNX */
-void gui_init_argon_menu(void)
+/* Generate dinamycally the entries */
+void generate_payloads_entries(const char* payloads, gui_menu_t* menu)
 {
-    setup_gfx_gui();
-    g_gfx_con.scale = 4;
-    gfx_con_setpos(&g_gfx_con, 550, 10);
-    gfx_printf(&g_gfx_con, "ArgonNX V%d.%d", MAJOR_VERSION, MINOR_VERSION);
+    if (payloads == NULL)
+    {
+        g_gfx_con.scale = 4;
+        gfx_con_setpos(&g_gfx_con, 140, 250);
+        gfx_printf(&g_gfx_con, "Payloads directory is empty...\n");
+        
+        g_gfx_con.scale = 3;
+        gfx_con_setpos(&g_gfx_con, 110, 370);
+        gfx_printf(&g_gfx_con, "Place your payloads inside \"argon/payloads\"");
 
-    char* dir = "argon/payloads";
-    const char* payloads = dirlist(dir, "*.bin", false);
+        return;
+    }
 
-    /* Init pool for menu */
-    gui_menu_pool_init();
-
-    gui_menu_t* menu = gui_menu_create("ArgonNX");
-
-    /* Generate dinamycally the entries */
     u32 i = 0;
     /* For each payload generate its logo, its name and its path */
     while(payloads[i * 256])
@@ -86,6 +84,22 @@ void gui_init_argon_menu(void)
                                     (int (*)(void *))launch_payload, (void*)payload_path));
         i++;
     }
+}
+
+/* Init needed menus for ArgonNX */
+void gui_init_argon_menu(void)
+{
+    setup_gfx_gui();
+    g_gfx_con.scale = 4;
+    gfx_con_setpos(&g_gfx_con, 500, 10);
+    gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
+
+    /* Init pool for menu */
+    gui_menu_pool_init();
+
+    gui_menu_t* menu = gui_menu_create("ArgonNX");
+
+    generate_payloads_entries(dirlist(PAYLOADS_DIR, "*.bin", false), menu);
 
     gui_menu_append_entry(menu, 
             gui_create_menu_entry("Power off", NULL, 900, 680, 1, 1, (int (*)(void *))power_off, NULL));
@@ -95,8 +109,6 @@ void gui_init_argon_menu(void)
 
 
     gui_menu_open(menu);
-
-    // gfx_render_bmp_arg_file(&g_gfx_ctxt, "argon/logos/fusee-primary.bmp", 100, 100, 200, 200);
 
     /* Clear all entries and menus */
     gui_menu_pool_cleanup();

@@ -64,6 +64,9 @@ void ipl_main()
         {
             gui_init_argon_menu();
         }
+    } else {
+        g_gfx_con.scale = 2;
+        gfx_printf(&g_gfx_con, "No sd card found...\n");
     }
 
     /* If payload launch fails wait for user input to reboot the switch */

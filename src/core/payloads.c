@@ -5,10 +5,6 @@
 #include "utils/util.h"
 #include "gfx/gfx.h"
 
-#define PAYLOADS_DIR "argon/payloads"
-#define PAYLOADS_LOGOS_DIR "argon/logos"
-
-
 void payload_full_path(const char* payload, char* result)
 {
     strcpy(result, PAYLOADS_DIR);
