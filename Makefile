@@ -51,6 +51,7 @@ OBJS = $(addprefix $(BUILD)/$(TARGET)/, \
 	gui_menu_entry.o \
 	gui_menu_pool.o \
 	payloads.o \
+	touch.o \
 )
 
 OBJS += $(addprefix $(BUILD)/$(TARGET)/, \

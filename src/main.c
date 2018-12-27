@@ -29,6 +29,7 @@
 #include "utils/util.h"
 #include "utils/fs_utils.h"
 #include "utils/btn.h"
+#include "utils/touch.h"
 
 #include "menu/console/argon_menu.h"
 #include "menu/gui/gui_argon_menu.h"
@@ -63,6 +64,8 @@ void ipl_main()
     /* Mount Sd card and launch payload */
     if (sd_mount())
     {
+            // touch_power_on();
+
         bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
         bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
         if (load_menu)

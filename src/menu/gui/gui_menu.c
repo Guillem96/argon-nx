@@ -17,7 +17,7 @@
 
 #include "menu/gui/gui_menu.h"
 #include "menu/gui/gui_menu_pool.h"
-#include "utils/btn.h"
+#include "utils/touch.h"
 #include "gfx/gfx.h"
 #include "mem/heap.h"
 #include <string.h>
@@ -61,37 +61,39 @@ void gui_menu_draw(gui_menu_t *menu)
 
 int gui_menu_update(gui_menu_t *menu)
 {
-	gui_menu_entry_t *entry = NULL;
-	u32 input;
+// 	gui_menu_entry_t *entry = NULL;
+// 	u32 input;
 
     gui_menu_draw(menu);
 
-    input = btn_wait();
-
-	if ((input & BTN_VOL_DOWN) && menu->selected_index > 0)
-	{
-		menu->selected_index--;
-	}
-	else if ((input & BTN_VOL_UP) && menu->selected_index < menu->next_entry - 1)
-	{
-		menu->selected_index++;
-	}
-	else if (input & BTN_POWER)
-	{
-		entry = menu->entries[menu->selected_index];
-		if (entry->handler != NULL)
-		{
-            gfx_con_setpos(&g_gfx_con, 20, 50);
-			if (entry->handler(entry->param) != 0)
-				return 0;
-            gui_menu_draw(menu);
-		}
-	}
+    struct touch_event event = touch_wait();
+    gfx_con_setpos(&g_gfx_con, 0,0 );
+    gfx_printf(&g_gfx_con, "x: %d  y: %d\n", event.x, event.y);
+	// if ((input & BTN_VOL_DOWN) && menu->selected_index > 0)
+	// {
+	// 	menu->selected_index--;
+	// }
+	// else if ((input & BTN_VOL_UP) && menu->selected_index < menu->next_entry - 1)
+	// {
+	// 	menu->selected_index++;
+	// }
+	// else if (input & BTN_POWER)
+	// {
+	// 	entry = menu->entries[menu->selected_index];
+	// 	if (entry->handler != NULL)
+	// 	{
+    //         gfx_con_setpos(&g_gfx_con, 20, 50);
+	// 		if (entry->handler(entry->param) != 0)
+	// 			return 0;
+    //         gui_menu_draw(menu);
+	// 	}
+	// }
 	return 1;
 }
 
 int gui_menu_open(gui_menu_t *menu)
-{
+{    
+
 	while (gui_menu_update(menu))
 		;
 

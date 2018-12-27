@@ -488,9 +488,7 @@ void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_
         {
             u32 render_color = buf[(size_y + pos_y - 1 - y) * size_x + x - pos_x];
         
-            if (render_color == TRANSPARENT_COLOR)
-                gfx_set_pixel(ctxt, x, y, g_gfx_con.bgcol);
-            else
+            if (render_color != TRANSPARENT_COLOR)
                 gfx_set_pixel(ctxt, x, y, render_color);
         }
     }

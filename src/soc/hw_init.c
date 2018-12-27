@@ -36,6 +36,7 @@
 #include "storage/sdmmc.h"
 #include "utils/util.h"
 #include "utils/fs_utils.h"
+#include "utils/touch.h"
 
 void _config_oscillators()
 {
@@ -63,20 +64,17 @@ void _config_gpios()
 	PINMUX_AUX(PINMUX_AUX_GPIO_PE6) = PINMUX_INPUT_ENABLE;
 	PINMUX_AUX(PINMUX_AUX_GPIO_PH6) = PINMUX_INPUT_ENABLE;
 
-#if !defined (DEBUG_UART_PORT) || DEBUG_UART_PORT != UART_B
 	gpio_config(GPIO_PORT_G, GPIO_PIN_0, GPIO_MODE_GPIO);
-#endif
-#if !defined (DEBUG_UART_PORT) || DEBUG_UART_PORT != UART_C
 	gpio_config(GPIO_PORT_D, GPIO_PIN_1, GPIO_MODE_GPIO);
-#endif
 	gpio_config(GPIO_PORT_E, GPIO_PIN_6, GPIO_MODE_GPIO);
 	gpio_config(GPIO_PORT_H, GPIO_PIN_6, GPIO_MODE_GPIO);
 	gpio_output_enable(GPIO_PORT_G, GPIO_PIN_0, GPIO_OUTPUT_DISABLE);
 	gpio_output_enable(GPIO_PORT_D, GPIO_PIN_1, GPIO_OUTPUT_DISABLE);
 	gpio_output_enable(GPIO_PORT_E, GPIO_PIN_6, GPIO_OUTPUT_DISABLE);
-	gpio_output_enable(GPIO_PORT_H, GPIO_PIN_6, GPIO_OUTPUT_DISABLE);
+    gpio_output_enable(GPIO_PORT_H, GPIO_PIN_6, GPIO_OUTPUT_DISABLE);
 
 	pinmux_config_i2c(I2C_1);
+    pinmux_config_i2c(I2C_3);
 	pinmux_config_i2c(I2C_5);
 	pinmux_config_uart(UART_A);
 
@@ -85,6 +83,11 @@ void _config_gpios()
 	gpio_config(GPIO_PORT_X, GPIO_PIN_7, GPIO_MODE_GPIO);
 	gpio_output_enable(GPIO_PORT_X, GPIO_PIN_6, GPIO_OUTPUT_DISABLE);
 	gpio_output_enable(GPIO_PORT_X, GPIO_PIN_7, GPIO_OUTPUT_DISABLE);
+
+    PINMUX_AUX(PINMUX_AUX_DAP4_SCLK) = PINMUX_PULL_UP | 3;
+	gpio_config(GPIO_PORT_J, GPIO_PIN_7, GPIO_MODE_GPIO);
+	gpio_output_enable(GPIO_PORT_J, GPIO_PIN_7, GPIO_OUTPUT_ENABLE);
+    gpio_write(GPIO_PORT_J, GPIO_PIN_7, GPIO_HIGH);
 }
 
 void _config_pmc_scratch()
@@ -190,19 +193,16 @@ void config_hw()
 	APB_MISC(APB_MISC_PP_PINMUX_GLOBAL) = 0;
 	_config_gpios();
 
-#ifdef DEBUG_UART_PORT
-	clock_enable_uart(DEBUG_UART_PORT);
-	uart_init(DEBUG_UART_PORT, 115200);
-#endif
-
 	clock_enable_cl_dvfs();
 
 	clock_enable_i2c(I2C_1);
+    clock_enable_i2c(I2C_3);
 	clock_enable_i2c(I2C_5);
 
 	clock_enable_unk2();
 
 	i2c_init(I2C_1);
+    i2c_init(I2C_3);
 	i2c_init(I2C_5);
 
 	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_CNFGBBC, 0x40);
@@ -217,6 +217,10 @@ void config_hw()
 	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_SD1, 0x29);
 	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_SD3, 0x1B);
 
+    // Enables LDO6 for touchscreen AVDD supply
+	i2c_send_byte(I2C_5, 0x3C, MAX77620_REG_LDO6_CFG, 0xEA);
+    i2c_send_byte(I2C_5, 0x3C, MAX77620_REG_LDO6_CFG2, 0xDA);
+
 	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_GPIO3, 0x22); // 3.x+
 
 	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_SD0, 42); //42 = (1125000uV - 600000) / 12500 -> 1.125V
@@ -224,8 +228,10 @@ void config_hw()
 	_config_pmc_scratch(); // Missing from 4.x+
 
 	CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) = (CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) & 0xFFFF8888) | 0x3333;
-
-	sdram_init();
+    
+    mc_config_carveout();
+	
+    sdram_init();
 }
 
 void reconfig_hw_workaround(bool extra_reconfig, u32 magic)
