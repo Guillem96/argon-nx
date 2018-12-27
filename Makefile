@@ -52,6 +52,7 @@ OBJS = $(addprefix $(BUILD)/$(TARGET)/, \
 	gui_menu_pool.o \
 	payloads.o \
 	sys_sdrammtc.o \
+	minerva.o \
 )
 
 OBJS += $(addprefix $(BUILD)/$(TARGET)/, \

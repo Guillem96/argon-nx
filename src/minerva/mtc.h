@@ -20,7 +20,7 @@
 #ifndef _MTC_H_
 #define _MTC_H_
 
-#include "minerva/mtc_table.h"
+#include "mtc_table.h"
 #include "utils/types.h"
 
 /* Address bases and access macros - Change these for mapped access */
