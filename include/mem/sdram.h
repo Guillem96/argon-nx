@@ -19,6 +19,6 @@
 
 void sdram_init();
 const void *sdram_get_params();
-void sdram_lp0_save_params(const void *params);
+u32 get_sdram_id();
 
 #endif

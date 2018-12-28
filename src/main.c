@@ -30,7 +30,6 @@
 #include "utils/fs_utils.h"
 #include "utils/btn.h"
 
-#include "menu/console/argon_menu.h"
 #include "menu/gui/gui_argon_menu.h"
 
 #include "minerva/minerva.h"
@@ -63,7 +62,8 @@ void ipl_main()
 
     g_gfx_con.scale = 2;
     
-
+    minerva();
+    
     /* Mount Sd card and launch payload */
     if (sd_mount())
     {

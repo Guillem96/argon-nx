@@ -2,11 +2,11 @@
 #include "utils/types.h"
 #include "utils/btn.h"
 #include "utils/util.h"
-#include "utils/fs_utils.h"
 #include "soc/fuse.h"
 #include "mtc.h"
 #include "mtc_mc_emc_regs.h"
 #include "gfx/gfx.h"
+#include "mem/sdram.h"
 
 void minerva()
 {
@@ -15,14 +15,12 @@ void minerva()
     gfx_clear_partial_grey(&g_gfx_ctxt, 0, 0, 1256);
 	gfx_con_setpos(&g_gfx_con, 0, 0);
 	u32 curr_ram_idx = 0;
-	
-    if (!sd_mount())
-		return;
+
 	gfx_printf(&g_gfx_con, "-- Minerva Training Cell --\n\n");
 	
     // Set table to ram.
 	mtc_cfg.mtc_table = NULL;
-	mtc_cfg.sdram_id = (fuse_read_odm(4) >> 3) & 0x1F;
+	mtc_cfg.sdram_id = get_sdram_id();
 	_minerva_init(&mtc_cfg, NULL);
 
 	gfx_printf(&g_gfx_con, "\nStarting training process..\n\n");
@@ -50,6 +48,5 @@ void minerva()
 	_minerva_init(&mtc_cfg, NULL);
 
 	gfx_printf(&g_gfx_con, "Finished!");
-    sd_unmount();
     btn_wait();
 }
