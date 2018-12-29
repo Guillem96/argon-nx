@@ -27,7 +27,6 @@ OBJS = $(addprefix $(BUILD)/$(TARGET)/, \
 	max7762x.o \
 	max17050.o \
 	mc.o \
-	nx_emmc.o \
 	sdmmc.o \
 	sdmmc_driver.o \
 	sdram.o \
@@ -41,21 +40,20 @@ OBJS = $(addprefix $(BUILD)/$(TARGET)/, \
 	hw_init.o \
 	dirlist.o \
 	smmu.o \
-	menu.o \
-	menu_entry.o \
-	menu_pool.o \
-	argon_menu.o \
 	panic.o \
 	gui_argon_menu.o \
 	gui_menu.o \
 	gui_menu_entry.o \
 	gui_menu_pool.o \
 	payloads.o \
+	minerva.o \
+	ianos.o \
 )
 
 OBJS += $(addprefix $(BUILD)/$(TARGET)/, \
 	lz.o blz.o \
 	diskio.o ff.o ffunicode.o ffsystem.o \
+	elfload.o elfreloc_arm.o \
 )
 
 ARCH := -march=armv4t -mtune=arm7tdmi -mthumb -mthumb-interwork
