@@ -482,19 +482,23 @@ void gfx_set_rect_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y,
 
 void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
 {
+    gfx_render_bmp_argb_transparent(ctxt, buf, size_x, size_y, pos_x, pos_y, TRANSPARENT_COLOR);
+}
+
+void gfx_render_bmp_argb_transparent(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y, u32 transparent_color)
+{
     for (u32 y = pos_y; y < (pos_y + size_y); y++)
     {
         for (u32 x = pos_x; x < (pos_x + size_x); x++) 
         {
             u32 render_color = buf[(size_y + pos_y - 1 - y) * size_x + x - pos_x];
         
-            if (render_color == TRANSPARENT_COLOR)
-                gfx_set_pixel(ctxt, x, y, g_gfx_con.bgcol);
-            else
+            if (render_color != transparent_color)
                 gfx_set_pixel(ctxt, x, y, render_color);
         }
     }
 }
+
 
 void gfx_render_bmp_arg_file(gfx_ctxt_t *ctxt, char *path, u32 x, u32 y, u32 width, u32 height)
 {
@@ -502,7 +506,7 @@ void gfx_render_bmp_arg_file(gfx_ctxt_t *ctxt, char *path, u32 x, u32 y, u32 wid
     gfx_render_bmp_arg_bitmap(ctxt, bitmap, x, y, width, height);
 }
 
-void gfx_render_bmp_arg_bitmap(gfx_ctxt_t *ctxt, u8 *bitmap, u32 x, u32 y, u32 width, u32 height)
+void gfx_render_bmp_arg_bitmap_transparent(gfx_ctxt_t *ctxt, u8 *bitmap, u32 x, u32 y, u32 width, u32 height, u32 transparent_color)
 {
     bmp_data_t bmp_data;
     u8 *image = NULL;
@@ -536,8 +540,8 @@ void gfx_render_bmp_arg_bitmap(gfx_ctxt_t *ctxt, u8 *bitmap, u32 x, u32 y, u32 w
                 bmp_data.pos_y = (height - bmp_data.size_y) >> 1;
 
                 // Get background color from 1st pixel.
-				if (bmp_data.size_x < width || bmp_data.height < 1280)
-                    gfx_clear_color(ctxt, *(u32 *)BOOTLOGO);
+				if (bmp_data.size_x < width || bmp_data.size_y < height)
+                    gfx_clear_color(ctxt, *(u32 *)image);
                     
                 image_found = true;
             }
@@ -545,8 +549,14 @@ void gfx_render_bmp_arg_bitmap(gfx_ctxt_t *ctxt, u8 *bitmap, u32 x, u32 y, u32 w
     }
     if (image_found)
     {
-        gfx_render_bmp_argb(&g_gfx_ctxt, (u32 *)image, bmp_data.size_x, bmp_data.size_y,
-                            bmp_data.pos_x + x, bmp_data.pos_y + y);
+        gfx_render_bmp_argb_transparent(&g_gfx_ctxt, (u32 *)image, bmp_data.size_x, bmp_data.size_y,
+                            bmp_data.pos_x + x, bmp_data.pos_y + y, transparent_color);
     }
     free(image);
+}
+
+
+void gfx_render_bmp_arg_bitmap(gfx_ctxt_t *ctxt, u8 *bitmap, u32 x, u32 y, u32 width, u32 height)
+{
+    gfx_render_bmp_arg_bitmap_transparent(ctxt, bitmap, x, y, width, height, TRANSPARENT_COLOR);
 }
