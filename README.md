@@ -21,19 +21,26 @@ When Argon NX is injected it automatically launches the `payload.bin` loacted at
 
 If `payload.bin` is not present or VOOLUME DOWN button is pressed on payload injection, Argon NX will list all payloads located at `argon/payloads`, and you will be able tp select one of theme to launch it.
 
-If you want, you can choose a payload logo by adding a **32 argb bmp(200*200) file named as the payload** to `argon/logos` directory.
+## Features
 
-Example:
+- Autolaunch/autochainload the payload named `payload.bin` inside `argon` directory in your sd card root
+- If `argon/payload.bin` is not found or `VOLUME_DOWN_BUTTON` is held during ArgonNX injection, ArgonNX lists all the payloads located at `argon/payloads`, so you can select one of them to launch it.
+- Customize payloads' logos. **Logos must be smaller or equal than 200x200**. Example:
 ```
 argon
   ├───logos
-  │     default.bmp       # Default logo
+  │     default.bmp       # Default logo (logo for all payloads)
   │     fusee-primary.bmp # Logo for fusee-primary.bin payload
   │
   └───payloads
         fusee-primary.bin
         ReiNX.bin         # Will be rendered using default logo
 ```
+- Custom background add a custom background by simply adding `background.bmp` file inside `argon` directory. **Background must be smaller than 1280x720**.
+
+## About BMP format
+
+The only format supported is **BMP 32 bit ARGB color**.
 
 ## GUI
 
@@ -60,6 +67,11 @@ argon
         fusee.bmp
 ```
 
+## Improve performance
+
+ArgonNX uses **minerva dram training** to improve performance.
+Use of minerva is optional but recommended, to use minerva just place the compiled `minerva.bso` inside `argon/sys`. The directory `argon/sys` with minerva, is included in `sd-files.zip` in the release section.
+
 ## Compatibility
 
 Works with all cfw payloads. 
@@ -70,13 +82,11 @@ Not tested with TeamXecuter SXOS payloat but it should work too.
 1. Touch input
 2. Kind of config file
 3. Change font
-4. More generic Makefile
-5. A lot more
 
 ## Credits
 
 * __devkitPro__ for the [devkitA64](https://devkitpro.org/) toolchain and libnx support.
 * __naehrwert__ and __st4rk__ for the original [hekate](https://github.com/nwert/hekate) project and its hwinit code base.
-* __CTCaer__ for the continued [hekate](https://github.com/CTCaer/hekate).
+* __CTCaer__ for the continued [hekate](https://github.com/CTCaer/hekate) and his **minerva** project.
 * __SciresM__, __TuxSH__ and __hexkyz__ for the base hwinit code of Argon NX
 

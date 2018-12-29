@@ -10,73 +10,62 @@ BLVERSION_MINOR := 1
 BUILD 					:= build
 OUTPUT 					:= output
 SOURCEDIR 			:= src
+DATA						:= data
+SOURCES		      := src \
+										src/core \
+										src/ianos \
+										src/gfx \
+										src/libs/fatfs src/libs/elfload src/libs/compr \
+										src/mem \
+										src/menu/gui \
+										src/minerva \
+										src/panic \
+										src/power \
+										src/sec \
+										src/soc \
+										src/storage \
+										src/utils
 INCLUDES				:= include
 VPATH = $(dir $(wildcard ./$(SOURCEDIR)/*/)) $(dir $(wildcard ./$(SOURCEDIR)/*/*/))
 
-OBJS = $(addprefix $(BUILD)/$(TARGET)/, \
-	start.o \
-	main.o \
-	btn.o \
-	clock.o \
-	cluster.o \
-	fuse.o \
-	gpio.o \
-	heap.o \
-	launcher.o \
-	i2c.o \
-	max7762x.o \
-	max17050.o \
-	mc.o \
-	nx_emmc.o \
-	sdmmc.o \
-	sdmmc_driver.o \
-	sdram.o \
-	fs_utils.o \
-	util.o \
-	di.o \
-	gfx.o \
-	pinmux.o \
-	se.o \
-	uart.o \
-	hw_init.o \
-	dirlist.o \
-	smmu.o \
-	menu.o \
-	menu_entry.o \
-	menu_pool.o \
-	argon_menu.o \
-	panic.o \
-	gui_argon_menu.o \
-	gui_menu.o \
-	gui_menu_entry.o \
-	gui_menu_pool.o \
-	payloads.o \
-)
+CFILES			:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+SFILES			:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
+BINFILES		:=  $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
-OBJS += $(addprefix $(BUILD)/$(TARGET)/, \
-	lz.o blz.o \
-	diskio.o ff.o ffunicode.o ffsystem.o \
-)
+OFILES_BIN		:= $(addsuffix .o,$(BINFILES))
+OFILES_SRC		:= $(SFILES:.s=.o) $(CFILES:.c=.o)
+HFILES_BIN		:= $(addsuffix .h,$(subst .,_,$(BINFILES)))
+
+OBJS 					= $(addprefix $(BUILD)/$(TARGET)/, $(OFILES_BIN) $(OFILES_SRC))
+
+
+INCLUDE				:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+										$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+										-I$(BUILD)/$(TARGET)
 
 ARCH := -march=armv4t -mtune=arm7tdmi -mthumb -mthumb-interwork
 CFLAGS = $(INCLUDE) $(ARCH) -O2 -nostdlib -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-inline -std=gnu11 -Wall
 LDFLAGS = $(ARCH) -nostartfiles -lgcc -Wl,--nmagic,--gc-sections
 
-export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
-					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-					-I$(CURDIR)/$(BUILD)
 
 .PHONY: all clean
 
-all: $(TARGET).bin
+all: directories $(TARGET).bin
+	@echo $(HFILES_BIN)
 	@echo -n "Payload size is "
 	@wc -c < $(OUTPUT)/$(TARGET).bin
 	@echo "Max size is 126296 Bytes."
 
+directories:
+	@mkdir -p "$(BUILD)"
+	@mkdir -p "$(BUILD)/$(TARGET)"
+	@mkdir -p "$(OUTPUT)"
+	
 clean:
 	@rm -rf $(OBJS)
 	@rm -rf $(BUILD)
 	@rm -rf $(OUTPUT)
+	@rm -rf logo_bmp.h
 
 $(MODULEDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
@@ -92,8 +81,10 @@ $(BUILD)/$(TARGET)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/$(TARGET)/%.o: %.s
-	@mkdir -p "$(BUILD)"
-	@mkdir -p "$(BUILD)/$(TARGET)"
-	@mkdir -p "$(OUTPUT)"
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(OFILES_SRC)	: $(HFILES_BIN)
+
+$(BUILD)/$(TARGET)/%.bmp.o %_bmp.h:	data/%.bmp
+	@echo $(notdir $<)
+	@$(bin2o)

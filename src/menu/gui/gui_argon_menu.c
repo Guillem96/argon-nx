@@ -29,40 +29,59 @@
 
 #include "mem/heap.h"
 
+#include "../logo_bmp.h"
+
 #include <string.h>
 
 #define COLUMNS 4  
 #define ROWS 2
 #define ELEM_SIZE 230
-#define MARGIN 50
+#define MARGIN_TOP 80
+#define MARGIN_LEFT 45
 
 #define MINOR_VERSION 1
 #define MAJOR_VERSION 0
 
+#define CUSTOM_BACKGROUND_PATH "argon/background.bmp"
+
 void setup_gfx_gui()
 {
-    u32 clear_color = 0xFFF7F7F7;
-    gfx_con_setcol(&g_gfx_con, BLACK, 1, clear_color);
-    gfx_clear_color(&g_gfx_ctxt, clear_color);
+    /* Custom background*/
+    u8* custom_bg = (u8*)sd_file_read(CUSTOM_BACKGROUND_PATH);
+    if (custom_bg != NULL)
+        gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, custom_bg, 0, 0, 1280, 720);
+    else 
+        gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
+    
+    gfx_con_setcol(&g_gfx_con, 0xFFF9F9F9, 0, 0xFF191414);
+
+    /* Render logo */
+    u32 bmp_width = (logo_bmp[0x12] | (logo_bmp[0x13] << 8) | (logo_bmp[0x14] << 16) | (logo_bmp[0x15] << 24));
+    u32 bmp_height = (logo_bmp[0x16] | (logo_bmp[0x17] << 8) | (logo_bmp[0x18] << 16) | (logo_bmp[0x19] << 24));
+    gfx_render_bmp_arg_bitmap_transparent(&g_gfx_ctxt, (u8*)logo_bmp, 30, 10, bmp_width, bmp_height, 0);
+
+    /* Render title */
+    g_gfx_con.scale = 4;
+    gfx_con_setpos(&g_gfx_con, 120, 20);
+    gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
 }
 
-/* Init needed menus for ArgonNX */
-void gui_init_argon_menu(void)
+/* Generate entries dynamically */
+void generate_payloads_entries(const char* payloads, gui_menu_t* menu)
 {
-    setup_gfx_gui();
-    g_gfx_con.scale = 4;
-    gfx_con_setpos(&g_gfx_con, 550, 10);
-    gfx_printf(&g_gfx_con, "ArgonNX V%d.%d", MAJOR_VERSION, MINOR_VERSION);
+    if (payloads == NULL)
+    {
+        g_gfx_con.scale = 4;
+        gfx_con_setpos(&g_gfx_con, 140, 250);
+        gfx_printf(&g_gfx_con, "Payloads directory is empty...\n");
+        
+        g_gfx_con.scale = 3;
+        gfx_con_setpos(&g_gfx_con, 110, 370);
+        gfx_printf(&g_gfx_con, "Place your payloads inside \"%s\"", PAYLOADS_DIR);
 
-    char* dir = "argon/payloads";
-    const char* payloads = dirlist(dir, "*.bin", false);
+        return;
+    }
 
-    /* Init pool for menu */
-    gui_menu_pool_init();
-
-    gui_menu_t* menu = gui_menu_create("ArgonNX");
-
-    /* Generate dinamycally the entries */
     u32 i = 0;
     /* For each payload generate its logo, its name and its path */
     while(payloads[i * 256])
@@ -75,8 +94,8 @@ void gui_init_argon_menu(void)
 
         u32 row = i / COLUMNS;
         u32 col = i % COLUMNS;
-        u32 x = g_gfx_ctxt.width / COLUMNS * col + MARGIN;
-        u32 y = g_gfx_ctxt.height / ROWS * row + MARGIN + (row == 0 ? 30 : -30);
+        u32 x = g_gfx_ctxt.width / COLUMNS * col + MARGIN_LEFT;
+        u32 y = g_gfx_ctxt.height / ROWS * row + MARGIN_TOP + (row == 0 ? 30 : -60);
 
         gui_menu_append_entry(menu, 
             gui_create_menu_entry(&payloads[i * 256], 
@@ -86,6 +105,19 @@ void gui_init_argon_menu(void)
                                     (int (*)(void *))launch_payload, (void*)payload_path));
         i++;
     }
+}
+
+/* Init needed menus for ArgonNX */
+void gui_init_argon_menu(void)
+{
+    setup_gfx_gui();
+
+    /* Init pool for menu */
+    gui_menu_pool_init();
+
+    gui_menu_t* menu = gui_menu_create("ArgonNX");
+
+    generate_payloads_entries(dirlist(PAYLOADS_DIR, "*.bin", false), menu);
 
     gui_menu_append_entry(menu, 
             gui_create_menu_entry("Power off", NULL, 900, 680, 1, 1, (int (*)(void *))power_off, NULL));
@@ -95,8 +127,6 @@ void gui_init_argon_menu(void)
 
 
     gui_menu_open(menu);
-
-    // gfx_render_bmp_arg_file(&g_gfx_ctxt, "argon/logos/fusee-primary.bmp", 100, 100, 200, 200);
 
     /* Clear all entries and menus */
     gui_menu_pool_cleanup();

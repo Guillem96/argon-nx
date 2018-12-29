@@ -34,7 +34,7 @@
 #include "mem/sdram_config.inl"
 #endif
 
-static u32 _get_sdram_id()
+u32 get_sdram_id()
 {
 	return (fuse_read_odm(4) & 0x38) >> 3;
 }
@@ -496,9 +496,9 @@ const void *sdram_get_params()
 #ifdef CONFIG_SDRAM_COMPRESS_CFG
 	u8 *buf = (u8 *)0x40030000;
 	LZ_Uncompress(_dram_cfg_lz, buf, sizeof(_dram_cfg_lz));
-	return (const void *)&buf[sizeof(sdram_params_t) * _get_sdram_id()];
+	return (const void *)&buf[sizeof(sdram_params_t) * get_sdram_id()];
 #else
-	return _dram_cfgs[_get_sdram_id()];
+	return _dram_cfgs[get_sdram_id()];
 #endif
 }
 
