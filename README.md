@@ -21,19 +21,26 @@ When Argon NX is injected it automatically launches the `payload.bin` loacted at
 
 If `payload.bin` is not present or VOOLUME DOWN button is pressed on payload injection, Argon NX will list all payloads located at `argon/payloads`, and you will be able tp select one of theme to launch it.
 
-If you want, you can choose a payload logo by adding a **32 argb bmp(200*200) file named as the payload** to `argon/logos` directory.
+## Features
 
-Example:
+- Autolaunch/autochainload the payload named `payload.bin` inside `argon` directory in your sd card root
+- If `argon/payload.bin` is not found or `VOLUME_DOWN_BUTTON` is held during ArgonNX injection, ArgonNX lists all the payloads located at `argon/payloads`, so you can select one of them to launch it.
+- Customize payloads' logos. **Logos must be smaller or equal than 200x200**. Example:
 ```
 argon
   ├───logos
-  │     default.bmp       # Default logo
+  │     default.bmp       # Default logo (logo for all payloads)
   │     fusee-primary.bmp # Logo for fusee-primary.bin payload
   │
   └───payloads
         fusee-primary.bin
         ReiNX.bin         # Will be rendered using default logo
 ```
+- Custom background add a custom background by simply adding `background.bmp` file inside `argon` directory. **Background must be smaller than 1280x720**.
+
+## About BMP format
+
+The only format supported is **BMP 32 bit ARGB color**.
 
 ## GUI
 
@@ -75,8 +82,6 @@ Not tested with TeamXecuter SXOS payloat but it should work too.
 1. Touch input
 2. Kind of config file
 3. Change font
-4. More generic Makefile
-5. A lot more
 
 ## Credits
 
