@@ -59,11 +59,13 @@ void ipl_main()
     setup_gfx();
     display_backlight_pwm_init();
     display_backlight_brightness(100, 1000);
-
-    g_gfx_con.scale = 2;
     
+    /* Train DRAM */
     minerva();
     
+    /* Double the font size */
+    g_gfx_con.scale = 2;
+
     /* Mount Sd card and launch payload */
     if (sd_mount())
     {
