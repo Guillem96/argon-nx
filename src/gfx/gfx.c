@@ -535,6 +535,10 @@ void gfx_render_bmp_arg_bitmap(gfx_ctxt_t *ctxt, u8 *bitmap, u32 x, u32 y, u32 w
                 bmp_data.pos_x = (width - bmp_data.size_x) >> 1;
                 bmp_data.pos_y = (height - bmp_data.size_y) >> 1;
 
+                // Get background color from 1st pixel.
+				if (bmp_data.size_x < width || bmp_data.height < 1280)
+                    gfx_clear_color(ctxt, *(u32 *)BOOTLOGO);
+                    
                 image_found = true;
             }
         }
