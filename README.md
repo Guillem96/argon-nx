@@ -60,6 +60,11 @@ argon
         fusee.bmp
 ```
 
+## Improve performance
+
+ArgonNX uses **minerva dram training** to improve performance.
+Use of minerva is optional but recommended, to use minerva just place the compiled `minerva.bso` inside `argon/sys`. The directory `argon/sys` with minerva, is included in `sd-files.zip` in the release section.
+
 ## Compatibility
 
 Works with all cfw payloads. 
@@ -77,6 +82,6 @@ Not tested with TeamXecuter SXOS payloat but it should work too.
 
 * __devkitPro__ for the [devkitA64](https://devkitpro.org/) toolchain and libnx support.
 * __naehrwert__ and __st4rk__ for the original [hekate](https://github.com/nwert/hekate) project and its hwinit code base.
-* __CTCaer__ for the continued [hekate](https://github.com/CTCaer/hekate).
+* __CTCaer__ for the continued [hekate](https://github.com/CTCaer/hekate) and his **minerva** project.
 * __SciresM__, __TuxSH__ and __hexkyz__ for the base hwinit code of Argon NX
 
