@@ -21,7 +21,7 @@
 #define _MTC_H_
 
 #include "mtc_table.h"
-#include "utils/types.h"
+#include "types.h"
 
 /* Address bases and access macros - Change these for mapped access */
 #define TMR_BASE   0x60005000

@@ -22,8 +22,7 @@
 #include "mtc.h"
 #include "mtc_mc_emc_regs.h"
 #include "mtc_switch_tables.h"
-#include "utils/types.h"
-#include "gfx/gfx.h"
+#include "types.h"
 
 bool emc_2X_clk_src_is_pllmb;
 bool fsp_for_src_freq;
@@ -2661,7 +2660,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	s32 tZQCAL_lpddr4_fc_adj = (s32)(float)(tZQCAL_lpddr4 / dst_clock_period);
 
 	// Step 1 - Pre DVFS SW sequence.
-	gfx_printf(&g_gfx_con,"Step 1\n");
+	// EPRINTF("Step 1");
 	emc_dbg_o = EMC(EMC_DBG);
 	emc_pin_o = EMC(EMC_PIN);
 	emc_cfg = dst_emc_entry->burst_regs.emc_cfg_idx & 0xFFFFFFF;
@@ -2670,11 +2669,11 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	_digital_dll_disable();
 
 	// Step 1.2 - Disable AUTOCAL temporarily.
-	gfx_printf(&g_gfx_con,"Step 1.2\n");
+	// EPRINTF("Step 1.2");
 	EMC(EMC_AUTO_CAL_CONFIG) = (dst_emc_entry->emc_auto_cal_config & 0x7FFFF9FF) | 0x600;
 
 	// Step 1.3 - Disable other power features.
-	gfx_printf(&g_gfx_con,"Step 1.3\n");
+	// EPRINTF("Step 1.3");
 	EMC(EMC_DBG) = emc_dbg_o | 2;
 	EMC(EMC_CFG) = emc_cfg;
 	EMC(EMC_SEL_DPD_CTRL) = emc_sel_dpd_ctrl;
@@ -2751,7 +2750,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	EMC(EMC_DBG) = emc_dbg_o;
 
 	// Step 2 - Prelock the DLL.
-	gfx_printf(&g_gfx_con,"Step 2\n");
+	// EPRINTF("Step 2");
 	if (dst_emc_entry->burst_regs.emc_cfg_dig_dll_idx & 1)
 		_digital_dll_prelock(dst_emc_entry, needs_tristate_training, selected_clk_src_emc); //Prelock enabled for target frequency.
 	else
@@ -2761,7 +2760,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	}
 
 	// Step 3 - Prepare autocal for the clock change.
-	gfx_printf(&g_gfx_con,"Step 3\n");
+	// EPRINTF("Step 3");
 	EMC(EMC_AUTO_CAL_CONFIG) = (dst_emc_entry->emc_auto_cal_config & 0x7FFFF9FF) | 0x600;
 	EMC(EMC_DBG) = emc_dbg_o | 2;
 	EMC(EMC_AUTO_CAL_CONFIG2) = dst_emc_entry->emc_auto_cal_config2;
@@ -2775,14 +2774,14 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	EMC(EMC_AUTO_CAL_CONFIG) = (dst_emc_entry->emc_auto_cal_config & 0x7FFFF9FE) | 0x601;
 
 	// Step 4 - Update EMC_CFG.
-	gfx_printf(&g_gfx_con,"Step 4\n");
+	// EPRINTF("Step 4");
 	if (src_clock_period <= 50.0f || dram_type != 1)
 		EMC(EMC_CFG_2) = dst_emc_entry->emc_cfg_2;
 	else
 		_ccfifo_write(EMC_SELF_REF, 1, 0);
 
 	// Step 5 - Prepare reference variables for ZQCAL regs.
-	gfx_printf(&g_gfx_con,"Step 5\n");
+	// EPRINTF("Step 5");
 	// u32 zq_wait_long = 0;
 	// u32 zq_wait_short = 0;
 
@@ -2799,7 +2798,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	// 	zq_wait_short = _fceil(80.0f / dst_clock_period);
 
 	// Step 7 - Bug 200024907 - Patch RP R2P.
-	gfx_printf(&g_gfx_con,"Step 7\n");
+	// EPRINTF("Step 7");
 	if (needs_ca_or_cavref_training && dram_dev_num == TWO_RANK)
 		EMC(EMC_PIN) = 0x107;
 
@@ -2884,7 +2883,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	}
 
 	// Step 7.2 - Program FSP reference registers and send MRWs to new FSPWR.
-	gfx_printf(&g_gfx_con,"Step 7.2\n");
+	// EPRINTF("Step 7.2");
 	mr13_catr_enable = 0;
 	if (fsp_for_src_freq)
 	{
@@ -2928,7 +2927,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	}
 
 	// Step 8 - Program the shadow registers.
-	gfx_printf(&g_gfx_con,"Step 8\n");
+	// EPRINTF("Step 8");
 	// Writing burst_regs.
 	u32 reg_addr = 0;
 	u32 reg_val = 0;
@@ -3133,7 +3132,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	}
 
 	// Step 9 - LPDDR4.
-	gfx_printf(&g_gfx_con,"Step 9\n");
+	// EPRINTF("Step 9");
 	if (dram_type == DRAM_TYPE_LPDDR4)
 	{
 		EMC(EMC_ZCAL_INTERVAL) = src_emc_entry->burst_regs.emc_zcal_interval_idx & 0xFF000000;
@@ -3155,7 +3154,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	}
 
 	// Step 10 - Self refresh
-	gfx_printf(&g_gfx_con,"Step 10\n");
+	// EPRINTF("Step 10");
 	u32 emc_self_ref_val = 1;
 	if (!opt_dll_mode && dram_type == DRAM_TYPE_DDR3)
 		_ccfifo_write(EMC_EMRS, dst_emc_entry->emc_emrs, 0); 
@@ -3226,7 +3225,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	}
 
 	// Step 11 - Ramp down.
-	gfx_printf(&g_gfx_con,"Step 11\n");
+	// EPRINTF("Step 11");
 	ref_delay = 0;
 	if (dram_type != DRAM_TYPE_LPDDR4)
 		ref_delay = (u32)(float)(tRP_src_timing + tRFC_src_timing + 20.0f);
@@ -3235,18 +3234,18 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	ramp_down_wait = _dvfs_power_ramp_down(false, src_emc_entry, dst_emc_entry, src_clock_period);
 
 	// Step 12 - Trigger clock change.
-	gfx_printf(&g_gfx_con,"Step 12\n");
+	// EPRINTF("Step 12");
 	_ccfifo_write(EMC_STALL_THEN_EXE_AFTER_CLKCHANGE, 1, 0);
 	if (!needs_tristate_training)
 		_ccfifo_write(EMC_DBG, (emc_dbg_val & 0xBFFFFFFF) | 2, 0);
 
 	// Step 13 - Ramp up.
-	gfx_printf(&g_gfx_con,"Step 13\n");
+	// EPRINTF("Step 13");
 	ramp_up_wait = _dvfs_power_ramp_up(false, src_emc_entry, dst_emc_entry, needs_training & 0xFF, dst_clock_period);
 	_ccfifo_write(EMC_DBG, emc_dbg_val, 0);
 
 	// Step 14 - Bringup CKE pins.
-	gfx_printf(&g_gfx_con,"Step 14\n");
+	// EPRINTF("Step 14");
 	if (dram_type == DRAM_TYPE_LPDDR4)
 	{
 		u32 emc_pin_val_final = 0;
@@ -3270,7 +3269,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	}
 
 	// Step 15 - Zqlatch.
-	gfx_printf(&g_gfx_con,"Step 15\n");
+	// EPRINTF("Step 15");
 	if (dram_type == DRAM_TYPE_LPDDR4 && !needs_ca_or_cavref_training && opt_zcal_en_cc)
 	{
 		s32 zq_latch_dvfs_wait_time = 0;
@@ -3348,7 +3347,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	_ccfifo_write(EMC_INTSTATUS, 0, 10); // WAR: delay for zqlatch.
 
 	// Step 16 - LPDDR4 Conditional training kickoff.
-	gfx_printf(&g_gfx_con,"Step 16\n");
+	// EPRINTF("Step 16");
 	if (needs_tristate_training && dram_type == DRAM_TYPE_LPDDR4)
 	{
 		_ccfifo_write(EMC_INTSTATUS, 0, (u32)(1020.0f / dst_clock_period));
@@ -3463,7 +3462,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 	if (dram_type != DRAM_TYPE_LPDDR4)
 	{
 		// Step 17 - MANSR exit self refresh.
-		gfx_printf(&g_gfx_con,"Step 17\n");
+		// EPRINTF("Step 17");
 		_ccfifo_write(EMC_SELF_REF, 0, 0);
 
 		if (dram_type != DRAM_TYPE_LPDDR2)
@@ -3495,14 +3494,14 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 		}
 
 		// Step 18 - Send MRWs to LPDDR3/DDR3.
-		gfx_printf(&g_gfx_con,"Step 18\n");
+		// EPRINTF("Step 18");
 		_ccfifo_write(EMC_MRW2, dst_emc_entry->emc_mrw2, 0);
 		_ccfifo_write(EMC_MRW, dst_emc_entry->emc_mrw, 0);
 		if (is_lpddr3_dram)
 			_ccfifo_write(EMC_MRW4, dst_emc_entry->emc_mrw4, 0);
 
 		// Step 19 - ZQCAL for LPDDR3/DDR3.
-		gfx_printf(&g_gfx_con,"Step 19\n");
+		// EPRINTF("Step 19");
 		if (opt_zcal_en_cc)
 		{
 			u32 zcal_wait_time_clocks = _fceil(90.0f / dst_clock_period);
@@ -3515,7 +3514,7 @@ s32 _minerva_set_clock(emc_table_t *src_emc_entry, emc_table_t *dst_emc_entry, u
 
 step_19_2:
 	// Step 19.2.
-	gfx_printf(&g_gfx_con,"Step 19.2\n");
+	// EPRINTF("Step 19.2");
 	if (bg_regulator_mode_change)
 	{
 		_ccfifo_write(EMC_DBG, emc_dbg_o | 2, 0);
@@ -3539,12 +3538,12 @@ step_19_2:
 	}
 
 	// Step 20 - Issue ref and optional QRST.
-	gfx_printf(&g_gfx_con,"Step 20\n");
+	// EPRINTF("Step 20");
 	if (needs_tristate_training || dram_type != DRAM_TYPE_LPDDR4)
 		_ccfifo_write(EMC_REF, 0, 0);
 
 	// Step 21 - Restore ZCAL and ZCAL interval.
-	gfx_printf(&g_gfx_con,"Step 21\n");
+	// EPRINTF("Step 21");
 	_ccfifo_write(EMC_DBG, emc_dbg_o | 2, 0);
 
 	if (opt_zcal_en_cc)
@@ -3558,7 +3557,7 @@ step_19_2:
 	_ccfifo_write(EMC_CFG, dst_emc_entry->burst_regs.emc_cfg_idx & 0xEFFFFFFF, 0);
 
 	// Step 22 - Restore EMC_CFG_PIPE_CLK.
-	gfx_printf(&g_gfx_con,"Step 22\n");
+	// EPRINTF("Step 22");
 	if (needs_tristate_training && dram_type == DRAM_TYPE_LPDDR4)
 		_ccfifo_write(EMC_SEL_DPD_CTRL, src_emc_entry->emc_sel_dpd_ctrl, 0);
 	_ccfifo_write(EMC_DBG, emc_dbg_o, 0);
@@ -3572,7 +3571,7 @@ step_19_2:
 	}
 
 	// Step 23 - Clock Change.
-	gfx_printf(&g_gfx_con,"Step 23\n");
+	// EPRINTF("Step 23");
 	if (needs_tristate_training)
 	{
 		CLOCK(CLK_RST_CONTROLLER_CLK_SOURCE_EMC_SAFE) = (u32)CLOCK(CLK_RST_CONTROLLER_CLK_SOURCE_EMC);
@@ -3585,7 +3584,7 @@ step_19_2:
 		return 4; // Clkchange handshake timeout error.
 
 	// Step 24 - Save training results.
-	gfx_printf(&g_gfx_con,"Step 24\n");
+	// EPRINTF("Step 24");
 	if (needs_tristate_training)
 	{
 		emc_dbg_val = EMC(EMC_DBG);
@@ -3597,7 +3596,7 @@ step_19_2:
 	}
 
 	// Step 25 - Program MC updown regs.
-	gfx_printf(&g_gfx_con,"Step 25\n");
+	// EPRINTF("Step 25");
 	//if (dst_emc_entry->rate_khz > src_emc_entry->rate_khz) //NEW TODO
 	if ((dst_emc_entry->rate_khz > src_emc_entry->rate_khz) > needs_tristate_training)
 	{
@@ -3610,7 +3609,7 @@ step_19_2:
 	}
 
 	// Step 26 - Restore ZCAL regs.
-	gfx_printf(&g_gfx_con,"Step 26\n");
+	// EPRINTF("Step 26");
 	if (!in_self_refresh)
 	{
 		EMC(EMC_DBG) = emc_dbg_o | 2;
@@ -3620,7 +3619,7 @@ step_19_2:
 	}
 
 	// Step 27 - Restore EMC_CFG, FDPD regs.
-	gfx_printf(&g_gfx_con,"Step 27\n");
+	// EPRINTF("Step 27");
 	EMC(EMC_DBG) = emc_dbg_o | 2;
 	EMC(EMC_CFG) = dst_emc_entry->burst_regs.emc_cfg_idx;
 	EMC(EMC_DBG) = emc_dbg_o;
@@ -3628,7 +3627,7 @@ step_19_2:
 	EMC(EMC_SEL_DPD_CTRL) = dst_emc_entry->emc_sel_dpd_ctrl;
 
 	// Step 28 - Training recover.
-	gfx_printf(&g_gfx_con,"Step 28\n");
+	// EPRINTF("Step 28");
 	if (needs_tristate_training && dram_type == DRAM_TYPE_LPDDR4)
 	{
 		EMC(EMC_DBG) = emc_dbg_o | 2;
@@ -3652,14 +3651,14 @@ step_19_2:
 	EMC(EMC_DBG) = emc_dbg_o;
 
 	// Step 29 - Power fix WAR.
-	gfx_printf(&g_gfx_con,"Step 29\n");
+	// EPRINTF("Step 29");
 	EMC(EMC_PMACRO_CFG_PM_GLOBAL_0) = 0xFF0000;
 	EMC(EMC_PMACRO_TRAINING_CTRL_0) = CH0_TRAINING_E_WRPTR;
 	EMC(EMC_PMACRO_TRAINING_CTRL_1) = CH0_TRAINING_E_WRPTR;
 	EMC(EMC_PMACRO_CFG_PM_GLOBAL_0) = 0;
 
 	// Step 30 - Re-enable autocal and Restore FSP to account for switch back (training).
-	gfx_printf(&g_gfx_con,"Step 30\n");
+	// EPRINTF("Step 30");
 	if (needs_tristate_training)
 	{
 		EMC(EMC_AUTO_CAL_CONFIG) = src_emc_entry->emc_auto_cal_config;
@@ -3759,7 +3758,7 @@ static void _minerva_train_patterns(emc_table_t *src_emc_entry, emc_table_t *dst
 
 		}
 		dst_emc_entry->trained = 1;
-		gfx_printf(&g_gfx_con,"Trained");
+		// EPRINTF("Trained");
 	}
 
 	if (switch_rate)
@@ -3923,7 +3922,7 @@ s32 _minerva_set_rate(mtc_config_t *mtc_cfg)
 		return 4;
 
 	freq_changed = _check_freq_changed(dst_rate_khz, dst_clk_src_emc, src_rate_khz, src_clk_src_emc);
-	gfx_printf(&g_gfx_con,"Requested freq change from %d to %d.\n", src_rate_khz, dst_rate_khz);
+	// EPRINTFARGS("Requested freq change from %d to %d.", src_rate_khz, dst_rate_khz);
 
 	if (freq_changed)
 	{
@@ -3982,7 +3981,7 @@ s32 _minerva_set_rate(mtc_config_t *mtc_cfg)
 
 static void _minerva_get_table(mtc_config_t *mtc_cfg)
 {
-	switch (0)
+	switch (mtc_cfg->sdram_id)
 	{
 	case 1:
 		memcpy((void *)MTC_TABLE, nx_abca2_2_10NoCfgVersion_V9_8_7_V1_6, EMC_TABLE_SIZE_R7);
@@ -4013,7 +4012,7 @@ static void _minerva_get_table(mtc_config_t *mtc_cfg)
 
 void _minerva_init(mtc_config_t *mtc_cfg, void* bp)
 {
-	gfx_printf(&g_gfx_con,"-- Minerva Training Cell --\n");
+	// EPRINTF("-- Minerva Training Cell --");
 	
 	train_ram_patterns = mtc_cfg->train_ram_patterns;
 	fsp_for_src_freq = mtc_cfg->fsp_for_src_freq;
@@ -4022,7 +4021,6 @@ void _minerva_init(mtc_config_t *mtc_cfg, void* bp)
 	if (!mtc_cfg->mtc_table)
 	{
 		_minerva_get_table(mtc_cfg);
-        	gfx_printf(&g_gfx_con,"Set table\n");
 		return;
 	}
 	
@@ -4039,28 +4037,26 @@ void _minerva_init(mtc_config_t *mtc_cfg, void* bp)
 	switch (mtc_cfg->train_mode)
 	{
 	case OP_SWITCH:
-		gfx_printf(&g_gfx_con,"Switching..");
+		// EPRINTF("Switching..");
 		_minerva_set_rate(mtc_cfg);
 		break;
 	case OP_TRAIN:
-		gfx_printf(&g_gfx_con,"Training..");
+		// EPRINTF("Training..");
 		_minerva_set_rate(mtc_cfg);
 		break;
 	case OP_TRAIN_SWITCH:
-		gfx_printf(&g_gfx_con,"Training and switching..\n");
+		// EPRINTF("Training and switching..");
 		_minerva_set_rate(mtc_cfg);
 		break;
 	case OP_PERIODIC_TRAIN:
-		gfx_printf(&g_gfx_con,"Periodic training..");
+		// EPRINTF("Periodic training..");
 		_minerva_do_periodic_compensation(mtc_cfg->current_emc_table);
 		break;
 	case OP_TEMP_COMP:
-		gfx_printf(&g_gfx_con,"Over temperature compensation..");
+		// EPRINTF("Over temperature compensation..");
 		_minerva_do_over_temp_compensation(mtc_cfg);
 		break;
 	}
-	
-    gfx_printf(&g_gfx_con,"Done for now..\n");
 
 	mtc_cfg->train_ram_patterns = train_ram_patterns;
 	mtc_cfg->fsp_for_src_freq = fsp_for_src_freq;

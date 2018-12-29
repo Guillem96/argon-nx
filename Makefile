@@ -46,13 +46,14 @@ OBJS = $(addprefix $(BUILD)/$(TARGET)/, \
 	gui_menu_entry.o \
 	gui_menu_pool.o \
 	payloads.o \
-	sys_sdrammtc.o \
 	minerva.o \
+	ianos.o \
 )
 
 OBJS += $(addprefix $(BUILD)/$(TARGET)/, \
 	lz.o blz.o \
 	diskio.o ff.o ffunicode.o ffsystem.o \
+	elfload.o elfreloc_arm.o \
 )
 
 ARCH := -march=armv4t -mtune=arm7tdmi -mthumb -mthumb-interwork
