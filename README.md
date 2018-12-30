@@ -89,5 +89,5 @@ Not tested with TeamXecuter SXOS payloat but it should work too.
 * __naehrwert__ and __st4rk__ for the original [hekate](https://github.com/nwert/hekate) project and its hwinit code base.
 * __CTCaer__ for the continued [hekate](https://github.com/CTCaer/hekate) and his **minerva** project.
 * __SciresM__, __TuxSH__ and __hexkyz__ for the base hwinit code of Argon NX
-*__xalgovia__ and __Retrogamer 74__ for the splash and logos. Also thanks them to use ArgonNX in RetroReloaded.
+* __xalgovia__ and __Retrogamer 74__ for the splash and logos. Also thanks them to use ArgonNX in RetroReloaded.
 
