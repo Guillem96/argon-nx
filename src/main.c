@@ -60,7 +60,7 @@ void ipl_main()
     setup_gfx();
     display_backlight_pwm_init();
     display_backlight_brightness(100, 1000);
-    
+
     /* Train DRAM */
     g_gfx_con.mute = 1; /* Silence minerva, comment for debug */
     minerva();
@@ -69,10 +69,11 @@ void ipl_main()
     /* Double the font size */
     g_gfx_con.scale = 2;
 
+    touch_power_on(); // Needs a game card lol
+    
     /* Mount Sd card and launch payload */
     if (sd_mount())
     {
-            // touch_power_on();
 
         bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
         bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");

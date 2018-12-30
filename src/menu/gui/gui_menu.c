@@ -65,11 +65,12 @@ int gui_menu_update(gui_menu_t *menu)
 	// u32 input;
 
     gui_menu_draw(menu);
-
-    // input = btn_wait();
+    
     struct touch_event event = touch_wait();
-    gfx_con_setpos(&g_gfx_con, 0,0 );
-    gfx_printf(&g_gfx_con, "x: %d  y: %d\n", event.x, event.y);
+    gfx_con_setpos(&g_gfx_con, 10, 10);
+    gfx_printf(&g_gfx_con, "X: %d, Y: %d\n");
+    // input = btn_wait();
+
 	// if ((input & BTN_VOL_DOWN) && menu->selected_index > 0)
 	// {
 	// 	menu->selected_index--;

@@ -15,8 +15,8 @@ static int touch_command(u8 cmd)
 
 static void touch_process_contact_event(struct touch_event *event)
 {
-	event->x = (event->raw[2] << 4) | ((event->raw[3] & 0x0f));
-	event->y = (event->raw[3] << 4) | ((event->raw[3] & 0xf0) >> 1);
+	event->x = (event->raw[3] << 4) | ((event->raw[3] & 0xf0) >> 1);
+	event->y = (event->raw[2] << 4) | ((event->raw[3] & 0x0f));
 }
 
 static void touch_parse_event(struct touch_event *event) 
