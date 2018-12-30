@@ -54,10 +54,10 @@ argon
 ├───payloads
 │       fusee-primary.bin
 │       ReiNX.bin
-│       fusee.bin
+│       fusee-gelee.bin
 │       hekate.bin
+│       SXOS.bin
 │       payload1.bin
-│       payload2.bin
 │       payload3.bin
 │       payload4.bin
 │
@@ -66,7 +66,10 @@ argon
         default.bmp
         Reinx.bmp
         hekate.bmp
-        fusee.bmp
+        SXOS.bmp
+        fusee-gelee.bmp
+ background.bmp
+ title.bmp
 ```
 
 ## Improve performance
