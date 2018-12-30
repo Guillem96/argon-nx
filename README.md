@@ -51,7 +51,7 @@ Color used for transparency is **#1D1919**.
 The sd card files of the image are:
 ```
 argon
-├───payloads
+├─── payloads
 │       fusee-primary.bin
 │       ReiNX.bin
 │       fusee-gelee.bin
@@ -61,15 +61,15 @@ argon
 │       payload3.bin
 │       payload4.bin
 │
-└───logos
-        fusee-primary.bmp
-        default.bmp
-        Reinx.bmp
-        hekate.bmp
-        SXOS.bmp
-        fusee-gelee.bmp
- background.bmp
- title.bmp
+├─── logos
+|       fusee-primary.bmp
+|       efault.bmp
+|       Reinx.bmp
+|       hekate.bmp
+|       SXOS.bmp
+|       fusee-gelee.bmp
+├─── background.bmp
+└─── title.bmp
 ```
 
 ## Improve performance
