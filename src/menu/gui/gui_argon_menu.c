@@ -26,6 +26,7 @@
 #include "utils/util.h"
 #include "core/launcher.h"
 #include "core/payloads.h"
+#include "core/custom-gui.h"
 
 #include "mem/heap.h"
 
@@ -34,19 +35,30 @@
 #define COLUMNS 4  
 #define ROWS 2
 #define ELEM_SIZE 230
-#define MARGIN 50
+#define MARGIN_TOP 100
+#define MARGIN_LEFT 45
 
 #define MINOR_VERSION 1
 #define MAJOR_VERSION 0
 
 void setup_gfx_gui()
 {
-    gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
+    /* Custom background*/
+    if(!render_custom_background())
+        gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
+    
     gfx_con_setcol(&g_gfx_con, 0xFFF9F9F9, 0, 0xFF191414);
+
+    /* Render title */
+    if (!render_custom_title()) {
+        g_gfx_con.scale = 4;
+        gfx_con_setpos(&g_gfx_con, 120, 20);
+        gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
+    }
 }
 
-/* Generate dinamycally the entries */
-void generate_payloads_entries(const char* payloads, gui_menu_t* menu)
+/* Generate entries dynamically */
+void generate_payloads_entries(char* payloads, gui_menu_t* menu)
 {
     if (payloads == NULL)
     {
@@ -56,7 +68,7 @@ void generate_payloads_entries(const char* payloads, gui_menu_t* menu)
         
         g_gfx_con.scale = 3;
         gfx_con_setpos(&g_gfx_con, 110, 370);
-        gfx_printf(&g_gfx_con, "Place your payloads inside \"argon/payloads\"");
+        gfx_printf(&g_gfx_con, "Place your payloads inside \"%s\"", PAYLOADS_DIR);
 
         return;
     }
@@ -73,11 +85,12 @@ void generate_payloads_entries(const char* payloads, gui_menu_t* menu)
 
         u32 row = i / COLUMNS;
         u32 col = i % COLUMNS;
-        u32 x = g_gfx_ctxt.width / COLUMNS * col + MARGIN;
-        u32 y = g_gfx_ctxt.height / ROWS * row + MARGIN + (row == 0 ? 30 : -30);
+        u32 x = g_gfx_ctxt.width / COLUMNS * col + MARGIN_LEFT;
+        u32 y = g_gfx_ctxt.height / ROWS * row + MARGIN_TOP + (row == 0 ? 30 : -60);
 
+        const char* payload_wo_bin = str_replace(&payloads[i * 256], ".bin", "");
         gui_menu_append_entry(menu, 
-            gui_create_menu_entry(&payloads[i * 256], 
+            gui_create_menu_entry(payload_wo_bin, 
                                     sd_file_read(payload_logo), 
                                     x, y,
                                     200, 200,
@@ -90,9 +103,6 @@ void generate_payloads_entries(const char* payloads, gui_menu_t* menu)
 void gui_init_argon_menu(void)
 {
     setup_gfx_gui();
-    g_gfx_con.scale = 4;
-    gfx_con_setpos(&g_gfx_con, 500, 10);
-    gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
 
     /* Init pool for menu */
     gui_menu_pool_init();

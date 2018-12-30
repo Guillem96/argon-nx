@@ -1,7 +1,6 @@
-/*  
+/*
  * Copyright (c) 2018 Guillem96
- *
- *
+ * 
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
  * version 2, as published by the Free Software Foundation.
@@ -14,26 +13,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _MENU_POOL_H_
-#define _MENU_POOL_H_
+#ifndef _CUSTOM_GUI_H_
+#define _CUSTOM_GUI_H_
 
-#include "menu/console/menu.h"
+#include "utils/types.h"
 
-typedef struct {
-    int max_items;
-    int current_items;
-    menu_t** menus;
-} menu_pool_t;
+#define CUSTOM_BG_PATH "argon/background.bmp"
+#define CUSTOM_TITLE_PATH "argon/title.bmp"
 
-menu_pool_t* g_menu_pool;
+/* Renders custom background, returns false if background.bmp does not exist */
+bool render_custom_background();
 
-/* Initializes the pool */
-void menu_pool_init();
-
-/* Add a menu and its entries to the pool */
-void menu_push_to_pool(menu_t * menu);
-
-/* Deallocate all entries and menus */
-void menu_pool_cleanup();
+/* Renders custom title, returns false if title.bmp does not exist */
+bool render_custom_title();
 
 #endif

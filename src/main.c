@@ -31,8 +31,9 @@
 #include "utils/btn.h"
 #include "utils/touch.h"
 
-#include "menu/console/argon_menu.h"
 #include "menu/gui/gui_argon_menu.h"
+
+#include "minerva/minerva.h"
 
 extern void pivot_stack(u32 stack_top);
 
@@ -43,6 +44,7 @@ static inline void setup_gfx()
     gfx_con_init(&g_gfx_con, &g_gfx_ctxt);
     gfx_con_setcol(&g_gfx_con, 0xFFCCCCCC, 1, BLACK);
 }
+
 
 void ipl_main()
 {
@@ -58,7 +60,13 @@ void ipl_main()
     setup_gfx();
     display_backlight_pwm_init();
     display_backlight_brightness(100, 1000);
-
+    
+    /* Train DRAM */
+    g_gfx_con.mute = 1; /* Silence minerva, comment for debug */
+    minerva();
+    g_gfx_con.mute = 0;
+    
+    /* Double the font size */
     g_gfx_con.scale = 2;
 
     /* Mount Sd card and launch payload */
@@ -68,6 +76,7 @@ void ipl_main()
 
         bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
         bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
+        
         if (load_menu)
             gui_init_argon_menu();
 
