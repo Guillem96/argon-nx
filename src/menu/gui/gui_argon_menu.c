@@ -26,48 +26,39 @@
 #include "utils/util.h"
 #include "core/launcher.h"
 #include "core/payloads.h"
+#include "core/custom-gui.h"
 
 #include "mem/heap.h"
-
-#include "../logo_bmp.h"
 
 #include <string.h>
 
 #define COLUMNS 4  
 #define ROWS 2
 #define ELEM_SIZE 230
-#define MARGIN_TOP 80
+#define MARGIN_TOP 100
 #define MARGIN_LEFT 45
 
 #define MINOR_VERSION 1
 #define MAJOR_VERSION 0
 
-#define CUSTOM_BACKGROUND_PATH "argon/background.bmp"
-
 void setup_gfx_gui()
 {
     /* Custom background*/
-    u8* custom_bg = (u8*)sd_file_read(CUSTOM_BACKGROUND_PATH);
-    if (custom_bg != NULL)
-        gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, custom_bg, 0, 0, 1280, 720);
-    else 
+    if(!render_custom_background())
         gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
     
     gfx_con_setcol(&g_gfx_con, 0xFFF9F9F9, 0, 0xFF191414);
 
-    /* Render logo */
-    u32 bmp_width = (logo_bmp[0x12] | (logo_bmp[0x13] << 8) | (logo_bmp[0x14] << 16) | (logo_bmp[0x15] << 24));
-    u32 bmp_height = (logo_bmp[0x16] | (logo_bmp[0x17] << 8) | (logo_bmp[0x18] << 16) | (logo_bmp[0x19] << 24));
-    gfx_render_bmp_arg_bitmap_transparent(&g_gfx_ctxt, (u8*)logo_bmp, 30, 10, bmp_width, bmp_height, 0);
-
     /* Render title */
-    g_gfx_con.scale = 4;
-    gfx_con_setpos(&g_gfx_con, 120, 20);
-    gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
+    if (!render_custom_title()) {
+        g_gfx_con.scale = 4;
+        gfx_con_setpos(&g_gfx_con, 120, 20);
+        gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
+    }
 }
 
 /* Generate entries dynamically */
-void generate_payloads_entries(const char* payloads, gui_menu_t* menu)
+void generate_payloads_entries(char* payloads, gui_menu_t* menu)
 {
     if (payloads == NULL)
     {
@@ -97,8 +88,9 @@ void generate_payloads_entries(const char* payloads, gui_menu_t* menu)
         u32 x = g_gfx_ctxt.width / COLUMNS * col + MARGIN_LEFT;
         u32 y = g_gfx_ctxt.height / ROWS * row + MARGIN_TOP + (row == 0 ? 30 : -60);
 
+        const char* payload_wo_bin = str_replace(&payloads[i * 256], ".bin", "");
         gui_menu_append_entry(menu, 
-            gui_create_menu_entry(&payloads[i * 256], 
+            gui_create_menu_entry(payload_wo_bin, 
                                     sd_file_read(payload_logo), 
                                     x, y,
                                     200, 200,
