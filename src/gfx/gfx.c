@@ -23,7 +23,7 @@
 #include "utils/util.h"
 #include "mem/heap.h"
 
-#define TRANSPARENT_COLOR 0xFFFF00FF
+#define TRANSPARENT_COLOR 0xFF1D1919
 
 static const u8 _gfx_font[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Char 032 ( )
