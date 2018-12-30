@@ -61,7 +61,9 @@ void ipl_main()
     display_backlight_brightness(100, 1000);
     
     /* Train DRAM */
+    g_gfx_con.mute = 1; /* Silence minerva, comment for debug */
     minerva();
+    g_gfx_con.mute = 0;
     
     /* Double the font size */
     g_gfx_con.scale = 2;

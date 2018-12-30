@@ -37,10 +37,12 @@ argon
         ReiNX.bin         # Will be rendered using default logo
 ```
 - Custom background add a custom background by simply adding `background.bmp` file inside `argon` directory. **Background must be smaller than 1280x720**.
+- Custom title add a custom title by simply adding `title.bmp` file inside `argon` directory. **Not an specific size for title**.
 
 ## About BMP format
 
 The only format supported is **BMP 32 bit ARGB color**.
+Color used for transparency is **#1D1919**.
 
 ## GUI
 
