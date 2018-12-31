@@ -66,9 +66,9 @@ int gui_menu_update(gui_menu_t *menu)
 
     gui_menu_draw(menu);
     
-    struct touch_event event = touch_wait();
+    touch_event_t event = touch_wait();
     gfx_con_setpos(&g_gfx_con, 10, 10);
-    gfx_printf(&g_gfx_con, "X: %d, Y: %d\n");
+    gfx_printf(&g_gfx_con, "X: %d, Y: %d\n", event.x, event.y);
     // input = btn_wait();
 
 	// if ((input & BTN_VOL_DOWN) && menu->selected_index > 0)

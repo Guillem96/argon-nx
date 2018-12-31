@@ -1,6 +1,23 @@
+/*
+ * Copyright (c) 2018 balika011
+ * Copyright (C) 2018 Guillem96
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "utils/touch.h"
 
-struct touch_event last_event;
+touch_event_t last_event;
 
 static int touch_command(u8 cmd)
 {
@@ -13,13 +30,13 @@ static int touch_command(u8 cmd)
 	return 0;
 }
 
-static void touch_process_contact_event(struct touch_event *event)
+static void touch_process_contact_event(touch_event_t *event)
 {
 	event->x = (event->raw[3] << 4) | ((event->raw[3] & 0xf0) >> 1);
 	event->y = (event->raw[2] << 4) | ((event->raw[3] & 0x0f));
 }
 
-static void touch_parse_event(struct touch_event *event) 
+static void touch_parse_event(touch_event_t *event) 
 {
 	event->type = event->raw[0];
 
@@ -38,15 +55,15 @@ static void touch_parse_event(struct touch_event *event)
 	}
 }
 
-static void touch_poll(struct touch_event *event)
+static void touch_poll(touch_event_t *event)
 {
 	i2c_recv_buf_small(event->raw, 4, I2C_3, 0x49, STMFTS_LATEST_EVENT);
 	touch_parse_event(event);
 }
 
-struct touch_event touch_wait()
+touch_event_t touch_wait()
 {
-	struct touch_event event;
+	touch_event_t event;
 	do 
 	{
 		touch_poll(&event);
