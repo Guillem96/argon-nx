@@ -22,13 +22,11 @@
 #include "mem/heap.h"
 
 #include "soc/hw_init.h"
-#include "soc/t210.h"
 
 #include "core/launcher.h"
 
 #include "utils/util.h"
 #include "utils/fs_utils.h"
-#include "utils/btn.h"
 #include "utils/touch.h"
 
 #include "menu/gui/gui_argon_menu.h"
@@ -44,7 +42,6 @@ static inline void setup_gfx()
     gfx_con_init(&g_gfx_con, &g_gfx_ctxt);
     gfx_con_setcol(&g_gfx_con, 0xFFCCCCCC, 1, BLACK);
 }
-
 
 void ipl_main()
 {
@@ -65,21 +62,28 @@ void ipl_main()
     g_gfx_con.mute = 1; /* Silence minerva, comment for debug */
     minerva();
     g_gfx_con.mute = 0;
-    
-    /* Double the font size */
-    g_gfx_con.scale = 2;
 
+    /* Cofigure touch input */
+    g_touch_enabled = true;
     touch_power_on(); // Needs a game card lol
     
     /* Mount Sd card and launch payload */
     if (sd_mount())
     {
+        gfx_con_setpos(&g_gfx_con, 0, 0);
 
-        bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
-        bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
+        for(u16 i = 0; i < 10; i++)
+        {
+            msleep(500);    /* Just in case touch is to fast */
+            touch_event_t event = touch_wait();
+            gfx_printf(&g_gfx_con, "X: %d - Y: %d\n", event.x, event.y);
+        }
         
-        if (load_menu)
-            gui_init_argon_menu();
+        // bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
+        // bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
+        
+        // if (load_menu)
+        //     gui_init_argon_menu();
 
     } else {
         gfx_printf(&g_gfx_con, "No sd card found...\n");

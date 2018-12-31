@@ -36,7 +36,6 @@
 #include "storage/sdmmc.h"
 #include "utils/util.h"
 #include "utils/fs_utils.h"
-#include "utils/touch.h"
 
 void _config_oscillators()
 {

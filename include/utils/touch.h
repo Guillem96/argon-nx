@@ -77,6 +77,9 @@
 #define STMFTS_MAX_FINGERS	    10
 #define STMFTS_DEV_NAME		    "stmfts"
 
+/* TOUCH SUPPORT ONLY WORKS WHEN A GC IS INSIDE NINTENDO SWITCH */
+
+
 typedef struct {
     u8 raw[4];
     u8 type;
@@ -84,8 +87,20 @@ typedef struct {
     u16 y;
 } touch_event_t;
 
-int touch_power_on();
-touch_event_t touch_wait();
-bool is_square_touch(touch_event_t* event, u32 x, u32 y, u32 width, u32 height);
+/* Set to true or create an empty file called "touch" inside "argon" dir to enable touch support */
+bool g_touch_enabled;
 
- #endif /* __TOUCH_H_ */ 
+/* Init touch support */
+int touch_power_on();
+
+/* Wait for touch input */
+/* No safe to call it when g_touch_enabled = false */
+touch_event_t touch_wait();
+
+/**
+ * Checks if touch event is produced inside a rectangle
+ * x, y are the top left coordinates of the rect
+ */
+bool is_rect_touched(touch_event_t* event, u32 x, u32 y, u32 width, u32 height);
+
+#endif /* _TOUCH_H_ */ 
