@@ -25,6 +25,8 @@
 
 #include "mem/heap.h"
 
+#include <string.h>
+
 bool g_force_render = true;
 
 /* Render the menu */
