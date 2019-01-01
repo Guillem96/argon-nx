@@ -251,6 +251,9 @@ void reconfig_hw_workaround(bool extra_reconfig, u32 magic)
 		gpio_config(GPIO_PORT_D, GPIO_PIN_1, GPIO_MODE_SPIO);
 		gpio_config(GPIO_PORT_E, GPIO_PIN_6, GPIO_MODE_SPIO);
 		gpio_config(GPIO_PORT_H, GPIO_PIN_6, GPIO_MODE_SPIO);
+
+        // Touch
+        gpio_config(GPIO_PORT_J, GPIO_PIN_7, GPIO_MODE_SPIO);
 	}
 
 	// Power off display.
