@@ -17,18 +17,21 @@
 
 #include "menu/gui/gui_menu.h"
 #include "menu/gui/gui_menu_pool.h"
+
 #include "utils/touch.h"
+#include "utils/btn.h"
+
 #include "gfx/gfx.h"
+
 #include "mem/heap.h"
-#include <string.h>
 
 bool g_force_render = true;
 
 /* Render the menu */
-void gui_menu_draw(gui_menu_t *menu);
+static void gui_menu_draw(gui_menu_t *menu);
 
 /* Update menu after an input */
-int gui_menu_update(gui_menu_t *menu);
+static int gui_menu_update(gui_menu_t *menu);
 
 gui_menu_t *gui_menu_create(const char *title)
 {
@@ -40,6 +43,7 @@ gui_menu_t *gui_menu_create(const char *title)
 	return menu;
 }
 
+
 void gui_menu_append_entry(gui_menu_t *menu, gui_menu_entry_t *menu_entry)
 {
 	if (menu->next_entry == MAX_ENTRIES)
@@ -49,7 +53,8 @@ void gui_menu_append_entry(gui_menu_t *menu, gui_menu_entry_t *menu_entry)
 	menu->next_entry++;
 }
 
-void gui_menu_draw(gui_menu_t *menu)
+
+static void gui_menu_draw(gui_menu_t *menu)
 {
     for (s16 i = 0; i < menu->next_entry; i++)
 	{
@@ -59,39 +64,69 @@ void gui_menu_draw(gui_menu_t *menu)
 }
 
 
-int gui_menu_update(gui_menu_t *menu)
+static int handle_touch_input(gui_menu_t *menu)
 {
-	// gui_menu_entry_t *entry = NULL;
-	// u32 input;
-
-    gui_menu_draw(menu);
-    
+    gui_menu_entry_t *entry = NULL;
     touch_event_t event = touch_wait();
-    gfx_con_setpos(&g_gfx_con, 10, 10);
-    gfx_printf(&g_gfx_con, "X: %d, Y: %d\n", event.x, event.y);
-    // input = btn_wait();
+    
+    /* After touch input check if any entry has ben tapped */
+    for(u32 i = 0; i < menu->next_entry; i++)
+    {
+        entry = menu->entries[i];
 
-	// if ((input & BTN_VOL_DOWN) && menu->selected_index > 0)
-	// {
-	// 	menu->selected_index--;
-	// }
-	// else if ((input & BTN_VOL_UP) && menu->selected_index < menu->next_entry - 1)
-	// {
-	// 	menu->selected_index++;
-	// }
-	// else if (input & BTN_POWER)
-	// {
-	// 	entry = menu->entries[menu->selected_index];
-	// 	if (entry->handler != NULL)
-	// 	{
-    //         gfx_con_setpos(&g_gfx_con, 20, 50);
-	// 		if (entry->handler(entry->param) != 0)
-	// 			return 0;
-    //         gui_menu_draw(menu);
-	// 	}
-	// }
-	return 1;
+        if (entry->handler != NULL 
+            && is_rect_touched(&event, entry->x, entry->y, entry->width, entry->height))
+        {
+            if (entry->handler(entry->param) != 0)
+                return 0;
+            gui_menu_draw(menu);
+        }
+    }
+    
+    return 1;
 }
+
+
+static int handle_btn_input(gui_menu_t *menu)
+{
+    gui_menu_entry_t *entry = NULL;
+	u32 input;
+
+    input = btn_wait();
+
+	if ((input & BTN_VOL_DOWN) && menu->selected_index > 0)
+	{
+		menu->selected_index--;
+	}
+	else if ((input & BTN_VOL_UP) && menu->selected_index < menu->next_entry - 1)
+	{
+		menu->selected_index++;
+	}
+	else if (input & BTN_POWER)
+	{
+		entry = menu->entries[menu->selected_index];
+		if (entry->handler != NULL)
+		{
+			if (entry->handler(entry->param) != 0)
+				return 0;
+            gui_menu_draw(menu);
+		}
+	}
+
+    return 1;
+}
+
+
+static int gui_menu_update(gui_menu_t *menu)
+{
+    gui_menu_draw(menu);
+
+    if (!g_touch_enabled)
+        return handle_btn_input(menu);
+
+    return handle_touch_input(menu);
+}
+
 
 int gui_menu_open(gui_menu_t *menu)
 {    
@@ -101,6 +136,7 @@ int gui_menu_open(gui_menu_t *menu)
 
 	return 0;
 }
+
 
 void gui_menu_destroy(gui_menu_t *menu)
 {

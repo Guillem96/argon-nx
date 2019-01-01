@@ -16,10 +16,14 @@
  */
 
 #include "menu/gui/gui_menu_entry.h"
+
 #include "mem/heap.h"
+
 #include "gfx/gfx.h"
+
 #include "utils/touch.h"
 #include "utils/fs_utils.h"
+
 #include <string.h>
 
 #define DEFAULT_LOGO "argon/logos/default.bmp"
@@ -43,6 +47,23 @@ gui_menu_entry_t *gui_create_menu_entry(const char *text,
     else
         menu_entry->bitmap = sd_file_read(DEFAULT_LOGO);
 
+    menu_entry->x = x;
+    menu_entry->y = y;
+    menu_entry->width = width;
+    menu_entry->height = height;
+	menu_entry->handler = handler;
+	menu_entry->param = param;
+	return menu_entry;
+}
+
+gui_menu_entry_t *gui_create_menu_entry_no_bitmap(const char *text, 
+                                                    u32 x, u32 y, 
+                                                    u32 width, u32 height, 
+                                                    int (*handler)(void *), void *param)
+{
+ gui_menu_entry_t *menu_entry = (gui_menu_entry_t *)malloc(sizeof(gui_menu_entry_t));
+	strcpy(menu_entry->text, text);
+    menu_entry->bitmap = NULL;
     menu_entry->x = x;
     menu_entry->y = y;
     menu_entry->width = width;

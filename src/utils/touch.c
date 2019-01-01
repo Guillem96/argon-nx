@@ -121,8 +121,11 @@ bool is_rect_touched(touch_event_t* event, u32 x, u32 y, u32 width, u32 height)
     if (!g_touch_enabled || event == NULL)
         return false;
         
-    return event->x > x 
-            && event->y > y
-            && event->x < event->x + width
-            && event->y < event->y + height;
+    u32 event_x = event->y;
+    u32 event_y = event->x;
+
+    return event_x > x 
+            && event_y > y
+            && event_x < x + width
+            && event_y < y + height;
 }

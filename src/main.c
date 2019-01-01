@@ -28,6 +28,7 @@
 #include "utils/util.h"
 #include "utils/fs_utils.h"
 #include "utils/touch.h"
+#include "utils/btn.h"
 
 #include "menu/gui/gui_argon_menu.h"
 
@@ -64,26 +65,17 @@ void ipl_main()
     g_gfx_con.mute = 0;
 
     /* Cofigure touch input */
-    g_touch_enabled = true;
+    g_touch_enabled = false; // If set to false touch support won't be enabled
     touch_power_on(); // Needs a game card lol
     
     /* Mount Sd card and launch payload */
     if (sd_mount())
     {
-        gfx_con_setpos(&g_gfx_con, 0, 0);
-
-        for(u16 i = 0; i < 10; i++)
-        {
-            msleep(500);    /* Just in case touch is to fast */
-            touch_event_t event = touch_wait();
-            gfx_printf(&g_gfx_con, "X: %d - Y: %d\n", event.x, event.y);
-        }
+        bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
+        bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
         
-        // bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
-        // bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
-        
-        // if (load_menu)
-        //     gui_init_argon_menu();
+        if (load_menu)
+            gui_init_argon_menu();
 
     } else {
         gfx_printf(&g_gfx_con, "No sd card found...\n");

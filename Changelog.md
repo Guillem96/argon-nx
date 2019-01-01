@@ -8,3 +8,4 @@
 - Custom title. Just place your custom title inside argon directory and name it `title.bmp`. Use custom title is optional.
 - By default ArgonNX uses dark background instead of the white one in v0.1.
 - Improve system stability to enhance user experience.
+- Payloads' names now are centered below the logo.

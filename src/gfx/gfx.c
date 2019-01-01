@@ -123,9 +123,6 @@ static const u8 _gfx_font[] = {
     0x00, 0x00, 0x00, 0x4C, 0x32, 0x00, 0x00, 0x00  // Char 126 (~)
 };
 
-#define CHAR_WIDTH 8
-#define CHAR_HEIGHT 8
-
 void gfx_init_ctxt(gfx_ctxt_t *ctxt, u32 *fb, u32 width, u32 height, u32 stride)
 {
     ctxt->fb = fb;
