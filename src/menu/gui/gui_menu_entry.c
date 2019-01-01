@@ -18,6 +18,7 @@
 #include "menu/gui/gui_menu_entry.h"
 #include "mem/heap.h"
 #include "gfx/gfx.h"
+#include "utils/touch.h"
 #include "utils/fs_utils.h"
 #include <string.h>
 
@@ -34,7 +35,11 @@ gui_menu_entry_t *gui_create_menu_entry(const char *text,
 	strcpy(menu_entry->text, text);
     
     if (bitmap != NULL)
+    {
 	    menu_entry->bitmap = bitmap;
+        if (g_touch_enabled)
+            strcpy(menu_entry->text, ""); // If not default icon, text is not needed on touch input
+    }
     else
         menu_entry->bitmap = sd_file_read(DEFAULT_LOGO);
 
@@ -47,6 +52,31 @@ gui_menu_entry_t *gui_create_menu_entry(const char *text,
 	return menu_entry;
 }
 
+
+/* Get text width */
+static u32 get_text_width(char* text)
+{
+    u32 lenght = strlen(text);
+    return lenght * g_gfx_con.scale * (u32)CHAR_WIDTH;
+}
+
+static void render_text_centered(gui_menu_entry_t* entry, char* text, bool selected)
+{
+    /* Set text below the logo and centered */
+    s32 x_offset = -(get_text_width(text) - entry->width) / 2;
+    u32 y_offset = entry->bitmap != NULL ? entry->height + 20 : 0;
+    
+    u32 prevColor = g_gfx_con.fgcol;
+
+    g_gfx_con.scale = 2;
+    gfx_con_setpos(&g_gfx_con, entry->x + x_offset, entry->y + y_offset);
+    
+    if (selected && !g_touch_enabled) /* If touch is enabled there s no selected text */
+        gfx_printf(&g_gfx_con, "%k%s%k", 0xFF1971FF, entry->text, prevColor);
+    else
+        gfx_printf(&g_gfx_con, "%s", entry->text);
+}
+
 /* Renders a gfx menu entry */
 void gui_menu_render_entry(gui_menu_entry_t* entry, bool selected, bool render_bmp)
 {
@@ -55,15 +85,7 @@ void gui_menu_render_entry(gui_menu_entry_t* entry, bool selected, bool render_b
                                     entry->x, entry->y, 
                                     entry->width, entry->height);
 
-    u32 prevColor = g_gfx_con.fgcol;
-
-    g_gfx_con.scale = 2;
-    gfx_con_setpos(&g_gfx_con, entry->x, entry->y + entry->height + 20);
-    
-    if (selected)
-        gfx_printf(&g_gfx_con, "%k%s%k", 0xFF1971FF, entry->text, prevColor);
-    else
-        gfx_printf(&g_gfx_con, "%s", entry->text);
+    render_text_centered(entry, entry->text, selected);
 }
 
 void gui_menu_entry_destroy(gui_menu_entry_t* entry)
