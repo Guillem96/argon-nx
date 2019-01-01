@@ -65,7 +65,7 @@ void ipl_main()
     g_gfx_con.mute = 0;
 
     /* Cofigure touch input */
-    g_touch_enabled = false; // If set to false touch support won't be enabled
+    g_touch_enabled = true; // If set to false touch support won't be enabled
     touch_power_on(); // Needs a game card lol
     
     /* Mount Sd card and launch payload */

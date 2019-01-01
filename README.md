@@ -96,3 +96,4 @@ Not tested with TeamXecuter SXOS payloat but it should work too.
 * __CTCaer__ for the continued [hekate](https://github.com/CTCaer/hekate) and his **minerva** project.
 * __xalgovia__ and __Retrogamer 74__ for the splash and logos. Also thanks them to use ArgonNX in RetroReloaded.
 * __balika011__ for his implementation of partial touch support.
+* __D3fau4__ for touch support testing.
