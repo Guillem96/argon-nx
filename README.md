@@ -50,7 +50,7 @@ Color used for transparency is **#1D1919**.
 
 This capture is thanks to **screenshot** feature.
 
-<img src="img/example.png" alt="example" width="500">
+<img src="img/example.png" alt="example" width="700">
 
 The sd card files of the image are:
 ```
