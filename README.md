@@ -51,22 +51,26 @@ Color used for transparency is **#1D1919**.
 The sd card files of the image are:
 ```
 argon
-├───payloads
+├─── payloads
 │       fusee-primary.bin
 │       ReiNX.bin
-│       fusee.bin
+│       fusee-gelee.bin
 │       hekate.bin
+│       SXOS.bin
 │       payload1.bin
-│       payload2.bin
 │       payload3.bin
 │       payload4.bin
 │
-└───logos
-        fusee-primary.bmp
-        default.bmp
-        Reinx.bmp
-        hekate.bmp
-        fusee.bmp
+├─── logos
+|       fusee-primary.bmp
+|       efault.bmp
+|       Reinx.bmp
+|       hekate.bmp
+|       SXOS.bmp
+|       fusee-gelee.bmp
+|
+├─── background.bmp
+└─── title.bmp
 ```
 
 ## Improve performance
@@ -87,9 +91,9 @@ Not tested with TeamXecuter SXOS payloat but it should work too.
 
 ## Credits
 
-* __devkitPro__ for the [devkitA64](https://devkitpro.org/) toolchain and libnx support.
+* __devkitPro__ for the [devkitA64](https://devkitpro.org/) toolchain.
 * __naehrwert__ and __st4rk__ for the original [hekate](https://github.com/nwert/hekate) project and its hwinit code base.
 * __CTCaer__ for the continued [hekate](https://github.com/CTCaer/hekate) and his **minerva** project.
-* __SciresM__, __TuxSH__ and __hexkyz__ for the base hwinit code of Argon NX
-*__xalgovia__ and __Retrogamer 74__ for the splash and logos. Also thanks them to use ArgonNX in RetroReloaded.
-
+* __xalgovia__ and __Retrogamer 74__ for the splash and logos. Also thanks them to use ArgonNX in RetroReloaded.
+* __balika011__ for his implementation of partial touch support.
+* __D3fau4__ for touch support testing.

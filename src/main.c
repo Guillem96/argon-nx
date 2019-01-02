@@ -22,17 +22,19 @@
 #include "mem/heap.h"
 
 #include "soc/hw_init.h"
-#include "soc/t210.h"
 
 #include "core/launcher.h"
 
 #include "utils/util.h"
 #include "utils/fs_utils.h"
+#include "utils/touch.h"
 #include "utils/btn.h"
 
 #include "menu/gui/gui_argon_menu.h"
 
 #include "minerva/minerva.h"
+
+#define PATH_ENABLE_TOUCH "argon/touch"
 
 extern void pivot_stack(u32 stack_top);
 
@@ -43,7 +45,6 @@ static inline void setup_gfx()
     gfx_con_init(&g_gfx_con, &g_gfx_ctxt);
     gfx_con_setcol(&g_gfx_con, 0xFFCCCCCC, 1, BLACK);
 }
-
 
 void ipl_main()
 {
@@ -59,15 +60,17 @@ void ipl_main()
     setup_gfx();
     display_backlight_pwm_init();
     display_backlight_brightness(100, 1000);
-    
+
     /* Train DRAM */
     g_gfx_con.mute = 1; /* Silence minerva, comment for debug */
     minerva();
     g_gfx_con.mute = 0;
-    
-    /* Double the font size */
-    g_gfx_con.scale = 2;
 
+    /* Cofigure touch input */
+    /* If touch file exists enable touch support*/
+    g_touch_enabled = sd_file_exists(PATH_ENABLE_TOUCH);
+    touch_power_on(); // Needs a game card lol
+    
     /* Mount Sd card and launch payload */
     if (sd_mount())
     {

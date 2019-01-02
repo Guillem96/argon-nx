@@ -15,5 +15,6 @@ bool sd_mount();
 void sd_unmount();
 void *sd_file_read(char *path);
 int sd_save_to_file(void *buf, u32 size, const char *filename);
+bool sd_file_exists(const char* filename);
 
 #endif
