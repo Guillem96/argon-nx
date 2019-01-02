@@ -27,4 +27,7 @@ bool render_custom_background();
 /* Renders custom title, returns false if title.bmp does not exist */
 bool render_custom_title();
 
+/* Tool to take screenshots */
+int screenshot(void* params);
+
 #endif

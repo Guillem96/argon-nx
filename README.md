@@ -23,9 +23,9 @@ If `payload.bin` is not present or VOOLUME DOWN button is pressed on payload inj
 
 ## Features
 
-- Autolaunch/autochainload the payload named `payload.bin` inside `argon` directory in your sd card root
+- **Autolaunch/autochainload** the payload named `payload.bin` inside `argon` directory in your sd card root
 - If `argon/payload.bin` is not found or `VOLUME_DOWN_BUTTON` is held during ArgonNX injection, ArgonNX lists all the payloads located at `argon/payloads`, so you can select one of them to launch it.
-- Customize payloads' logos. **Logos must be smaller or equal than 200x200**. Example:
+- **Customize payloads' logos**. **Logos must be smaller or equal than 200x200**. Example:
 ```
 argon
   ├───logos
@@ -36,8 +36,10 @@ argon
         fusee-primary.bin
         ReiNX.bin         # Will be rendered using default logo
 ```
-- Custom background add a custom background by simply adding `background.bmp` file inside `argon` directory. **Background must be smaller than 1280x720**.
-- Custom title add a custom title by simply adding `title.bmp` file inside `argon` directory. **Not an specific size for title**.
+- **Custom background** add a custom background by simply adding `background.bmp` file inside `argon` directory. **Background must be smaller than 1280x720**.
+- **Custom title** add a custom title by simply adding `title.bmp` file inside `argon` directory. **Not an specific size for title**.
+- Take **screenshots** to share your ArgonNX gui.
+- Touch partial suppor. Create an empty file called `touch` inside `argon` directory. **Touch only works with Game Cartige inside de Nintendo Switch**
 
 ## About BMP format
 
@@ -46,31 +48,28 @@ Color used for transparency is **#1D1919**.
 
 ## GUI
 
-<img src="img/example.jpg" alt="example" width="500">
+This capture is thanks to **screenshot** feature.
+
+<img src="img/example.png" alt="example" width="700">
 
 The sd card files of the image are:
 ```
 argon
 ├─── payloads
-│       fusee-primary.bin
+│       Atmosphere.bin
 │       ReiNX.bin
 │       fusee-gelee.bin
 │       hekate.bin
 │       SXOS.bin
-│       payload1.bin
-│       payload3.bin
-│       payload4.bin
 │
 ├─── logos
-|       fusee-primary.bmp
-|       efault.bmp
-|       Reinx.bmp
-|       hekate.bmp
-|       SXOS.bmp
-|       fusee-gelee.bmp
+|       [Atmosphere.bmp](img/example-logos/Atmosphere.bmp)
+|       [Reinx.bmp](img/example-logos/Reinx.bmp)
+|       [hekate.bmp](img/example-logos/hekate.bmp)
+|       [SXOS.bmp](img/example-logos/SXOS.bmp)
 |
-├─── background.bmp
-└─── title.bmp
+├─── [background.bmp](sd-card-example/background.bmp)
+└─── [title.bmp](sd-card-example/title.bmp)
 ```
 
 ## Improve performance
