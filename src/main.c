@@ -34,6 +34,8 @@
 
 #include "minerva/minerva.h"
 
+#define PATH_ENABLE_TOUCH "argon/touch"
+
 extern void pivot_stack(u32 stack_top);
 
 static inline void setup_gfx()
@@ -65,7 +67,8 @@ void ipl_main()
     g_gfx_con.mute = 0;
 
     /* Cofigure touch input */
-    g_touch_enabled = false; // If set to false touch support won't be enabled
+    /* If touch file exists enable touch support*/
+    g_touch_enabled = sd_file_exists(PATH_ENABLE_TOUCH);
     touch_power_on(); // Needs a game card lol
     
     /* Mount Sd card and launch payload */
