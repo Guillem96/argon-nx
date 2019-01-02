@@ -97,13 +97,13 @@ int touch_power_on()
 	if (err < 0)
 		return err;
 
-	err = touch_command(STMFTS_MS_CX_TUNING);
-	if (err < 0)
-		return err;
+	// err = touch_command(STMFTS_MS_CX_TUNING);
+	// if (err < 0)
+	// 	return err;
 
-	err = touch_command(STMFTS_SS_CX_TUNING);
-	if (err < 0)
-		return err;
+	// err = touch_command(STMFTS_SS_CX_TUNING);
+	// if (err < 0)
+	// 	return err;
 
 	err = touch_command(STMFTS_FULL_FORCE_CALIBRATION);
 	if (err < 0)
