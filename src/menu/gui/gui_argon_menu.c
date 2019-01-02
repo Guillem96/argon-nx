@@ -53,8 +53,9 @@ static void setup_gfx_gui()
     /* Render title */
     if (!render_custom_title()) {
         g_gfx_con.scale = 4;
-        gfx_con_setpos(&g_gfx_con, 120, 20);
+        gfx_con_setpos(&g_gfx_con, 480, 20);
         gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
+        g_gfx_con.scale = 2;
     }
 }
 
