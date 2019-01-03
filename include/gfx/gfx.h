@@ -22,7 +22,6 @@
 
 #include "utils/types.h"
 
-
 #define RED 0xFF0000FF
 #define GREEN 0xFF00FF00
 #define BLUE 0xFFFF0000
@@ -31,6 +30,8 @@
 #define WHITE 0xFFFFFFFF
 #define BLACK 0xFF000000
 
+#define CHAR_WIDTH 8
+#define CHAR_HEIGHT 8
 
 typedef struct _gfx_ctxt_t
 {

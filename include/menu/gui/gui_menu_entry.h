@@ -38,6 +38,10 @@ gui_menu_entry_t *gui_create_menu_entry(const char *text,
                                         u32 width, u32 height, 
                                         int (*handler)(void *), void *param);
 
+gui_menu_entry_t *gui_create_menu_entry_no_bitmap(const char *text, 
+                                                    u32 x, u32 y, 
+                                                    u32 width, u32 height, 
+                                                    int (*handler)(void *), void *param);
 /* Renders a gfx menu entry */
 void gui_menu_render_entry(gui_menu_entry_t*, bool, bool);
 

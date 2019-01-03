@@ -103,3 +103,17 @@ int sd_save_to_file(void *buf, u32 size, const char *filename)
 
 	return 0;
 }
+
+bool sd_file_exists(const char* filename)
+{
+    FIL fp;
+	u32 res = 0;
+	res = f_open(&fp, filename, FA_READ);
+	if (res == FR_OK)
+	{
+        f_close(&fp);
+        return true;
+	}
+
+    return false;
+}

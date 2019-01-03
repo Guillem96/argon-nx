@@ -2,6 +2,7 @@
 <img src="img/splash.jpg" alt="banner">
 
 ![License badge](https://img.shields.io/badge/license-GPLv3-blue.svg)
+[![Homebrew Store](https://img.shields.io/badge/Homebrew%20Switch-store-%23ff4554.svg)](https://www.switchbru.com/appstore/#/app/argon-nx)
 
 ## What Argon is?
 
@@ -23,9 +24,9 @@ If `payload.bin` is not present or VOOLUME DOWN button is pressed on payload inj
 
 ## Features
 
-- Autolaunch/autochainload the payload named `payload.bin` inside `argon` directory in your sd card root
+- **Autolaunch/autochainload** the payload named `payload.bin` inside `argon` directory in your sd card root
 - If `argon/payload.bin` is not found or `VOLUME_DOWN_BUTTON` is held during ArgonNX injection, ArgonNX lists all the payloads located at `argon/payloads`, so you can select one of them to launch it.
-- Customize payloads' logos. **Logos must be smaller or equal than 200x200**. Example:
+- **Customize payloads' logos**. **Logos must be smaller or equal than 200x200**. Example:
 ```
 argon
   ├───logos
@@ -36,8 +37,11 @@ argon
         fusee-primary.bin
         ReiNX.bin         # Will be rendered using default logo
 ```
-- Custom background add a custom background by simply adding `background.bmp` file inside `argon` directory. **Background must be smaller or equal than 1280x720**.
-- Custom title add a custom title by simply adding `title.bmp` file inside `argon` directory. **Not an specific size for title**.
+- **Custom background** add a custom background by simply adding `background.bmp` file inside `argon` directory. **Background must be smaller or equal than 1280x720**.
+- **Custom title** add a custom title by simply adding `title.bmp` file inside `argon` directory. **Not an specific size for title**.
+- Take **screenshots** to share your ArgonNX gui.
+- Touch partial suppor. Create an empty file called `touch` inside `argon` directory. **Touch only works with Game Cartige inside de Nintendo Switch**
+
 
 ## About BMP format
 
@@ -46,28 +50,27 @@ Color used for transparency is **#1D1919**.
 
 ## GUI
 
-<img src="img/example.jpg" alt="example" width="500">
+This capture is thanks to **screenshot** feature.
+
+<img src="img/example.png" alt="example" width="700">
 
 The sd card files of the image are:
+Find these logos [here](img/example-logos) an background and title [here](sd-card-example/).
 ```
 argon
 ├─── payloads
-│       fusee-primary.bin
+│       Atmosphere.bin
 │       ReiNX.bin
 │       fusee-gelee.bin
 │       hekate.bin
 │       SXOS.bin
-│       payload1.bin
-│       payload3.bin
-│       payload4.bin
 │
 ├─── logos
-|       fusee-primary.bmp
-|       efault.bmp
+|       Atmosphere.bmp
 |       Reinx.bmp
 |       hekate.bmp
 |       SXOS.bmp
-|       fusee-gelee.bmp
+|
 ├─── background.bmp
 └─── title.bmp
 ```
@@ -90,9 +93,9 @@ Not tested with TeamXecuter SXOS payload, but it should work too.
 
 ## Credits
 
-* __devkitPro__ for the [devkitA64](https://devkitpro.org/) toolchain and libnx support.
+* __devkitPro__ for the [devkitA64](https://devkitpro.org/) toolchain.
 * __naehrwert__ and __st4rk__ for the original [hekate](https://github.com/nwert/hekate) project and its hwinit code base.
 * __CTCaer__ for the continued [hekate](https://github.com/CTCaer/hekate) and his **minerva** project.
-* __SciresM__, __TuxSH__ and __hexkyz__ for the base hwinit code of Argon NX
 * __xalgovia__ and __Retrogamer 74__ for the splash and logos. Also thanks them to use ArgonNX in RetroReloaded.
-
+* __balika011__ for his implementation of partial touch support.
+* __D3fau4__ for touch support testing.

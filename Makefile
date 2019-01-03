@@ -25,9 +25,9 @@ SOURCES		      := src \
 										src/soc \
 										src/storage \
 										src/utils
+
 INCLUDES				:= include
 VPATH = $(dir $(wildcard ./$(SOURCEDIR)/*/)) $(dir $(wildcard ./$(SOURCEDIR)/*/*/))
-
 CFILES			:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 SFILES			:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 BINFILES		:=  $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))

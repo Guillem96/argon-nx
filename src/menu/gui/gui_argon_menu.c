@@ -20,17 +20,18 @@
 #include "menu/gui/gui_menu_pool.h"
 
 #include "gfx/gfx.h"
+
 #include "utils/types.h"
 #include "utils/fs_utils.h"
 #include "utils/dirlist.h"
 #include "utils/util.h"
+#include "utils/touch.h"
+
 #include "core/launcher.h"
 #include "core/payloads.h"
 #include "core/custom-gui.h"
 
 #include "mem/heap.h"
-
-#include <string.h>
 
 #define COLUMNS 4  
 #define ROWS 2
@@ -41,7 +42,7 @@
 #define MINOR_VERSION 1
 #define MAJOR_VERSION 0
 
-void setup_gfx_gui()
+static void setup_gfx_gui()
 {
     /* Custom background*/
     if(!render_custom_background())
@@ -52,13 +53,14 @@ void setup_gfx_gui()
     /* Render title */
     if (!render_custom_title()) {
         g_gfx_con.scale = 4;
-        gfx_con_setpos(&g_gfx_con, 120, 20);
+        gfx_con_setpos(&g_gfx_con, 480, 20);
         gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
+        g_gfx_con.scale = 2;
     }
 }
 
 /* Generate entries dynamically */
-void generate_payloads_entries(char* payloads, gui_menu_t* menu)
+static void generate_payloads_entries(char* payloads, gui_menu_t* menu)
 {
     if (payloads == NULL)
     {
@@ -90,7 +92,7 @@ void generate_payloads_entries(char* payloads, gui_menu_t* menu)
 
         const char* payload_wo_bin = str_replace(&payloads[i * 256], ".bin", "");
         gui_menu_append_entry(menu, 
-            gui_create_menu_entry(payload_wo_bin, 
+            gui_create_menu_entry(payload_wo_bin,
                                     sd_file_read(payload_logo), 
                                     x, y,
                                     200, 200,
@@ -98,6 +100,8 @@ void generate_payloads_entries(char* payloads, gui_menu_t* menu)
         i++;
     }
 }
+
+int screenshot(void*);
 
 /* Init needed menus for ArgonNX */
 void gui_init_argon_menu(void)
@@ -111,13 +115,17 @@ void gui_init_argon_menu(void)
 
     generate_payloads_entries(dirlist(PAYLOADS_DIR, "*.bin", false), menu);
 
+     gui_menu_append_entry(menu, 
+            gui_create_menu_entry_no_bitmap("Screenshot", 700, 680, 150, 100, (int (*)(void *))screenshot, NULL));
+
+    /* Generate reboot rcm and shutdown entry */
     gui_menu_append_entry(menu, 
-            gui_create_menu_entry("Power off", NULL, 900, 680, 1, 1, (int (*)(void *))power_off, NULL));
+            gui_create_menu_entry_no_bitmap("Power off", 900, 680, 150, 100, (int (*)(void *))power_off, NULL));
 
     gui_menu_append_entry(menu, 
-            gui_create_menu_entry("Reboot RCM", NULL, 1100, 680, 1, 1, (int (*)(void *))reboot_rcm, NULL));
+            gui_create_menu_entry_no_bitmap("Reboot RCM", 1100, 680, 150, 100, (int (*)(void *))reboot_rcm, NULL));
 
-
+    /* Start menu */
     gui_menu_open(menu);
 
     /* Clear all entries and menus */

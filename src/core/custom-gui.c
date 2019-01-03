@@ -16,7 +16,10 @@
 
 #include "core/custom-gui.h"
 #include "gfx/gfx.h"
+#include "mem/heap.h"
 #include "utils/fs_utils.h"
+
+#include <string.h>
 
 bool render_custom_background()
 {
@@ -40,3 +43,54 @@ bool render_custom_title()
     return true;
 }
 
+int screenshot(void* params)
+{
+    //width, height, and bitcount are the key factors:
+    s32 width = 720;
+    s32 height = 1280;
+    u16 bitcount = 32;//<- 24-bit bitmap
+
+    //take padding in to account
+    int width_in_bytes = ((width * bitcount + 31) / 32) * 4;
+
+    //total image size in bytes, not including header
+    u32 imagesize = width_in_bytes * height;
+
+    //this value is always 40, it's the sizeof(BITMAPINFOHEADER)
+    const u32 biSize = 40;
+
+    //bitmap bits start after headerfile, 
+    //this is sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER)
+    const u32 bfOffBits = 54; 
+
+    //total file size:
+    u32 filesize = 54 + imagesize;
+
+    //number of planes is usually 1
+    const u16 biPlanes = 1;
+
+    //create header:
+    //copy to buffer instead of BITMAPFILEHEADER and BITMAPINFOHEADER
+    //to avoid problems with structure packing
+    unsigned char header[54] = { 0 };
+    memcpy(header, "BM", 2);
+    memcpy(header + 2 , &filesize, 4);
+    memcpy(header + 10, &bfOffBits, 4);
+    memcpy(header + 14, &biSize, 4);
+    memcpy(header + 18, &width, 4);
+    memcpy(header + 22, &height, 4);
+    memcpy(header + 26, &biPlanes, 2);
+    memcpy(header + 28, &bitcount, 2);
+    memcpy(header + 34, &imagesize, 4);
+
+    u8* buff = (u8*)malloc(imagesize + 54);
+    memcpy(buff, header, 54);
+    memcpy(buff + 54, g_gfx_ctxt.fb, imagesize);
+    sd_save_to_file(buff, imagesize + 54, "argon/screenshot.bmp");
+    free(buff);
+
+    g_gfx_con.scale = 2;
+    gfx_con_setpos(&g_gfx_con, 0, 665);
+    gfx_printf(&g_gfx_con, " Screenshot saved!\n Found it at argon/screenshot.bmp");
+    return 0;
+}
