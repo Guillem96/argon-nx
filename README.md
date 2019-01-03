@@ -13,13 +13,13 @@ Argon NX is an immutable payload which is injected to your Nintendo Switch via F
 
 ## Purpose 
 
-The purpose of Argon NX is to stay immutable, so you can always inject it, without caring about other payloads getting updated (Always use ArgonNX for TegraSmash, TegraGUI, TrinkedM0 ...).
+The purpose of Argon NX is to stay immutable, so you can always inject it, without caring about other payloads getting updated (Always use ArgonNX for TegraSmash, TegraGUI, TrinkedM0...).
 
 ## How can it be?
 
 When Argon NX is injected it automatically launches the `payload.bin` loacted at `argon` directory on your SD Card root. 
 
-If `payload.bin` is not present or VOOLUME DOWN button is pressed on payload injection, Argon NX will list all payloads located at `argon/payloads`, and you will be able tp select one of theme to launch it.
+If `payload.bin` is not present or VOOLUME DOWN button is pressed on payload injection, Argon NX will list all payloads located at `argon/payloads`, and you will be able to select one of theme to launch it.
 
 ## Features
 
@@ -36,7 +36,7 @@ argon
         fusee-primary.bin
         ReiNX.bin         # Will be rendered using default logo
 ```
-- Custom background add a custom background by simply adding `background.bmp` file inside `argon` directory. **Background must be smaller than 1280x720**.
+- Custom background add a custom background by simply adding `background.bmp` file inside `argon` directory. **Background must be smaller or equal than 1280x720**.
 - Custom title add a custom title by simply adding `title.bmp` file inside `argon` directory. **Not an specific size for title**.
 
 ## About BMP format
@@ -80,7 +80,7 @@ Use of minerva is optional but recommended, to use minerva just place the compil
 ## Compatibility
 
 Works with all cfw payloads. 
-Not tested with TeamXecuter SXOS payloat but it should work too.
+Not tested with TeamXecuter SXOS payload, but it should work too.
 
 ## Roadmap
 
