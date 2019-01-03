@@ -73,6 +73,20 @@ char *dirlist(const char *directory, const char *pattern, bool includeHiddenFile
 		return NULL;
 	}
 
+	// toLower
+	for(i = 0; i < k; i++) 
+	{
+		j = 0;
+		while(dir_entries[j + i*256])
+		{
+			if(dir_entries[j + i*256] >= 'A' && dir_entries[j + i*256] <= 'Z')
+			{
+				dir_entries[j + i*256] += 32;
+			}
+			j++;
+		}
+	}
+
 	for (i = 0; i < k - 1 ; i++)
 	{
 		for (j = i + 1; j < k; j++)
