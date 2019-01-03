@@ -20,6 +20,8 @@
 #include "mem/heap.h"
 #include "utils/types.h"
 
+#define NUMBER_OCCURR 4
+
 char *dirlist(const char *directory, const char *pattern, bool includeHiddenFiles)
 {
 	u8 max_entries = 61;
@@ -30,6 +32,7 @@ char *dirlist(const char *directory, const char *pattern, bool includeHiddenFile
 	static FILINFO fno;
 	
 	char *dir_entries = (char *)calloc(max_entries, 256);
+	char *occurrences[NUMBER_OCCURR] = {"nx", " os", "Sxos", "Biskeydump"};
 	char *temp = (char *)calloc(1, 256);
 
 	if (!pattern && !f_opendir(&dir, directory))
@@ -71,6 +74,53 @@ char *dirlist(const char *directory, const char *pattern, bool includeHiddenFile
 		free(dir_entries);
 
 		return NULL;
+	}
+
+	// Fix cap in a static and more good-looking way
+	for(i = 0; i < k; i++) 
+	{
+		j = i * 256;
+		while(dir_entries[j])
+		{
+			if(j % 256 == 0) // first letter
+			{
+				if(dir_entries[j] >= 'a' && dir_entries[j] <= 'z') // and lower cap
+				{
+					dir_entries[j] -= 32; // make it upper
+				}
+			} 
+			else if(dir_entries[j] >= 'A' && dir_entries[j] <= 'Z') // not first letter but upper
+			{
+				dir_entries[j] += 32; // make it lower
+			}
+			j++;
+		}
+
+		// find any occurrence in strings
+		char *index;
+		for(j = 0; j < NUMBER_OCCURR; j++)
+		{
+			index = strstr(&dir_entries[i * 256], occurrences[j]);
+			if(index)
+			{
+				size_t size = strlen(occurrences[j]);
+				switch(j)
+				{
+					case 0:
+						memcpy(index, "NX", size);
+						break;
+					case 1:
+						memcpy(index, " OS", size);
+						break;
+					case 2:
+						memcpy(index, "SxOS", size);
+						break;
+					case 3:
+						memcpy(index, "BisKeyDump", size);
+						break;
+				}
+			}
+		}
 	}
 
 	for (i = 0; i < k - 1 ; i++)
