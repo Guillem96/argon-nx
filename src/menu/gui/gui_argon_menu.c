@@ -39,7 +39,7 @@
 #define MARGIN_TOP 100
 #define MARGIN_LEFT 45
 
-#define MINOR_VERSION 1
+#define MINOR_VERSION 2
 #define MAJOR_VERSION 0
 
 static void setup_gfx_gui()
