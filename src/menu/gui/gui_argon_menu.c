@@ -39,26 +39,6 @@
 #define MARGIN_TOP 100
 #define MARGIN_LEFT 45
 
-#define MINOR_VERSION 2
-#define MAJOR_VERSION 0
-
-static void setup_gfx_gui()
-{
-    /* Custom background*/
-    if(!render_custom_background())
-        gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
-    
-    gfx_con_setcol(&g_gfx_con, 0xFFF9F9F9, 0, 0xFF191414);
-
-    /* Render title */
-    if (!render_custom_title()) {
-        g_gfx_con.scale = 4;
-        gfx_con_setpos(&g_gfx_con, 480, 20);
-        gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
-        g_gfx_con.scale = 2;
-    }
-}
-
 /* Generate entries dynamically */
 static void generate_payloads_entries(char* payloads, gui_menu_t* menu)
 {
@@ -101,13 +81,9 @@ static void generate_payloads_entries(char* payloads, gui_menu_t* menu)
     }
 }
 
-int screenshot(void*);
-
 /* Init needed menus for ArgonNX */
 void gui_init_argon_menu(void)
 {
-    setup_gfx_gui();
-
     /* Init pool for menu */
     gui_menu_pool_init();
 
@@ -130,4 +106,7 @@ void gui_init_argon_menu(void)
 
     /* Clear all entries and menus */
     gui_menu_pool_cleanup();
+
+    /* Free allocated mem for gfx */
+    gfx_end_ctxt(&g_gfx_ctxt);
 }

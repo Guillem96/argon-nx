@@ -21,19 +21,26 @@
 
 #include <string.h>
 
+u8* custom_bg = NULL;
+u8* title_bmp = NULL;
+
 bool render_custom_background()
 {
-    u8* custom_bg = (u8*)sd_file_read(CUSTOM_BG_PATH);
+    if (custom_bg == NULL)
+        custom_bg = (u8*)sd_file_read(CUSTOM_BG_PATH);
+
     if (custom_bg == NULL)
         return false;
     
-    gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, custom_bg, 0, 0, 1280, 720);
+    gfx_render_splash(&g_gfx_ctxt, custom_bg);
     return true;
 }
 
 bool render_custom_title()
 {
-    u8* title_bmp = (u8*)sd_file_read(CUSTOM_TITLE_PATH);
+    if (title_bmp == NULL)
+        title_bmp = (u8*)sd_file_read(CUSTOM_TITLE_PATH);
+    
     if (title_bmp == NULL)
         return false;
 
@@ -57,17 +64,17 @@ int screenshot(void* params)
     u32 imagesize = width_in_bytes * height;
 
     //this value is always 40, it's the sizeof(BITMAPINFOHEADER)
-    const u32 biSize = 40;
+    const u32 bi_size = 40;
 
     //bitmap bits start after headerfile, 
     //this is sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER)
-    const u32 bfOffBits = 54; 
+    const u32 buf_offset_bits = 54; 
 
     //total file size:
     u32 filesize = 54 + imagesize;
 
     //number of planes is usually 1
-    const u16 biPlanes = 1;
+    const u16 bi_planes = 1;
 
     //create header:
     //copy to buffer instead of BITMAPFILEHEADER and BITMAPINFOHEADER
@@ -75,11 +82,11 @@ int screenshot(void* params)
     unsigned char header[54] = { 0 };
     memcpy(header, "BM", 2);
     memcpy(header + 2 , &filesize, 4);
-    memcpy(header + 10, &bfOffBits, 4);
-    memcpy(header + 14, &biSize, 4);
+    memcpy(header + 10, &buf_offset_bits, 4);
+    memcpy(header + 14, &bi_size, 4);
     memcpy(header + 18, &width, 4);
     memcpy(header + 22, &height, 4);
-    memcpy(header + 26, &biPlanes, 2);
+    memcpy(header + 26, &bi_planes, 2);
     memcpy(header + 28, &bitcount, 2);
     memcpy(header + 34, &imagesize, 4);
 

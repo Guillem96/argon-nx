@@ -77,6 +77,9 @@ void ipl_main()
         bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
         bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
         
+        gfx_printf(&g_gfx_con, "Autochainload canceled. Loading menu...\n");
+        gfx_flush_buffer(&g_gfx_ctxt);
+
         if (load_menu)
             gui_init_argon_menu();
 
@@ -86,5 +89,6 @@ void ipl_main()
 
     /* If payload launch fails wait for user input to reboot the switch */
     gfx_printf(&g_gfx_con, "Press power button to reboot into RCM...\n\n");
+    gfx_flush_buffer(&g_gfx_ctxt);
     wait_for_button_and_reboot();
 }

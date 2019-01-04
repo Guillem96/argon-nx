@@ -100,6 +100,8 @@ int launch_payload(char *path)
         reconfig_hw_workaround(true, 0);
     }
 
+    gfx_end_ctxt(&g_gfx_ctxt);
+    
     // Launch our payload.
     (*ext_payload_ptr)();
 
