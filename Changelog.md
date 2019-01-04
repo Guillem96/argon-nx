@@ -11,3 +11,8 @@
 - Partial touch support. To enable touch support create an empty file called `touch` inside `argon` directory.
 - Take Screenshots to share your argon configuration! 
 - Improve system stability to enhance user experience.
+
+## v0.3
+
+- No background must be vertical. New background size must be smaller or equal than 720x1280. (Performance reasons)
+- Using 2 buffers for rendering in order to avoid flickering and also improve performance.

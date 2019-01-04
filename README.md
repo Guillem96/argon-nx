@@ -37,7 +37,7 @@ argon
         fusee-primary.bin
         ReiNX.bin         # Will be rendered using default logo
 ```
-- **Custom background** add a custom background by simply adding `background.bmp` file inside `argon` directory. **Background must be smaller or equal than 1280x720**.
+- **Custom background** add a custom background by simply adding `background.bmp` file inside `argon` directory. **Background must be smaller or equal than 720x1280**.
 - **Custom title** add a custom title by simply adding `title.bmp` file inside `argon` directory. **Not an specific size for title**.
 - Take **screenshots** to share your ArgonNX gui.
 - Touch partial suppor. Create an empty file called `touch` inside `argon` directory. **Touch only works with Game Cartige inside de Nintendo Switch**
