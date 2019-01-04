@@ -97,5 +97,5 @@ Not tested with TeamXecuter SXOS payload, but it should work too.
 * __naehrwert__ and __st4rk__ for the original [hekate](https://github.com/nwert/hekate) project and its hwinit code base.
 * __CTCaer__ for the continued [hekate](https://github.com/CTCaer/hekate) and his **minerva** project.
 * __xalgovia__ and __Retrogamer 74__ for the splash and logos. Also thanks them to use ArgonNX in RetroReloaded.
-* __balika011__ for his implementation of partial touch support.
+* __langerhans__ for his implementation of partial touch support.
 * __D3fau4__ for touch support testing.
