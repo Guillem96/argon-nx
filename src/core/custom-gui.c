@@ -21,32 +21,39 @@
 
 #include <string.h>
 
-u8* custom_bg = NULL;
-u8* title_bmp = NULL;
 
-bool render_custom_background()
+custom_gui_t* custom_gui_load()
 {
-    if (custom_bg == NULL)
-        custom_bg = (u8*)sd_file_read(CUSTOM_BG_PATH);
+    custom_gui_t* custom_gui = (custom_gui_t*)malloc(sizeof(custom_gui_t));
+    custom_gui->custom_bg = (u8*)sd_file_read(CUSTOM_BG_PATH);
+    custom_gui->title_bmp = (u8*)sd_file_read(CUSTOM_TITLE_PATH);
+    return custom_gui;
+}
 
-    if (custom_bg == NULL)
+void custom_gui_end(custom_gui_t* cg)
+{
+    free(cg->custom_bg);
+    free(cg->title_bmp);
+    free(cg);
+}
+
+bool render_custom_background(custom_gui_t* cg)
+{
+    if (cg->custom_bg == NULL)
         return false;
     
-    gfx_render_splash(&g_gfx_ctxt, custom_bg);
+    gfx_render_splash(&g_gfx_ctxt, cg->custom_bg);
     return true;
 }
 
-bool render_custom_title()
-{
-    if (title_bmp == NULL)
-        title_bmp = (u8*)sd_file_read(CUSTOM_TITLE_PATH);
-    
-    if (title_bmp == NULL)
+bool render_custom_title(custom_gui_t* cg)
+{  
+    if (cg->title_bmp == NULL)
         return false;
 
-    u32 bmp_width = (title_bmp[0x12] | (title_bmp[0x13] << 8) | (title_bmp[0x14] << 16) | (title_bmp[0x15] << 24));
-    u32 bmp_height = (title_bmp[0x16] | (title_bmp[0x17] << 8) | (title_bmp[0x18] << 16) | (title_bmp[0x19] << 24));
-    gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, (u8*)title_bmp, 420, 10, bmp_width, bmp_height);
+    u32 bmp_width = (cg->title_bmp[0x12] | (cg->title_bmp[0x13] << 8) | (cg->title_bmp[0x14] << 16) | (cg->title_bmp[0x15] << 24));
+    u32 bmp_height = (cg->title_bmp[0x16] | (cg->title_bmp[0x17] << 8) | (cg->title_bmp[0x18] << 16) | (cg->title_bmp[0x19] << 24));
+    gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, cg->title_bmp, 420, 10, bmp_width, bmp_height);
     return true;
 }
 

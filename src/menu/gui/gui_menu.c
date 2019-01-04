@@ -43,6 +43,7 @@ static int gui_menu_update(gui_menu_t *, bool);
 gui_menu_t *gui_menu_create(const char *title)
 {
 	gui_menu_t *menu = (gui_menu_t *)malloc(sizeof(gui_menu_t));
+    menu->custom_gui = custom_gui_load();
 	strcpy(menu->title, title);
 	menu->next_entry = 0;
 	menu->selected_index = 0;
@@ -68,13 +69,13 @@ static void gui_menu_draw(gui_menu_t *menu, bool clear_and_render)
     {
         gfx_clear_buffer(&g_gfx_ctxt);
 
-        if(!render_custom_background())
+        if(!render_custom_background(menu->custom_gui))
             gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
         
         gfx_con_setcol(&g_gfx_con, 0xFFF9F9F9, 0, 0xFF191414);
 
         /* Render title */
-        if (!render_custom_title()) {
+        if (!render_custom_title(menu->custom_gui)) {
             g_gfx_con.scale = 4;
             gfx_con_setpos(&g_gfx_con, 480, 20);
             gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
@@ -172,6 +173,7 @@ void gui_menu_destroy(gui_menu_t *menu)
 {
 	for (int i = 0; i < menu->next_entry; i++)
 		gui_menu_entry_destroy(menu->entries[i]);
+    custom_gui_end(menu->custom_gui);
 	free(menu->entries);
 	free(menu);
 }
