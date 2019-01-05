@@ -89,7 +89,7 @@ static void gui_menu_draw(gui_menu_t *menu, bool clear_and_render)
         gui_menu_render_entry(menu->entries[i], i == menu->selected_index, clear_and_render);
 	}
 
-    gfx_flush_buffer(&g_gfx_ctxt);
+    gfx_swap_buffer(&g_gfx_ctxt);
 }
 
 
@@ -162,7 +162,7 @@ int gui_menu_open(gui_menu_t *menu)
     bool first_render = true;
 	while (gui_menu_update(menu, first_render))
 	{
-        first_render = false;
+        // first_render = false;
     }
 
 	return 0;

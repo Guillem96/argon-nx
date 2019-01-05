@@ -18,6 +18,8 @@
 
 #include <stdarg.h>
 #include "gfx/gfx.h"
+#include "gfx/di.h"
+
 #include "utils/fs_utils.h"
 #include "utils/util.h"
 #include "mem/heap.h"
@@ -129,38 +131,43 @@ void gfx_init_ctxt(gfx_ctxt_t *ctxt, u32 *fb, u32 width, u32 height, u32 stride)
     ctxt->width = width;
     ctxt->height = height;
     ctxt->stride = stride;
-    ctxt->render_buffer = (u32*)malloc(ctxt->width * ctxt->stride * 4);
+    // ctxt->next = (u32*)malloc(ctxt->width * ctxt->stride * 4);
+    ctxt->next = fb + ctxt->width * ctxt->stride * 4;
 }
 
 void gfx_end_ctxt(gfx_ctxt_t *ctxt)
 {
     gfx_clear_buffer(ctxt);
-    free(ctxt->render_buffer);
+    free(ctxt->next);
     free(ctxt);
 }
 
 void gfx_clear_buffer(gfx_ctxt_t *ctxt)
 {
-    memset(ctxt->render_buffer, 0, ctxt->width * ctxt->stride * 4);
+    memset(ctxt->next, 0, ctxt->width * ctxt->stride * 4);
 }
-void gfx_flush_buffer(gfx_ctxt_t *ctxt)
+void gfx_swap_buffer(gfx_ctxt_t *ctxt)
 {
-    memcpy(ctxt->fb, ctxt->render_buffer, ctxt->width * ctxt->stride * 4);
+    u32* tmp = ctxt->fb;
+    ctxt->fb = ctxt->next;
+    ctxt->next = tmp;
+    set_active_framebuffer(ctxt->fb);
+    gfx_clear_buffer(ctxt);
 }
 
 void gfx_clear_grey(gfx_ctxt_t *ctxt, u8 color)
 {
-	memset(ctxt->render_buffer, color, ctxt->width * ctxt->stride * 4);
+	memset(ctxt->next, color, ctxt->width * ctxt->stride * 4);
 }
 
 void gfx_clear_color(gfx_ctxt_t *ctxt, u32 color)
 {
-    memset(ctxt->render_buffer, color, ctxt->width * ctxt->stride * 4);
+    memset(ctxt->next, color, ctxt->width * ctxt->stride * 4);
 }
 
 void gfx_clear_partial_grey(gfx_ctxt_t *ctxt, u8 color, u32 pos_x, u32 height)
 {
-    memset(ctxt->render_buffer + pos_x * ctxt->stride, color, height * 4 * ctxt->stride);
+    memset(ctxt->next + pos_x * ctxt->stride, color, height * 4 * ctxt->stride);
 }
 
 void gfx_con_init(gfx_con_t *con, gfx_ctxt_t *ctxt)
@@ -432,7 +439,7 @@ static int abs(int x)
 
 void gfx_set_pixel(gfx_ctxt_t *ctxt, u32 x, u32 y, u32 color)
 {
-    ctxt->render_buffer[y + (ctxt->width - x) * ctxt->stride] = color;
+    ctxt->next[y + (ctxt->width - x) * ctxt->stride] = color;
 }
 
 void gfx_line(gfx_ctxt_t *ctxt, int x0, int y0, int x1, int y1, u32 color)
@@ -467,7 +474,7 @@ void gfx_set_rect_grey(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, 
     {
         for (u32 x = pos_x; x < (pos_x + size_x); x++)
         {
-            memset(&ctxt->render_buffer[x + y * ctxt->stride], buf[pos], 4);
+            memset(&ctxt->next[x + y * ctxt->stride], buf[pos], 4);
             pos++;
         }
     }
@@ -480,7 +487,7 @@ void gfx_set_rect_rgb(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u
     {
         for (u32 x = pos_x; x < (pos_x + size_x); x++)
         {
-            ctxt->render_buffer[x + y * ctxt->stride] = buf[pos + 2] | (buf[pos + 1] << 8) | (buf[pos] << 16);
+            ctxt->next[x + y * ctxt->stride] = buf[pos + 2] | (buf[pos + 1] << 8) | (buf[pos] << 16);
             pos += 3;
         }
     }
@@ -491,7 +498,7 @@ void gfx_set_rect_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y,
     u32 *ptr = (u32 *)buf;
     for (u32 y = pos_y; y < (pos_y + size_y); y++)
         for (u32 x = pos_x; x < (pos_x + size_x); x++)
-            ctxt->render_buffer[x + y * ctxt->stride] = *ptr++;
+            ctxt->next[x + y * ctxt->stride] = *ptr++;
 }
 
 void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
@@ -620,7 +627,7 @@ void gfx_render_splash(gfx_ctxt_t *ctxt, u8 *bitmap)
         for (u32 y = bmp_data.pos_y; y < (bmp_data.pos_y + bmp_data.size_y); y++)
         {
             for (u32 x =  bmp_data.pos_x; x < (bmp_data.pos_x + bmp_data.size_x); x++)
-	            ctxt->render_buffer[x + y * ctxt->stride] = buf[(bmp_data.size_y + bmp_data.pos_y - 1 - y ) * bmp_data.size_x + x - bmp_data.pos_x];        
+	            ctxt->next[x + y * ctxt->stride] = buf[(bmp_data.size_y + bmp_data.pos_y - 1 - y ) * bmp_data.size_x + x - bmp_data.pos_x];        
         }
 
     }
