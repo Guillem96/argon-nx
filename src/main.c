@@ -40,12 +40,11 @@ extern void pivot_stack(u32 stack_top);
 
 static inline void setup_gfx()
 {
-    // u32 *fb = display_init_framebuffer();
-    set_active_framebuffer((u32*)0xC0000000);
-    gfx_init_ctxt(&g_gfx_ctxt, (u32*)0xC0000000, 1280, 720, 720);
+    u32 *fb = display_init_framebuffer();
+    gfx_init_ctxt(&g_gfx_ctxt, fb, 1280, 720, 720);
+    gfx_clear_buffer(&g_gfx_ctxt);
     gfx_con_init(&g_gfx_con, &g_gfx_ctxt);
     gfx_con_setcol(&g_gfx_con, 0xFFCCCCCC, 1, BLACK);
-    gfx_clear_buffer(&g_gfx_ctxt);
 }
 
 void ipl_main()

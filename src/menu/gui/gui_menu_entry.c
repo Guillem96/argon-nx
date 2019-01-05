@@ -82,6 +82,8 @@ static u32 get_text_width(char *text)
 
 static void render_text_centered(gui_menu_entry_t *entry, char *text, bool selected)
 {
+    g_gfx_con.scale = 2;
+
     /* Set text below the logo and centered */
     s32 x_offset = -(get_text_width(text) - entry->width) / 2;
     u32 y_offset = entry->bitmap != NULL ? entry->height + 20 : 0;
@@ -98,12 +100,11 @@ static void render_text_centered(gui_menu_entry_t *entry, char *text, bool selec
 }
 
 /* Renders a gfx menu entry */
-void gui_menu_render_entry(gui_menu_entry_t* entry, bool selected, bool render_bmp)
+void gui_menu_render_entry(gui_menu_entry_t* entry, bool selected)
 {
-    if (render_bmp)
-        gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, entry->bitmap,
-                                  entry->x, entry->y,
-                                  entry->width, entry->height);
+    gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, entry->bitmap,
+                                entry->x, entry->y,
+                                entry->width, entry->height);
 
     render_text_centered(entry, entry->text, selected);
 }

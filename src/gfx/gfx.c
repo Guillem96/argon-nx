@@ -131,8 +131,8 @@ void gfx_init_ctxt(gfx_ctxt_t *ctxt, u32 *fb, u32 width, u32 height, u32 stride)
     ctxt->width = width;
     ctxt->height = height;
     ctxt->stride = stride;
-    // ctxt->next = (u32*)malloc(ctxt->width * ctxt->stride * 4);
     ctxt->next = fb + ctxt->width * ctxt->stride * 4;
+    set_active_framebuffer(fb);
 }
 
 void gfx_end_ctxt(gfx_ctxt_t *ctxt)
