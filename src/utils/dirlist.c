@@ -88,6 +88,8 @@ char *dirlist(const char *directory, const char *pattern, bool includeHiddenFile
 			
 			j++;
 		}
+		
+		copy_entries[j] = '\0';
 	}
 
 	// compare copy_entries but sort dir_entries
