@@ -8,7 +8,7 @@
 
 Argon is a noble gas.
 "Argon" comes from Greek "Argon", neuter of "argos" meaning *lazy* , *idle* or *inactive*.
-Argon recieved this name because its chemical inactivity.
+Argon recieved this name because of its chemical inactivity.
 
 Argon NX is an immutable payload which is injected to your Nintendo Switch via Fusee Gelee exploit.
 
@@ -16,16 +16,16 @@ Argon NX is an immutable payload which is injected to your Nintendo Switch via F
 
 The purpose of Argon NX is to stay immutable, so you can always inject it, without caring about other payloads getting updated (Always use ArgonNX for TegraSmash, TegraGUI, TrinkedM0...).
 
-## How can it be?
+## How can it be immutable?
 
-When Argon NX is injected it automatically launches the `payload.bin` loacted at `argon` directory on your SD Card root. 
+When Argon NX is injected, it automatically launches the `payload.bin` loacted at `argon` directory on your SD Card root. 
 
-If `payload.bin` is not present or VOOLUME DOWN button is pressed on payload injection, Argon NX will list all payloads located at `argon/payloads`, and you will be able to select one of theme to launch it.
+If `payload.bin` is not present or VOLUME DOWN button is pressed on payload injection, Argon NX will list all payloads located at `argon/payloads`, and you will be able to select one of them to launch it.
 
 ## Features
 
-- **Autolaunch/autochainload** the payload named `payload.bin` inside `argon` directory in your sd card root
-- If `argon/payload.bin` is not found or `VOLUME_DOWN_BUTTON` is held during ArgonNX injection, ArgonNX lists all the payloads located at `argon/payloads`, so you can select one of them to launch it.
+- **Autolaunch/autochainload** the payload named `payload.bin` inside `argon` directory in your sd card root.
+- If `argon/payload.bin` is not found or `VOLUME_DOWN_BUTTON` is held during ArgonNX injection, ArgonNX will list all the payloads located at `argon/payloads`, so you can select one of them to launch it.
 - **Customize payloads' logos**. **Logos must be smaller or equal than 200x200**. Example:
 ```
 argon
@@ -37,25 +37,26 @@ argon
         fusee-primary.bin
         ReiNX.bin         # Will be rendered using default logo
 ```
-- **Custom background** add a custom background by simply adding `background.bmp` file inside `argon` directory. **Background must be smaller or equal than 1280x720**.
-- **Custom title** add a custom title by simply adding `title.bmp` file inside `argon` directory. **Not an specific size for title**.
+- **Custom backgrounds** can be added by placing `background.bmp` file inside `argon` directory. **The background must be smaller or equal than 1280x720**.
+- **Custom titles** can be added by placing `title.bmp` file inside `argon` directory. **There is not a specific size for title**.
 - Take **screenshots** to share your ArgonNX gui.
-- Touch partial suppor. Create an empty file called `touch` inside `argon` directory. **Touch only works with Game Cartige inside de Nintendo Switch**
+- Partial touch support. Create an empty file called `touch` inside `argon` directory. **Touch only works with Game Cartige inside the Nintendo Switch**
 
 
 ## About BMP format
 
 The only format supported is **BMP 32 bit ARGB color**.
-Color used for transparency is **#1D1919**.
+The color used for transparency is **#1D1919**.
 
 ## GUI
 
-This capture is thanks to **screenshot** feature.
+This image was captured with the **screenshot** feature.
 
 <img src="img/example.png" alt="example" width="700">
 
-The sd card files of the image are:
-Find these logos [here](img/example-logos) an background and title [here](sd-card-example/).
+Find these logos [here](img/example-logos) and the background and title [here](sd-card-example/).
+
+The layout of files on the sd card for this image:
 ```
 argon
 ├─── payloads
@@ -77,13 +78,14 @@ argon
 
 ## Improve performance
 
-ArgonNX uses **minerva dram training** to improve performance.
-Use of minerva is optional but recommended, to use minerva just place the compiled `minerva.bso` inside `argon/sys`. The directory `argon/sys` with minerva, is included in `sd-files.zip` in the release section.
+ArgonNX can use **minerva dram training** to improve performance.
+The use of minerva is optional but recommended. To use minerva just place the compiled `minerva.bso` inside `argon/sys`. The directory `argon/sys` with minerva, is included in `sd-files.zip` in the release section.
 
 ## Compatibility
 
-Works with all cfw payloads. 
-Not tested with TeamXecuter SXOS payload, but it should work too.
+This payload will launch any CFW. 
+
+It has not been tested with TeamXecuter SXOS payload, but it should launch that too.
 
 ## Roadmap
 
