@@ -40,7 +40,7 @@ argon
 - **Custom backgrounds** can be added by placing `background.bmp` file inside `argon` directory. **The background must be smaller or equal than 1280x720**.
 - **Custom titles** can be added by placing `title.bmp` file inside `argon` directory. **There is not a specific size for title**.
 - Take **screenshots** to share your ArgonNX gui.
-- Partial touch support. Create an empty file called `touch` inside `argon` directory. **Touch only works with Game Cartige inside the Nintendo Switch**
+- FULL touch support. Thanks to @pixel-stuck
 
 
 ## About BMP format
