@@ -57,6 +57,11 @@ void _config_oscillators()
 
 void _config_gpios()
 {
+	
+	/* Clear PINMUX_AUX I2C3 registers; required for reliable touch init */
+	PINMUX_AUX(PINMUX_AUX_X_I2C_SCL(I2C_4)) = 0; // actually listed in the TRM as for I2C3
+	PINMUX_AUX(PINMUX_AUX_X_I2C_SDA(I2C_4)) = 0; // actually listed in the TRM as for I2C3
+	
 	PINMUX_AUX(PINMUX_AUX_UART2_TX) = 0;
 	PINMUX_AUX(PINMUX_AUX_UART3_TX) = 0;
 
@@ -71,7 +76,7 @@ void _config_gpios()
 	gpio_output_enable(GPIO_PORT_H, GPIO_PIN_6, GPIO_OUTPUT_DISABLE);
 
 	pinmux_config_i2c(I2C_1);
-    pinmux_config_i2c(I2C_3);
+	pinmux_config_i2c(I2C_3);
 	pinmux_config_i2c(I2C_5);
 	pinmux_config_uart(UART_A);
 
@@ -81,10 +86,10 @@ void _config_gpios()
 	gpio_output_enable(GPIO_PORT_X, GPIO_PIN_6, GPIO_OUTPUT_DISABLE);
 	gpio_output_enable(GPIO_PORT_X, GPIO_PIN_7, GPIO_OUTPUT_DISABLE);
 
-    PINMUX_AUX(PINMUX_AUX_DAP4_SCLK) = PINMUX_PULL_UP | 3;
+	PINMUX_AUX(PINMUX_AUX_DAP4_SCLK) = PINMUX_PULL_UP | 3;
 	gpio_config(GPIO_PORT_J, GPIO_PIN_7, GPIO_MODE_GPIO);
 	gpio_output_enable(GPIO_PORT_J, GPIO_PIN_7, GPIO_OUTPUT_ENABLE);
-    gpio_write(GPIO_PORT_J, GPIO_PIN_7, GPIO_HIGH);
+	gpio_write(GPIO_PORT_J, GPIO_PIN_7, GPIO_HIGH);
 }
 
 void _config_pmc_scratch()
@@ -193,13 +198,13 @@ void config_hw()
 	clock_enable_cl_dvfs();
 
 	clock_enable_i2c(I2C_1);
-    clock_enable_i2c(I2C_3);
+	clock_enable_i2c(I2C_3);
 	clock_enable_i2c(I2C_5);
 
 	clock_enable_unk2();
 
 	i2c_init(I2C_1);
-    i2c_init(I2C_3);
+	i2c_init(I2C_3);
 	i2c_init(I2C_5);
 
 	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_CNFGBBC, 0x40);
@@ -216,7 +221,7 @@ void config_hw()
 
     // Enables LDO6 for touchscreen AVDD supply
 	i2c_send_byte(I2C_5, 0x3C, MAX77620_REG_LDO6_CFG, 0xEA);
-    i2c_send_byte(I2C_5, 0x3C, MAX77620_REG_LDO6_CFG2, 0xDA);
+	i2c_send_byte(I2C_5, 0x3C, MAX77620_REG_LDO6_CFG2, 0xDA);
 
 	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_GPIO3, 0x22); // 3.x+
 
