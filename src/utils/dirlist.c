@@ -30,6 +30,7 @@ char *dirlist(const char *directory, const char *pattern, bool includeHiddenFile
 	static FILINFO fno;
 	
 	char *dir_entries = (char *)calloc(max_entries, 256);
+	char *copy_entries = (char *)calloc(max_entries, 256);
 	char *temp = (char *)calloc(1, 256);
 
 	if (!pattern && !f_opendir(&dir, directory))
@@ -69,15 +70,34 @@ char *dirlist(const char *directory, const char *pattern, bool includeHiddenFile
 	{
 		free(temp);
 		free(dir_entries);
+		free(copy_entries);
 
 		return NULL;
 	}
 
+	// make copy_entries lowercase version of dir_entries
+	for(i = 0; i < k; i++) 
+	{
+		j = i * 256;
+		while(dir_entries[j]) 
+		{
+			copy_entries[j] = dir_entries[j];
+
+			if(dir_entries[j] >= 'A' && dir_entries[j] <= 'Z')
+				copy_entries[j] += 32;
+			
+			j++;
+		}
+		
+		copy_entries[j] = '\0';
+	}
+
+	// compare copy_entries but sort dir_entries
 	for (i = 0; i < k - 1 ; i++)
 	{
 		for (j = i + 1; j < k; j++)
 		{
-			if (strcmp(&dir_entries[i * 256], &dir_entries[j * 256]) > 0) 
+			if (strcmp(&copy_entries[i * 256], &copy_entries[j * 256]) > 0) 
 			{
 				memcpy(temp, &dir_entries[i * 256], strlen(&dir_entries[i * 256]) + 1);
 				memcpy(&dir_entries[i * 256], &dir_entries[j * 256], strlen(&dir_entries[j * 256]) + 1);
@@ -87,6 +107,7 @@ char *dirlist(const char *directory, const char *pattern, bool includeHiddenFile
 	}
 
 	free(temp);
+	free(copy_entries);
 
 	return dir_entries;
 }
