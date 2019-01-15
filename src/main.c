@@ -71,7 +71,7 @@ void ipl_main()
     /* Cofigure touch input */
     /* If touch file exists enable touch support*/
     g_touch_enabled = sd_file_exists(PATH_ENABLE_TOUCH);
-    touch_power_on(); // Needs a game card lol
+    touch_power_on();
     
     /* Mount Sd card and launch payload */
     if (sd_mount())
