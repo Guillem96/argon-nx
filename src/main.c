@@ -48,9 +48,6 @@ static inline void setup_gfx()
 
 void ipl_main()
 {
-    /* Clear PINMUX_AUX I/O mem; required for reliable touch init */
-    memset((void *)0x70003000, 0, 0x1000);
-
     /* Configure Switch Hardware (thanks to hekate project) */
     config_hw();
 
@@ -71,7 +68,7 @@ void ipl_main()
 
     /* Cofigure touch input */
     /* If touch file exists enable touch support*/
-    g_touch_enabled = sd_file_exists(PATH_ENABLE_TOUCH);
+    g_touch_enabled = true;
     touch_power_on();
     
     /* Mount Sd card and launch payload */

@@ -57,6 +57,11 @@ void _config_oscillators()
 
 void _config_gpios()
 {
+	
+	/* Clear PINMUX_AUX I2C3 registers; required for reliable touch init */
+  PINMUX_AUX(PINMUX_AUX_X_I2C_SCL(I2C_4)) = 0; // actually listed in the TRM as for I2C3
+  PINMUX_AUX(PINMUX_AUX_X_I2C_SDA(I2C_4)) = 0; // actually listed in the TRM as for I2C3
+	
 	PINMUX_AUX(PINMUX_AUX_UART2_TX) = 0;
 	PINMUX_AUX(PINMUX_AUX_UART3_TX) = 0;
 
@@ -71,7 +76,7 @@ void _config_gpios()
 	gpio_output_enable(GPIO_PORT_H, GPIO_PIN_6, GPIO_OUTPUT_DISABLE);
 
 	pinmux_config_i2c(I2C_1);
-    pinmux_config_i2c(I2C_3);
+  pinmux_config_i2c(I2C_3);
 	pinmux_config_i2c(I2C_5);
 	pinmux_config_uart(UART_A);
 
