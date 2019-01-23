@@ -87,14 +87,11 @@ typedef struct {
     u16 y;
 } touch_event_t;
 
-/* Set to true or create an empty file called "touch" inside "argon" dir to enable touch support */
-bool g_touch_enabled;
 
 /* Init touch support */
 int touch_power_on();
 
 /* Wait for touch input */
-/* No safe to call it when g_touch_enabled = false */
 touch_event_t touch_wait();
 
 /**

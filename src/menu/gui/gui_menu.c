@@ -32,18 +32,17 @@
 #define MINOR_VERSION 2
 #define MAJOR_VERSION 0
 
-bool g_first_render = true;
 
 /* Render the menu */
+static void gui_menu_render_menu(gui_menu_t*);
 static void gui_menu_draw_background(gui_menu_t*);
 static void gui_menu_draw_entries(gui_menu_t*);
 
 /* Update menu after an input */
 static int gui_menu_update(gui_menu_t*);
 
-/* Handle inputs input */
+/* Handle input */
 static int handle_touch_input(gui_menu_t*);
-static int handle_btn_input(gui_menu_t*);
 
 gui_menu_t *gui_menu_create(const char *title)
 {
@@ -80,38 +79,29 @@ static void gui_menu_draw_background(gui_menu_t* menu)
     }
 }
 
+static void gui_menu_render_menu(gui_menu_t* menu) 
+{
+    gui_menu_draw_background(menu);
+    gui_menu_draw_entries(menu);
+    gfx_swap_buffer(&g_gfx_ctxt);
+}
+
 static void gui_menu_draw_entries(gui_menu_t *menu)
 {
     for (s16 i = 0; i < menu->next_entry; i++)
-        gui_menu_render_entry(menu->entries[i], i == menu->selected_index);    
+        gui_menu_render_entry(menu->entries[i]);
 }
 
-static bool first_render = true;
 
 static int gui_menu_update(gui_menu_t *menu)
 {
     u32 res = 0;
+
     gui_menu_draw_background(menu);
-    
-    if (first_render)
-    {
-        /* When first render, we must render all because input is blocking */
-        gui_menu_draw_entries(menu);
-        gfx_swap_buffer(&g_gfx_ctxt);
-    }
-
-    if (!g_touch_enabled)
-        res = handle_btn_input(menu);
-    else
-        res = handle_touch_input(menu);
-
-    if (first_render) /* Force render background because on first render we flushed buffers before input */
-    {
-        gui_menu_draw_background(menu);
-        first_render = false;
-    }
-    /* Draw entries after handling input */
     gui_menu_draw_entries(menu);
+
+    res = handle_touch_input(menu);
+
     gfx_swap_buffer(&g_gfx_ctxt);
 
     return res;
@@ -120,6 +110,11 @@ static int gui_menu_update(gui_menu_t *menu)
 int gui_menu_open(gui_menu_t *menu)
 {   
     gfx_con_setcol(&g_gfx_con, 0xFFF9F9F9, 0, 0xFF191414);
+    /* 
+     * Render and flush at first render because blocking input won't allow us 
+     * flush buffers
+     */
+    gui_menu_render_menu(menu);
 
 	while (gui_menu_update(menu))
     ;
@@ -154,35 +149,6 @@ static int handle_touch_input(gui_menu_t *menu)
                 return 0;
         }
     }
-
-    return 1;
-}
-
-
-static int handle_btn_input(gui_menu_t *menu)
-{
-    gui_menu_entry_t *entry = NULL;
-	u32 input;
-
-    input = btn_wait();
-
-	if ((input & BTN_VOL_DOWN) && menu->selected_index > 0)
-	{
-		menu->selected_index--;
-	}
-	else if ((input & BTN_VOL_UP) && menu->selected_index < menu->next_entry - 1)
-	{
-		menu->selected_index++;
-	}
-	else if (input & BTN_POWER)
-	{
-		entry = menu->entries[menu->selected_index];
-		if (entry->handler != NULL)
-		{
-			if (entry->handler(entry->param) != 0)
-				return 0;
-		}
-	}
 
     return 1;
 }

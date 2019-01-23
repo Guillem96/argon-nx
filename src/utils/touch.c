@@ -64,13 +64,12 @@ static void touch_poll(touch_event_t *event)
 touch_event_t touch_wait()
 {
 	touch_event_t event;
-	if (g_touch_enabled)
-    {
-        do 
-        {
-            touch_poll(&event);
-        } while(event.type != STMFTS_EV_MULTI_TOUCH_ENTER);
-    }
+    
+	do 
+	{
+		touch_poll(&event);
+	} while(event.type != STMFTS_EV_MULTI_TOUCH_ENTER);
+    
 	return event;
 }
 
@@ -78,11 +77,6 @@ int touch_power_on()
 {
 	int err;
 
-    /* Avoid switch freeze if touch support is not enabled */
-    if (!g_touch_enabled) 
-    {
-        return -1;
-    }
 	/*
 	 * The datasheet does not specify the power on time, but considering
 	 * that the reset time is < 10ms, I sleep 20ms to be sure
@@ -118,7 +112,7 @@ int touch_power_on()
 
 bool is_rect_touched(touch_event_t* event, u32 x, u32 y, u32 width, u32 height)
 {
-    if (!g_touch_enabled || event == NULL)
+    if (event == NULL)
         return false;
         
     u32 event_x = event->y;

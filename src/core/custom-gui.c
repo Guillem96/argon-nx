@@ -105,6 +105,6 @@ int screenshot(void* params)
 
     g_gfx_con.scale = 2;
     gfx_con_setpos(&g_gfx_con, 0, 665);
-    gfx_printf(&g_gfx_con, " Screenshot saved!\n Found it at argon/screenshot.bmp");
+    gfx_printf(&g_gfx_con, " Screenshot saved!\n Find it at argon/screenshot.bmp");
     return 0;
 }

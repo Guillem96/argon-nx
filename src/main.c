@@ -69,8 +69,6 @@ void ipl_main()
     g_gfx_con.mute = 0;
 
     /* Cofigure touch input */
-    /* If touch file exists enable touch support*/
-    g_touch_enabled = true;
     touch_power_on();
     
     /* Mount Sd card and launch payload */

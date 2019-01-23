@@ -40,9 +40,10 @@ gui_menu_entry_t *gui_create_menu_entry(const char *text,
 
     if (bitmap != NULL)
     {
+        /* When not using the default icon set the text empty */
+        /* User knows which icon he uses for each payload */
         menu_entry->bitmap = bitmap;
-        if (g_touch_enabled)
-            strcpy(menu_entry->text, ""); // If not default icon, text is not needed on touch input
+        strcpy(menu_entry->text, ""); // If not default icon, text is not needed on touch input
     }
     else
         menu_entry->bitmap = sd_file_read(DEFAULT_LOGO);
@@ -80,7 +81,7 @@ static u32 get_text_width(char *text)
     return lenght * g_gfx_con.scale * (u32)CHAR_WIDTH;
 }
 
-static void render_text_centered(gui_menu_entry_t *entry, char *text, bool selected)
+static void render_text_centered(gui_menu_entry_t *entry, char *text)
 {
     g_gfx_con.scale = 2;
 
@@ -88,25 +89,20 @@ static void render_text_centered(gui_menu_entry_t *entry, char *text, bool selec
     s32 x_offset = -(get_text_width(text) - entry->width) / 2;
     u32 y_offset = entry->bitmap != NULL ? entry->height + 20 : 0;
 
-    u32 prevColor = g_gfx_con.fgcol;
-
     g_gfx_con.scale = 2;
     gfx_con_setpos(&g_gfx_con, entry->x + x_offset, entry->y + y_offset);
 
-    if (selected && !g_touch_enabled) /* If touch is enabled there s no selected text */
-        gfx_printf(&g_gfx_con, "%k%s%k", 0xFF1971FF, entry->text, prevColor);
-    else
-        gfx_printf(&g_gfx_con, "%s", entry->text);
+    gfx_printf(&g_gfx_con, "%s", entry->text);
 }
 
 /* Renders a gfx menu entry */
-void gui_menu_render_entry(gui_menu_entry_t* entry, bool selected)
+void gui_menu_render_entry(gui_menu_entry_t* entry)
 {
     gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, entry->bitmap,
                                 entry->x, entry->y,
                                 entry->width, entry->height);
 
-    render_text_centered(entry, entry->text, selected);
+    render_text_centered(entry, entry->text);
 }
 
 void gui_menu_entry_destroy(gui_menu_entry_t *entry)
