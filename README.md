@@ -84,15 +84,12 @@ The use of minerva is optional but recommended. To use minerva just place the co
 
 ## Compatibility
 
-This payload will launch any CFW. 
-
-It has not been tested with TeamXecuter SXOS payload, but it should launch that too.
+This payload will launch any CFW or payload. 
 
 ## Roadmap
 
-1. Touch input
-2. Kind of config file
-3. Change font
+1. Kind of config file
+2. Change to prettier font
 
 ## Credits
 
@@ -100,5 +97,5 @@ It has not been tested with TeamXecuter SXOS payload, but it should launch that 
 * __naehrwert__ and __st4rk__ for the original [hekate](https://github.com/nwert/hekate) project and its hwinit code base.
 * __CTCaer__ for the continued [hekate](https://github.com/CTCaer/hekate) and his **minerva** project.
 * __xalgovia__ and __Retrogamer 74__ for the splash and logos. Also thanks them to use ArgonNX in RetroReloaded.
-* __langerhans__ for his implementation of partial touch support.
+* __langerhans__ and  __stuck-pixel__ for their implementation of touch support.
 * __D3fau4__ for touch support testing.
