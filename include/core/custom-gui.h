@@ -21,11 +21,21 @@
 #define CUSTOM_BG_PATH "argon/background.bmp"
 #define CUSTOM_TITLE_PATH "argon/title.bmp"
 
+typedef struct {
+    u8* custom_bg;
+    u8* title_bmp;
+} custom_gui_t;
+
+
+custom_gui_t* custom_gui_load();
+
+void custom_gui_end(custom_gui_t*);
+
 /* Renders custom background, returns false if background.bmp does not exist */
-bool render_custom_background();
+bool render_custom_background(custom_gui_t*);
 
 /* Renders custom title, returns false if title.bmp does not exist */
-bool render_custom_title();
+bool render_custom_title(custom_gui_t*);
 
 /* Tool to take screenshots */
 int screenshot(void* params);

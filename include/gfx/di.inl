@@ -528,7 +528,7 @@ static const cfg_op_t cfg_display_one_color[8] = {
 };
 
 //Display A config.
-static const cfg_op_t cfg_display_framebuffer[32] = {
+static cfg_op_t cfg_display_framebuffer[32] = {
 	{DC_CMD_DISPLAY_WINDOW_HEADER, WINDOW_C_SELECT}, //Enable window C.
 	{DC_WIN_WIN_OPTIONS, 0},
 	{DC_CMD_DISPLAY_WINDOW_HEADER, WINDOW_B_SELECT}, //Enable window B.

@@ -39,25 +39,8 @@
 #define MARGIN_TOP 100
 #define MARGIN_LEFT 45
 
-#define MINOR_VERSION 2
-#define MAJOR_VERSION 0
-
-static void setup_gfx_gui()
-{
-    /* Custom background*/
-    if(!render_custom_background())
-        gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
-    
-    gfx_con_setcol(&g_gfx_con, 0xFFF9F9F9, 0, 0xFF191414);
-
-    /* Render title */
-    if (!render_custom_title()) {
-        g_gfx_con.scale = 4;
-        gfx_con_setpos(&g_gfx_con, 480, 20);
-        gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
-        g_gfx_con.scale = 2;
-    }
-}
+static int tool_reboot_rcm(void* param);
+static int tool_power_off(void* param);
 
 /* Generate entries dynamically */
 static void generate_payloads_entries(char* payloads, gui_menu_t* menu)
@@ -101,13 +84,9 @@ static void generate_payloads_entries(char* payloads, gui_menu_t* menu)
     }
 }
 
-int screenshot(void*);
-
 /* Init needed menus for ArgonNX */
 void gui_init_argon_menu(void)
 {
-    setup_gfx_gui();
-
     /* Init pool for menu */
     gui_menu_pool_init();
 
@@ -120,14 +99,28 @@ void gui_init_argon_menu(void)
 
     /* Generate reboot rcm and shutdown entry */
     gui_menu_append_entry(menu, 
-            gui_create_menu_entry_no_bitmap("Power off", 900, 680, 150, 100, (int (*)(void *))power_off, NULL));
+            gui_create_menu_entry_no_bitmap("Power off", 900, 680, 150, 100, tool_power_off, NULL));
 
     gui_menu_append_entry(menu, 
-            gui_create_menu_entry_no_bitmap("Reboot RCM", 1100, 680, 150, 100, (int (*)(void *))reboot_rcm, NULL));
+            gui_create_menu_entry_no_bitmap("Reboot RCM", 1100, 680, 150, 100, tool_reboot_rcm, NULL));
 
     /* Start menu */
     gui_menu_open(menu);
 
     /* Clear all entries and menus */
     gui_menu_pool_cleanup();
+}
+
+static int tool_reboot_rcm(void* param)
+{
+    gui_menu_pool_cleanup();
+    reboot_rcm();
+    return 0;
+}
+
+static int tool_power_off(void* param)
+{
+    gui_menu_pool_cleanup();
+    power_off();
+    return 0;
 }

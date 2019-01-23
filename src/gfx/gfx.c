@@ -17,11 +17,13 @@
  */
 
 #include <stdarg.h>
-#include <string.h>
 #include "gfx/gfx.h"
+#include "gfx/di.h"
+
 #include "utils/fs_utils.h"
 #include "utils/util.h"
 #include "mem/heap.h"
+#include <string.h>
 
 #define TRANSPARENT_COLOR 0xFF1D1919
 
@@ -129,21 +131,43 @@ void gfx_init_ctxt(gfx_ctxt_t *ctxt, u32 *fb, u32 width, u32 height, u32 stride)
     ctxt->width = width;
     ctxt->height = height;
     ctxt->stride = stride;
+    ctxt->next = fb + ctxt->width * ctxt->stride * 4;
+    set_active_framebuffer(fb);
+}
+
+void gfx_end_ctxt(gfx_ctxt_t *ctxt)
+{
+    gfx_clear_buffer(ctxt);
+    free(ctxt->next);
+    free(ctxt);
+}
+
+void gfx_clear_buffer(gfx_ctxt_t *ctxt)
+{
+    memset(ctxt->next, 0, ctxt->width * ctxt->stride * 4);
+}
+void gfx_swap_buffer(gfx_ctxt_t *ctxt)
+{
+    u32* tmp = ctxt->fb;
+    ctxt->fb = ctxt->next;
+    ctxt->next = tmp;
+    set_active_framebuffer(ctxt->fb);
+    gfx_clear_buffer(ctxt);
 }
 
 void gfx_clear_grey(gfx_ctxt_t *ctxt, u8 color)
 {
-	memset(ctxt->fb, color, ctxt->width * ctxt->stride * 4);
+	memset(ctxt->next, color, ctxt->width * ctxt->stride * 4);
 }
 
 void gfx_clear_color(gfx_ctxt_t *ctxt, u32 color)
 {
-    memset(ctxt->fb, color, ctxt->width * ctxt->stride * 4);
+    memset(ctxt->next, color, ctxt->width * ctxt->stride * 4);
 }
 
 void gfx_clear_partial_grey(gfx_ctxt_t *ctxt, u8 color, u32 pos_x, u32 height)
 {
-    memset(ctxt->fb + pos_x * ctxt->stride, color, height * 4 * ctxt->stride);
+    memset(ctxt->next + pos_x * ctxt->stride, color, height * 4 * ctxt->stride);
 }
 
 void gfx_con_init(gfx_con_t *con, gfx_ctxt_t *ctxt)
@@ -415,7 +439,7 @@ static int abs(int x)
 
 void gfx_set_pixel(gfx_ctxt_t *ctxt, u32 x, u32 y, u32 color)
 {
-    ctxt->fb[y + (ctxt->width - x) * ctxt->stride] = color;
+    ctxt->next[y + (ctxt->width - x) * ctxt->stride] = color;
 }
 
 void gfx_line(gfx_ctxt_t *ctxt, int x0, int y0, int x1, int y1, u32 color)
@@ -450,7 +474,7 @@ void gfx_set_rect_grey(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, 
     {
         for (u32 x = pos_x; x < (pos_x + size_x); x++)
         {
-            memset(&ctxt->fb[x + y * ctxt->stride], buf[pos], 4);
+            memset(&ctxt->next[x + y * ctxt->stride], buf[pos], 4);
             pos++;
         }
     }
@@ -463,7 +487,7 @@ void gfx_set_rect_rgb(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u
     {
         for (u32 x = pos_x; x < (pos_x + size_x); x++)
         {
-            ctxt->fb[x + y * ctxt->stride] = buf[pos + 2] | (buf[pos + 1] << 8) | (buf[pos] << 16);
+            ctxt->next[x + y * ctxt->stride] = buf[pos + 2] | (buf[pos + 1] << 8) | (buf[pos] << 16);
             pos += 3;
         }
     }
@@ -474,7 +498,7 @@ void gfx_set_rect_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y,
     u32 *ptr = (u32 *)buf;
     for (u32 y = pos_y; y < (pos_y + size_y); y++)
         for (u32 x = pos_x; x < (pos_x + size_x); x++)
-            ctxt->fb[x + y * ctxt->stride] = *ptr++;
+            ctxt->next[x + y * ctxt->stride] = *ptr++;
 }
 
 void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
@@ -532,7 +556,6 @@ void gfx_render_bmp_arg_bitmap_transparent(gfx_ctxt_t *ctxt, u8 *bitmap, u32 x, 
                 // Avoid unaligned access from BM 2-byte MAGIC and remove header.
                 image = (u8 *)malloc(0x400000);
                 memcpy(image, bitmap + bmp_data.offset, bmp_data.size - bmp_data.offset);
-                free(bitmap);
                 bmp_data.pos_x = (width - bmp_data.size_x) >> 1;
                 bmp_data.pos_y = (height - bmp_data.size_y) >> 1;
 
@@ -546,7 +569,7 @@ void gfx_render_bmp_arg_bitmap_transparent(gfx_ctxt_t *ctxt, u8 *bitmap, u32 x, 
     }
     if (image_found)
     {
-        gfx_render_bmp_argb_transparent(&g_gfx_ctxt, (u32 *)image, bmp_data.size_x, bmp_data.size_y,
+        gfx_render_bmp_argb_transparent(ctxt, (u32 *)image, bmp_data.size_x, bmp_data.size_y,
                             bmp_data.pos_x + x, bmp_data.pos_y + y, transparent_color);
     }
     free(image);
@@ -556,4 +579,57 @@ void gfx_render_bmp_arg_bitmap_transparent(gfx_ctxt_t *ctxt, u8 *bitmap, u32 x, 
 void gfx_render_bmp_arg_bitmap(gfx_ctxt_t *ctxt, u8 *bitmap, u32 x, u32 y, u32 width, u32 height)
 {
     gfx_render_bmp_arg_bitmap_transparent(ctxt, bitmap, x, y, width, height, TRANSPARENT_COLOR);
+}
+
+void gfx_render_splash(gfx_ctxt_t *ctxt, u8 *bitmap)
+{
+    bmp_data_t bmp_data;
+    u8 *image = NULL;
+    bool image_found = false;
+
+    if (bitmap != NULL)
+    {
+        // Get values manually to avoid unaligned access.
+        bmp_data.size = bitmap[2] | bitmap[3] << 8 |
+                        bitmap[4] << 16 | bitmap[5] << 24;
+        bmp_data.offset = bitmap[10] | bitmap[11] << 8 |
+                          bitmap[12] << 16 | bitmap[13] << 24;
+        bmp_data.size_x = bitmap[18] | bitmap[19] << 8 |
+                          bitmap[20] << 16 | bitmap[21] << 24;
+        bmp_data.size_y = bitmap[22] | bitmap[23] << 8 |
+                          bitmap[24] << 16 | bitmap[25] << 24;
+        // Sanity check.
+        if (bitmap[0] == 'B' &&
+            bitmap[1] == 'M' &&
+            bitmap[28] == 32 && //
+            bmp_data.size_x <= ctxt->height &&
+            bmp_data.size_y <= ctxt->width)
+        {
+            if ((bmp_data.size - bmp_data.offset) <= 0x400000)
+            {
+                // Avoid unaligned access from BM 2-byte MAGIC and remove header.
+                image = (u8 *)malloc(0x400000);
+                memcpy(image, bitmap + bmp_data.offset, bmp_data.size - bmp_data.offset);
+                bmp_data.pos_x = (ctxt->height - bmp_data.size_x) >> 1;
+                bmp_data.pos_y = (ctxt->width - bmp_data.size_y) >> 1;
+
+                // Get background color from 1st pixel.
+				if (bmp_data.size_x < ctxt->height || bmp_data.size_y < ctxt->width)
+                    gfx_clear_color(ctxt, *(u32 *)image);
+                    
+                image_found = true;
+            }
+        }
+    }
+    if (image_found)
+    {
+        u32* buf = (u32*)image;
+        for (u32 y = bmp_data.pos_y; y < (bmp_data.pos_y + bmp_data.size_y); y++)
+        {
+            for (u32 x =  bmp_data.pos_x; x < (bmp_data.pos_x + bmp_data.size_x); x++)
+	            ctxt->next[x + y * ctxt->stride] = buf[(bmp_data.size_y + bmp_data.pos_y - 1 - y ) * bmp_data.size_x + x - bmp_data.pos_x];        
+        }
+
+    }
+    free(image);
 }

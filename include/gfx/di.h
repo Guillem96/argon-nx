@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2018 naehrwert
  * Copyright (C) 2018 CTCaer
+ * Copyright (C) 2018 balika011
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -362,5 +363,7 @@ void display_backlight_brightness(u32 brightness, u32 step_delay);
 
 /*! Init display in full 1280x720 resolution (B8G8R8A8, line stride 768, framebuffer size = 1280*768*4 bytes). */
 u32 *display_init_framebuffer();
+
+void set_active_framebuffer(u32 *address);
 
 #endif

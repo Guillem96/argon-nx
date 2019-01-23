@@ -36,6 +36,7 @@
 typedef struct _gfx_ctxt_t
 {
 	u32 *fb;
+    u32* next;
 	u32 width;
 	u32 height;
 	u32 stride;
@@ -74,6 +75,9 @@ gfx_con_t g_gfx_con;
 #define WPRINTFARGS(text, args...) gfx_printf(&g_gfx_con, "%k"text"%k\n", 0xFFFFDD00, args, 0xFFCCCCCC)
 
 void gfx_init_ctxt(gfx_ctxt_t *ctxt, u32 *fb, u32 width, u32 height, u32 stride);
+void gfx_end_ctxt(gfx_ctxt_t *ctxt);
+void gfx_clear_buffer(gfx_ctxt_t *ctxt);
+void gfx_swap_buffer(gfx_ctxt_t *ctxt);
 void gfx_clear_grey(gfx_ctxt_t *ctxt, u8 color);
 void gfx_clear_partial_grey(gfx_ctxt_t *ctxt, u8 color, u32 pos_x, u32 height);
 void gfx_clear_color(gfx_ctxt_t *ctxt, u32 color);
@@ -98,5 +102,6 @@ void gfx_render_bmp_argb_transparent(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_
 void gfx_render_bmp_arg_bitmap(gfx_ctxt_t *ctxt, u8* bitmap, u32 x, u32 y, u32 width, u32 height);
 void gfx_render_bmp_arg_bitmap_transparent(gfx_ctxt_t *ctxt, u8* bitmap, u32 x, u32 y, u32 width, u32 height, u32 transparent_color);
 void gfx_render_bmp_arg_file(gfx_ctxt_t *ctxt, char *path, u32 x, u32 y, u32 width, u32 height);
+void gfx_render_splash(gfx_ctxt_t *ctxt, u8 *bitmap);
 
 #endif

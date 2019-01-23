@@ -1,7 +1,8 @@
 /*
  * Copyright (c) 2018 naehrwert
  * Copyright (C) 2018 CTCaer
- *
+ * Copyright (C) 2018 balika011
+ * 
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
  * version 2, as published by the Free Software Foundation.
@@ -22,10 +23,11 @@
 #include "utils/util.h"
 #include "soc/i2c.h"
 #include "soc/pmc.h"
-#include "power/max77620.h"
 #include "soc/gpio.h"
 #include "soc/pinmux.h"
 #include "soc/clock.h"
+
+#include "power/max77620.h"
 
 #include "gfx/di.inl"
 
@@ -247,6 +249,12 @@ void display_color_screen(u32 color)
 
 	display_backlight(true);
 }
+
+void set_active_framebuffer(u32 *address)
+{
+    cfg_display_framebuffer[19].val = address;
+    exec_cfg((u32 *)DISPLAY_A_BASE, cfg_display_framebuffer, 32);
+} 
 
 u32 *display_init_framebuffer()
 {

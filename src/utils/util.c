@@ -25,6 +25,7 @@
 #include "soc/i2c.h"
 #include "panic/panic.h"
 #include "gfx/di.h"
+#include "gfx/gfx.h"
 #include "mem/heap.h"
 #include <string.h>
 
@@ -113,10 +114,7 @@ __attribute__((noreturn)) void wait_for_button_and_reboot(void) {
     while (true) {
         button = btn_read();
         if (button & BTN_POWER) {
-            PMC(APBDEV_PMC_SCRATCH0) = 2; // Reboot into rcm.
-            PMC(APBDEV_PMC_CNTRL) |= PMC_CNTRL_MAIN_RST;
-            while (true)
-		        usleep(1);
+            reboot_rcm();
         }
     }
 }
@@ -125,6 +123,7 @@ void reboot_normal()
 {
 	sd_unmount();
 
+    gfx_end_ctxt(&g_gfx_ctxt);
 	display_end();
 	panic(0x21); // Bypass fuse programming in package1.
 }
@@ -132,7 +131,9 @@ void reboot_normal()
 void reboot_rcm()
 {
 	sd_unmount();
+    gfx_end_ctxt(&g_gfx_ctxt);
 	display_end();
+
 	PMC(APBDEV_PMC_SCRATCH0) = 2; // Reboot into rcm.
 	PMC(APBDEV_PMC_CNTRL) |= PMC_CNTRL_MAIN_RST;
 	while (true)

@@ -37,7 +37,8 @@ argon
         fusee-primary.bin
         ReiNX.bin         # Will be rendered using default logo
 ```
-- **Custom backgrounds** can be added by placing `background.bmp` file inside `argon` directory. **The background must be smaller or equal than 1280x720**.
+
+- **Custom backgrounds** can be added by placing `background.bmp` file inside `argon` directory. **The background must be smaller or equal than 720x1280**.
 - **Custom titles** can be added by placing `title.bmp` file inside `argon` directory. **There is not a specific size for title**.
 - Take **screenshots** to share your ArgonNX gui.
 - FULL touch support. Thanks to @pixel-stuck

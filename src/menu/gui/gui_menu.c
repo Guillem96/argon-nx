@@ -25,19 +25,30 @@
 
 #include "mem/heap.h"
 
+#include "core/custom-gui.h"
+
 #include <string.h>
 
-bool g_force_render = true;
+#define MINOR_VERSION 2
+#define MAJOR_VERSION 0
+
+bool g_first_render = true;
 
 /* Render the menu */
-static void gui_menu_draw(gui_menu_t *menu);
+static void gui_menu_draw_background(gui_menu_t*);
+static void gui_menu_draw_entries(gui_menu_t*);
 
 /* Update menu after an input */
-static int gui_menu_update(gui_menu_t *menu);
+static int gui_menu_update(gui_menu_t*);
+
+/* Handle inputs input */
+static int handle_touch_input(gui_menu_t*);
+static int handle_btn_input(gui_menu_t*);
 
 gui_menu_t *gui_menu_create(const char *title)
 {
 	gui_menu_t *menu = (gui_menu_t *)malloc(sizeof(gui_menu_t));
+    menu->custom_gui = custom_gui_load();
 	strcpy(menu->title, title);
 	menu->next_entry = 0;
 	menu->selected_index = 0;
@@ -55,14 +66,74 @@ void gui_menu_append_entry(gui_menu_t *menu, gui_menu_entry_t *menu_entry)
 	menu->next_entry++;
 }
 
+static void gui_menu_draw_background(gui_menu_t* menu)
+{
+    if(!render_custom_background(menu->custom_gui))
+        gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
+    
+    /* Render title */
+    if (!render_custom_title(menu->custom_gui)) 
+    {
+        g_gfx_con.scale = 4;
+        gfx_con_setpos(&g_gfx_con, 480, 20);
+        gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
+    }
+}
 
-static void gui_menu_draw(gui_menu_t *menu)
+static void gui_menu_draw_entries(gui_menu_t *menu)
 {
     for (s16 i = 0; i < menu->next_entry; i++)
-	{
-        gui_menu_render_entry(menu->entries[i], i == menu->selected_index, g_force_render);
-	}
-    g_force_render = false;
+        gui_menu_render_entry(menu->entries[i], i == menu->selected_index);    
+}
+
+static bool first_render = true;
+
+static int gui_menu_update(gui_menu_t *menu)
+{
+    u32 res = 0;
+    gui_menu_draw_background(menu);
+    
+    if (first_render)
+    {
+        /* When first render, we must render all because input is blocking */
+        gui_menu_draw_entries(menu);
+        gfx_swap_buffer(&g_gfx_ctxt);
+    }
+
+    if (!g_touch_enabled)
+        res = handle_btn_input(menu);
+    else
+        res = handle_touch_input(menu);
+
+    if (first_render) /* Force render background because on first render we flushed buffers before input */
+    {
+        gui_menu_draw_background(menu);
+        first_render = false;
+    }
+    /* Draw entries after handling input */
+    gui_menu_draw_entries(menu);
+    gfx_swap_buffer(&g_gfx_ctxt);
+
+    return res;
+}
+
+int gui_menu_open(gui_menu_t *menu)
+{   
+    gfx_con_setcol(&g_gfx_con, 0xFFF9F9F9, 0, 0xFF191414);
+
+	while (gui_menu_update(menu))
+    ;
+
+	return 0;
+}
+
+void gui_menu_destroy(gui_menu_t *menu)
+{
+	for (int i = 0; i < menu->next_entry; i++)
+		gui_menu_entry_destroy(menu->entries[i]);
+    custom_gui_end(menu->custom_gui);
+	free(menu->entries);
+	free(menu);
 }
 
 
@@ -81,10 +152,9 @@ static int handle_touch_input(gui_menu_t *menu)
         {
             if (entry->handler(entry->param) != 0)
                 return 0;
-            gui_menu_draw(menu);
         }
     }
-    
+
     return 1;
 }
 
@@ -111,39 +181,8 @@ static int handle_btn_input(gui_menu_t *menu)
 		{
 			if (entry->handler(entry->param) != 0)
 				return 0;
-            gui_menu_draw(menu);
 		}
 	}
 
     return 1;
-}
-
-
-static int gui_menu_update(gui_menu_t *menu)
-{
-    gui_menu_draw(menu);
-
-    if (!g_touch_enabled)
-        return handle_btn_input(menu);
-
-    return handle_touch_input(menu);
-}
-
-
-int gui_menu_open(gui_menu_t *menu)
-{    
-
-	while (gui_menu_update(menu))
-		;
-
-	return 0;
-}
-
-
-void gui_menu_destroy(gui_menu_t *menu)
-{
-	for (int i = 0; i < menu->next_entry; i++)
-		gui_menu_entry_destroy(menu->entries[i]);
-	free(menu->entries);
-	free(menu);
 }

@@ -25,6 +25,7 @@
 #include "gfx/gfx.h"
 #include "soc/hw_init.h"
 #include "mem/heap.h"
+#include "menu/gui/gui_menu_pool.h"
 
 // This is a safe and unused DRAM region for our payloads.
 #define IPL_LOAD_ADDR      0x40008000
@@ -100,6 +101,9 @@ int launch_payload(char *path)
         reconfig_hw_workaround(true, 0);
     }
 
+    gui_menu_pool_cleanup();
+    gfx_end_ctxt(&g_gfx_ctxt);
+    
     // Launch our payload.
     (*ext_payload_ptr)();
 

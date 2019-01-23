@@ -19,6 +19,7 @@
 
 #include "utils/types.h"
 #include "menu/gui/gui_menu_entry.h"
+#include "core/custom-gui.h"
 
 #define MAX_ENTRIES 0x10
 
@@ -27,6 +28,7 @@ typedef struct
 	char title[0x100];
 	int next_entry;
 	int selected_index;
+    custom_gui_t* custom_gui;
 	gui_menu_entry_t *entries[MAX_ENTRIES];
 } gui_menu_t;
 

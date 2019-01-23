@@ -42,6 +42,7 @@ static inline void setup_gfx()
 {
     u32 *fb = display_init_framebuffer();
     gfx_init_ctxt(&g_gfx_ctxt, fb, 1280, 720, 720);
+    gfx_clear_buffer(&g_gfx_ctxt);
     gfx_con_init(&g_gfx_con, &g_gfx_ctxt);
     gfx_con_setcol(&g_gfx_con, 0xFFCCCCCC, 1, BLACK);
 }
@@ -61,6 +62,7 @@ void ipl_main()
     display_backlight_pwm_init();
     display_backlight_brightness(100, 1000);
 
+
     /* Train DRAM */
     g_gfx_con.mute = 1; /* Silence minerva, comment for debug */
     minerva();
@@ -68,7 +70,7 @@ void ipl_main()
 
     /* Cofigure touch input */
     /* If touch file exists enable touch support*/
-    g_touch_enabled = sd_file_exists(PATH_ENABLE_TOUCH);
+    g_touch_enabled = true;
     touch_power_on();
     
     /* Mount Sd card and launch payload */
@@ -77,6 +79,9 @@ void ipl_main()
         bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
         bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
         
+        gfx_printf(&g_gfx_con, "Autochainload canceled. Loading menu...\n");
+        gfx_swap_buffer(&g_gfx_ctxt);
+
         if (load_menu)
             gui_init_argon_menu();
 
@@ -86,5 +91,6 @@ void ipl_main()
 
     /* If payload launch fails wait for user input to reboot the switch */
     gfx_printf(&g_gfx_con, "Press power button to reboot into RCM...\n\n");
+    gfx_swap_buffer(&g_gfx_ctxt);
     wait_for_button_and_reboot();
 }
