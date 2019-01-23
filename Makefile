@@ -6,7 +6,7 @@ include $(DEVKITARM)/base_rules
 
 TARGET 					:= argon-nx
 BLVERSION_MAJOR := 0
-BLVERSION_MINOR := 2
+BLVERSION_MINOR := 3
 BUILD 					:= build
 OUTPUT 					:= output
 SOURCEDIR 			:= src
