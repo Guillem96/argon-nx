@@ -14,8 +14,9 @@
 
 ## v0.3
 
-- No background must be in a vertical position. New background size must be smaller or equal than 720x1280. (Performance reasons)
+- Now background must be in a vertical position. New background size must be smaller or equal than 720x1280. (Performance reasons)
 - Using double buffering for rendering in order to avoid flickering and also improve performance.
 - Fully touch support. Thanks to @pixel-stuck
-- Now payloads are sorted by name
+- Now payloads are sorted by name.
+- Correctly deallocate argon-nx from memory when launching payloads.
 - Improve system stability to enhance user experience.
