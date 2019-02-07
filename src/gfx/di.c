@@ -252,7 +252,7 @@ void display_color_screen(u32 color)
 
 void set_active_framebuffer(u32 *address)
 {
-    cfg_display_framebuffer[19].val = address;
+    cfg_display_framebuffer[19].val = (uintptr_t)address;
     exec_cfg((u32 *)DISPLAY_A_BASE, cfg_display_framebuffer, 32);
 } 
 

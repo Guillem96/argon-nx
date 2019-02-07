@@ -39,11 +39,12 @@ void custom_gui_end(custom_gui_t* cg)
 
 bool render_custom_background(custom_gui_t* cg)
 {
-    if (cg->custom_bg == NULL)
+    if (cg->custom_bg == NULL){
         return false;
-    
-    gfx_render_splash(&g_gfx_ctxt, cg->custom_bg);
+    } else {
+	gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, cg->custom_bg, 0, 0, 1280, 720);
     return true;
+	}
 }
 
 bool render_custom_title(custom_gui_t* cg)
@@ -59,13 +60,15 @@ bool render_custom_title(custom_gui_t* cg)
 
 int screenshot(void* params)
 {
+	free(g_gfx_ctxt.fb);
     //width, height, and bitcount are the key factors:
     s32 width = 720;
     s32 height = 1280;
     u16 bitcount = 32;//<- 24-bit bitmap
 
     //take padding in to account
-    int width_in_bytes = ((width * bitcount + 31) / 32) * 4;
+    //int width_in_bytes = ((width * bitcount + 31) / 32) * 4;
+	int width_in_bytes = (width * 4);
 
     //total image size in bytes, not including header
     u32 imagesize = width_in_bytes * height;
@@ -99,12 +102,13 @@ int screenshot(void* params)
 
     u8* buff = (u8*)malloc(imagesize + 54);
     memcpy(buff, header, 54);
+	flipVertically ((unsigned char*)g_gfx_ctxt.fb, width, height , 4);
     memcpy(buff + 54, g_gfx_ctxt.fb, imagesize);
     sd_save_to_file(buff, imagesize + 54, "argon/screenshot.bmp");
     free(buff);
-
+	free(g_gfx_ctxt.fb);
     g_gfx_con.scale = 2;
     gfx_con_setpos(&g_gfx_con, 0, 665);
-    gfx_printf(&g_gfx_con, " Screenshot saved!\n Find it at argon/screenshot.bmp");
+    gfx_printf(&g_gfx_con, " Screenshot saved! Find it at argon/screenshot.bmp");
     return 0;
 }
