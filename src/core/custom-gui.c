@@ -39,22 +39,24 @@ void custom_gui_end(custom_gui_t* cg)
 
 bool render_custom_background(custom_gui_t* cg)
 {
-    if (cg->custom_bg == NULL)
+    if (cg->custom_bg == NULL){
         return false;
-    
-    gfx_render_splash(&g_gfx_ctxt, cg->custom_bg);
+    } else {
+	gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, cg->custom_bg, 0, 0, 1280, 720);
     return true;
+	}
 }
 
 bool render_custom_title(custom_gui_t* cg)
 {  
-    if (cg->title_bmp == NULL)
+    if (cg->title_bmp == NULL){
         return false;
-
+	} else {
     u32 bmp_width = (cg->title_bmp[0x12] | (cg->title_bmp[0x13] << 8) | (cg->title_bmp[0x14] << 16) | (cg->title_bmp[0x15] << 24));
     u32 bmp_height = (cg->title_bmp[0x16] | (cg->title_bmp[0x17] << 8) | (cg->title_bmp[0x18] << 16) | (cg->title_bmp[0x19] << 24));
     gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, cg->title_bmp, 420, 10, bmp_width, bmp_height);
     return true;
+	}
 }
 
 int screenshot(void* params)
@@ -99,12 +101,13 @@ int screenshot(void* params)
 
     u8* buff = (u8*)malloc(imagesize + 54);
     memcpy(buff, header, 54);
+	flipVertically (g_gfx_ctxt.fb, 720, 1280 , 4);
     memcpy(buff + 54, g_gfx_ctxt.fb, imagesize);
-    sd_save_to_file(buff, imagesize + 54, "argon/screenshot.bmp");
+    sd_save_to_file(buff, imagesize + 54, "bootloader/gfx/screenshot.bmp");
     free(buff);
 
     g_gfx_con.scale = 2;
     gfx_con_setpos(&g_gfx_con, 0, 665);
-    gfx_printf(&g_gfx_con, " Screenshot saved!\n Find it at argon/screenshot.bmp");
+    gfx_printf(&g_gfx_con, " Screenshot saved! Find it at bootloader/gfx/screenshot.bmp");
     return 0;
 }

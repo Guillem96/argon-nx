@@ -47,7 +47,7 @@ static u32 increase_freq(mtc_config_t* mtc_cfg, u32 from, u32 to, enum train_mod
     mtc_cfg->train_mode = train_mode;
 
     gfx_printf(&g_gfx_con, "Training and switching %7d -> %7d\n", mtc_cfg->rate_from, mtc_cfg->rate_to);
-	return ianos_loader(false, "argon/sys/minerva.bso", DRAM_LIB, (void *)mtc_cfg);
+	return ianos_loader(false, "bootloader/sys/minerva.bso", DRAM_LIB, (void *)mtc_cfg);
 }
 
 void minerva()
@@ -66,7 +66,7 @@ void minerva()
     // Set table to ram.
 	mtc_cfg.mtc_table = NULL;
 	mtc_cfg.sdram_id = get_sdram_id();
-	if (ianos_loader(false, "argon/sys/minerva.bso", DRAM_LIB, (void *)&mtc_cfg) != 0)
+	if (ianos_loader(false, "bootloader/sys/minerva.bso", DRAM_LIB, (void *)&mtc_cfg) != 0)
     {
         gfx_printf(&g_gfx_con, "Abort Minerva Training Cell\n");
         return;

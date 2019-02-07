@@ -18,8 +18,9 @@
 
 #include "utils/types.h"
 
-#define PAYLOADS_DIR "argon/payloads"
-#define PAYLOADS_LOGOS_DIR "argon/logos"
+#define PAYLOADS_DIR ""
+#define PAYLOADS_DIR_2 "bootloader/payloads"
+#define PAYLOADS_LOGOS_DIR "bootloader/gfx"
 
 /* Generate full pyload directory */
 void payload_full_path(const char*, char*);
