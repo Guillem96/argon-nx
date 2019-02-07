@@ -20,7 +20,6 @@
 
 #include "mem/heap.h"
 #include "gfx/gfx.h"
-#include <stddef.h>
 #include <string.h>
 
 bool sd_mount()
@@ -120,7 +119,7 @@ bool sd_file_exists(const char* filename)
     return false;
 }
 
-void flipVertically(unsigned char *pixels_buffer, const unsigned int width, const unsigned int height, const int bytes_per_pixel)
+void flipVertically(unsigned char* pixels_buffer, const unsigned int width, const unsigned int height, const int bytes_per_pixel)
 {
     const unsigned int rows = height / 2; // Iterate only half the buffer to get a full flip
     const unsigned int row_stride = width * bytes_per_pixel;

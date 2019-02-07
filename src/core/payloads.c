@@ -18,5 +18,7 @@ void payload_logo_path(const char* payload, char* result)
     strcpy(tmp, PAYLOADS_LOGOS_DIR);
     strcat(tmp, "/");
     strcat(tmp, payload);
+
     strcpy(result, str_replace(tmp, ".bin", ".bmp"));
 }
+

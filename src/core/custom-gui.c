@@ -49,25 +49,26 @@ bool render_custom_background(custom_gui_t* cg)
 
 bool render_custom_title(custom_gui_t* cg)
 {  
-    if (cg->title_bmp == NULL){
+    if (cg->title_bmp == NULL)
         return false;
-	} else {
+
     u32 bmp_width = (cg->title_bmp[0x12] | (cg->title_bmp[0x13] << 8) | (cg->title_bmp[0x14] << 16) | (cg->title_bmp[0x15] << 24));
     u32 bmp_height = (cg->title_bmp[0x16] | (cg->title_bmp[0x17] << 8) | (cg->title_bmp[0x18] << 16) | (cg->title_bmp[0x19] << 24));
     gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, cg->title_bmp, 420, 10, bmp_width, bmp_height);
     return true;
-	}
 }
 
 int screenshot(void* params)
 {
+	free(g_gfx_ctxt.fb);
     //width, height, and bitcount are the key factors:
     s32 width = 720;
     s32 height = 1280;
     u16 bitcount = 32;//<- 24-bit bitmap
 
     //take padding in to account
-    int width_in_bytes = ((width * bitcount + 31) / 32) * 4;
+    //int width_in_bytes = ((width * bitcount + 31) / 32) * 4;
+	int width_in_bytes = (width * 4);
 
     //total image size in bytes, not including header
     u32 imagesize = width_in_bytes * height;
@@ -101,13 +102,13 @@ int screenshot(void* params)
 
     u8* buff = (u8*)malloc(imagesize + 54);
     memcpy(buff, header, 54);
-	flipVertically (g_gfx_ctxt.fb, 720, 1280 , 4);
+	flipVertically ((unsigned char*)g_gfx_ctxt.fb, width, height , 4);
     memcpy(buff + 54, g_gfx_ctxt.fb, imagesize);
-    sd_save_to_file(buff, imagesize + 54, "bootloader/gfx/screenshot.bmp");
+    sd_save_to_file(buff, imagesize + 54, "argon/screenshot.bmp");
     free(buff);
-
+	free(g_gfx_ctxt.fb);
     g_gfx_con.scale = 2;
     gfx_con_setpos(&g_gfx_con, 0, 665);
-    gfx_printf(&g_gfx_con, " Screenshot saved! Find it at bootloader/gfx/screenshot.bmp");
+    gfx_printf(&g_gfx_con, " Screenshot saved! Find it at argon/screenshot.bmp");
     return 0;
 }

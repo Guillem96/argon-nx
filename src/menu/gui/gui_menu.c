@@ -69,6 +69,14 @@ static void gui_menu_draw_background(gui_menu_t* menu)
 {
     if(!render_custom_background(menu->custom_gui))
         gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
+    
+    /* Render title */
+    if (!render_custom_title(menu->custom_gui)) 
+    {
+        g_gfx_con.scale = 4;
+        gfx_con_setpos(&g_gfx_con, 480, 20);
+        gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
+    }
 }
 
 static void gui_menu_render_menu(gui_menu_t* menu) 

@@ -26,7 +26,7 @@
 
 #include <string.h>
 
-#define DEFAULT_LOGO "bootloader/gfx/default_icon.bmp"
+#define DEFAULT_LOGO "argon/logos/default.bmp"
 
 /* Creates a menu entry */
 gui_menu_entry_t *gui_create_menu_entry(const char *text,
@@ -43,8 +43,7 @@ gui_menu_entry_t *gui_create_menu_entry(const char *text,
         /* When not using the default icon set the text empty */
         /* User knows which icon he uses for each payload */
         menu_entry->bitmap = bitmap;
-        //strcpy(menu_entry->text, ""); // Uncomment to remove text on payload screen. But unless we have a crystal ball we need to know this
-		
+        strcpy(menu_entry->text, ""); // If not default icon, text is not needed on touch input
     }
     else
         menu_entry->bitmap = sd_file_read(DEFAULT_LOGO);
@@ -88,7 +87,7 @@ static void render_text_centered(gui_menu_entry_t *entry, char *text)
 
     /* Set text below the logo and centered */
     s32 x_offset = -(get_text_width(text) - entry->width) / 2;
-    u32 y_offset = entry->bitmap != NULL ? entry->height + 10 : 0;
+    u32 y_offset = entry->bitmap != NULL ? entry->height + 20 : 0;
 
     g_gfx_con.scale = 2;
     gfx_con_setpos(&g_gfx_con, entry->x + x_offset, entry->y + y_offset);

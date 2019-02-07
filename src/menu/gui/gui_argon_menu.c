@@ -103,10 +103,7 @@ void gui_init_argon_menu(void)
 
     gui_menu_append_entry(menu, 
             gui_create_menu_entry_no_bitmap("Reboot RCM", 1100, 680, 150, 100, tool_reboot_rcm, NULL));
-			
-	/* Generate version information */
-	gui_menu_append_entry(menu, 
-            gui_create_menu_entry_no_bitmap("Simple-ArgonNX v0.9.8", 120, 680, 150, 100, tool_reboot_rcm, NULL));
+
     /* Start menu */
     gui_menu_open(menu);
 

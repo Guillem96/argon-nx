@@ -34,7 +34,7 @@
 
 #include "minerva/minerva.h"
 
-#define PATH_ENABLE_TOUCH "bootloader/touch"
+#define PATH_ENABLE_TOUCH "argon/touch"
 
 extern void pivot_stack(u32 stack_top);
 
@@ -75,7 +75,7 @@ void ipl_main()
     if (sd_mount())
     {
         bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
-        bool load_menu = cancel_auto_chainloading || launch_payload("payload.bin");
+        bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
         
         gfx_printf(&g_gfx_con, "Autochainload canceled. Loading menu...\n");
         gfx_swap_buffer(&g_gfx_ctxt);
