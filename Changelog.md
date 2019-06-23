@@ -20,3 +20,12 @@
 - Now payloads are sorted by name.
 - Correctly deallocate argon-nx from memory when launching payloads.
 - Improve system stability to enhance user experience.
+
+## v0.4
+
+-  Show battery status. Shows the percentage and a color depending if the switch is charging or not:
+    - *Light blue*: Fast Charging
+    - *Light green*: Charging
+    - *Green*: Battery over 50%
+    - *Orange*: Battery under 50%
+    - *Red*: Battery under 20% 

@@ -170,6 +170,13 @@ void gfx_clear_partial_grey(gfx_ctxt_t *ctxt, u8 color, u32 pos_x, u32 height)
     memset(ctxt->next + pos_x * ctxt->stride, color, height * 4 * ctxt->stride);
 }
 
+void gfx_draw_color_rect(gfx_ctxt_t *ctxt, u32 color, u32 pos_x, u32 pos_y, u32 size_x, u32 size_y)
+{
+    for (u32 y = pos_y; y < (pos_y + size_y); y++)
+        for (u32 x = pos_x; x < (pos_x + size_x); x++)
+            ctxt->next[x + y * ctxt->stride] = color;
+}
+
 void gfx_con_init(gfx_con_t *con, gfx_ctxt_t *ctxt)
 {
     con->gfx_ctxt = ctxt;

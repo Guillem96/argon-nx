@@ -25,6 +25,8 @@
 
 #include "mem/heap.h"
 
+#include "power/battery.h"
+
 #include "core/custom-gui.h"
 
 #include <string.h>
@@ -79,10 +81,57 @@ static void gui_menu_draw_background(gui_menu_t* menu)
     }
 }
 
+
+static u32 get_battery_color(battery_status_t battery_status)
+{
+    if (battery_status.charge_status == FAST_CHARGING) {
+        return 0xFF6ED0F4;
+    } else if (battery_status.charge_status == CHARGING) {
+        return 0xFF74CC78;
+    } else if (battery_status.percent > 50) {
+        return 0xFF4EAD55;
+    } else if (battery_status.percent < 50) {
+        return 0xFFF4C153;
+    } else {
+        return 0xFFFF7C7C;
+    }
+}
+
+static void gui_menu_draw_battery()
+{
+    battery_status_t battery_status;
+    battery_get_status(&battery_status);
+    u32 color = get_battery_color(battery_status);
+
+    u32 x = 30;
+    u32 y = 1130;
+    u32 padding = 6;
+    u32 battery_width = 70;
+    u32 battery_height = 30;
+
+    gfx_draw_color_rect(&g_gfx_ctxt, 0xFFFFFFFF, x - padding / (float)2, y - padding / (float)2, 
+                            battery_height + padding / (float)2, 
+                            battery_width + padding / (float)2);
+    gfx_draw_color_rect(&g_gfx_ctxt, 0xFFFFFFFF, 
+                            x + battery_height / (float)2 - 6, 
+                            y - padding - 3, 
+                            10, 10);
+    
+    u32 y_offset = battery_width - (battery_width * battery_status.percent / (float)100);
+    gfx_draw_color_rect(&g_gfx_ctxt, color, x, y + y_offset, 
+                            battery_height - padding / (float)2 , 
+                            (battery_width * battery_status.percent / (float)100) - padding / (float)2);
+
+    g_gfx_con.scale = 2;
+    gfx_con_setpos(&g_gfx_con, 20, 35);
+    gfx_printf(&g_gfx_con, "%d%%", battery_status.percent);
+}
+
 static void gui_menu_render_menu(gui_menu_t* menu) 
 {
     gui_menu_draw_background(menu);
     gui_menu_draw_entries(menu);
+    gui_menu_draw_battery();
     gfx_swap_buffer(&g_gfx_ctxt);
 }
 
@@ -99,6 +148,7 @@ static int gui_menu_update(gui_menu_t *menu)
 
     gui_menu_draw_background(menu);
     gui_menu_draw_entries(menu);
+    gui_menu_draw_battery();
 
     res = handle_touch_input(menu);
 
