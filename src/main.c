@@ -34,7 +34,8 @@
 
 #include "minerva/minerva.h"
 
-#define PATH_ENABLE_TOUCH "argon/touch"
+#include "power/battery.h"
+#include "power/max17050.h"
 
 extern void pivot_stack(u32 stack_top);
 
@@ -82,6 +83,10 @@ void ipl_main()
 
         if (load_menu)
             gui_init_argon_menu();
+
+        gfx_swap_buffer(&g_gfx_ctxt);
+        
+        wait_for_button_and_reboot();
 
     } else {
         gfx_printf(&g_gfx_con, "No sd card found...\n");
