@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 M4xw
- * Copyright (c) 2018 CTCaer
+ * Copyright (c) 2018-2019 CTCaer
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -18,16 +18,36 @@
 #include <string.h>
 
 #include "ianos/ianos.h"
+#include "utils/types.h"
 #include "libs/elfload/elfload.h"
+#include "mem/heap.h"
+#include "gfx/gfx.h"
 
 #define IRAM_LIB_ADDR 0x4002B000
 #define DRAM_LIB_ADDR 0xE0000000
 
+// Module Callback
+typedef void (*cbMainModule_t)(const char *s);
+typedef void (*memcpy_t)(void *, void *, size_t);
+typedef void (*memset_t)(void *, int, size_t);
+
+typedef struct _bdkParams_t
+{
+	gfx_con_t *gfxCon;
+	gfx_ctxt_t *gfxCtx;
+	heap_t *sharedHeap;
+	memcpy_t memcpy;
+	memset_t memset;
+} *bdkParams_t;
+
+// Module Entrypoint
+typedef void (*moduleEntrypoint_t)(void *, bdkParams_t);
+
 extern heap_t _heap;
 
-extern void *sd_file_read(char *path);
+extern void *sd_file_read(const char *path, u32 *fsize);
 extern bool sd_mount();
-extern void sd_unmount();
+extern void sd_unmount(bool deinit);
 
 void *elfBuf = NULL;
 void *fileBuf = NULL;
@@ -61,62 +81,31 @@ static bool _ianos_read_cb(el_ctx *ctx, void *dest, size_t numberBytes, size_t o
 	return true;
 }
 
-void ianos_print_error(int errorno)
-{
-	switch (errorno)
-	{
-	case 1:
-		gfx_printf(&g_gfx_con, "Can't find library!\n");
-		break;
-	case 2:
-		gfx_printf(&g_gfx_con, "Cant init ELF context!\n");
-		break;
-	case 3:
-		gfx_printf(&g_gfx_con, "Cant alloc memory!\n");
-		break;
-	case 4:
-		gfx_printf(&g_gfx_con, "Error loading ELF!\n");
-		break;
-	case 5:
-		gfx_printf(&g_gfx_con, "Error relcating ELF!\n");
-		break;
-	}
-}
-
 //TODO: Support shared libraries.
-int ianos_loader(bool sdmount, char *path, elfType_t type, void *moduleConfig)
+uintptr_t ianos_loader(bool sdmount, char *path, elfType_t type, void *moduleConfig)
 {
-	int res = 0;
+	uintptr_t epaddr = 0;
 
 	if (sdmount)
 	{
 		if (!sd_mount())
-		{
-			res = 0xFFFF;
 			goto elfLoadFinalOut;
-		}
 	}
 
-	fileBuf = sd_file_read(path);
+	fileBuf = sd_file_read(path, NULL);
 
 	if (sdmount)
-		sd_unmount();
+		sd_unmount(true);
 
 	if (!fileBuf)
-	{
-		res = 1;
 		goto elfLoadFinalOut;
-	}
 
 
 	el_ctx ctx;
 	ctx.pread = _ianos_read_cb;
 
 	if (el_init(&ctx))
-	{
-		res = 2;
 		goto elfLoadFinalOut;
-	}
 
 	// Set our relocated library's buffer.
 	switch (type & 0xFFFF)
@@ -124,46 +113,35 @@ int ianos_loader(bool sdmount, char *path, elfType_t type, void *moduleConfig)
 	case EXEC_ELF:
 	case AR64_ELF:
 		elfBuf = (void *)DRAM_LIB_ADDR;
-		sd_unmount();
+		sd_unmount(true);
 		break;
 	default:
 		elfBuf = memalign(ctx.align, ctx.memsz);
 	}
 
 	if (!elfBuf)
-	{
-		res = 3;
 		goto elfLoadFinalOut;
-	}
 
 	// Load and relocate library.
 	ctx.base_load_vaddr = ctx.base_load_paddr = (uintptr_t)elfBuf;
 	if (el_load(&ctx, _ianos_alloc_cb))
-	{
-		res = 4;
 		goto elfFreeOut;
-	}
 
 	if (el_relocate(&ctx))
-	{
-		res = 5;
 		goto elfFreeOut;
-	}
 
 	// Launch.
-	uintptr_t epaddr = ctx.ehdr.e_entry + (uintptr_t)elfBuf;
+	epaddr = ctx.ehdr.e_entry + (uintptr_t)elfBuf;
 	moduleEntrypoint_t ep = (moduleEntrypoint_t)epaddr;
 
 	_ianos_call_ep(ep, moduleConfig);
 
 elfFreeOut:
-	if ((u32)elfBuf >= 0x90000000 && (u32)elfBuf <= DRAM_LIB_ADDR)
-		free(elfBuf);
 	free(fileBuf);
 	elfBuf = NULL;
 	fileBuf = NULL;
 
 elfLoadFinalOut:
 
-	return res;
+	return epaddr;
 }

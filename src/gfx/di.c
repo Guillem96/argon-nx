@@ -1,8 +1,7 @@
 /*
  * Copyright (c) 2018 naehrwert
- * Copyright (C) 2018 CTCaer
- * Copyright (C) 2018 balika011
- * 
+ * Copyright (c) 2018 CTCaer
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
  * version 2, as published by the Free Software Foundation.
@@ -19,15 +18,20 @@
 #include <string.h>
 
 #include "gfx/di.h"
+#include "gfx/gfx.h"
+#include "power/max77620.h"
+#include "power/max7762x.h"
+#include "soc/clock.h"
+#include "soc/gpio.h"
+#include "soc/i2c.h"
+#include "soc/pinmux.h"
+#include "soc/pmc.h"
 #include "soc/t210.h"
 #include "utils/util.h"
-#include "soc/i2c.h"
-#include "soc/pmc.h"
-#include "soc/gpio.h"
-#include "soc/pinmux.h"
-#include "soc/clock.h"
 
-#include "power/max77620.h"
+#pragma GCC push_options
+#pragma GCC target ("thumb")
+#pragma GCC optimize ("Os")
 
 #include "gfx/di.inl"
 
@@ -44,8 +48,8 @@ static void _display_dsi_wait(u32 timeout, u32 off, u32 mask)
 void display_init()
 {
 	// Power on.
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_LDO0_CFG, 0xD0); // Configure to 1.2V.
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_GPIO7, 0x09);
+	max77620_regulator_set_volt_and_flags(REGULATOR_LDO0, 1200000, MAX77620_POWER_MODE_NORMAL); // Configure to 1.2V.
+	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_GPIO7, MAX77620_CNFG_GPIO_OUTPUT_VAL_HIGH | MAX77620_CNFG_GPIO_DRV_PUSHPULL);
 
 	// Enable MIPI CAL, DSI, DISP1, HOST1X, UART_FST_MIPI_CAL, DSIA LP clocks.
 	CLOCK(CLK_RST_CONTROLLER_RST_DEV_H_CLR) = 0x1010000;
@@ -143,7 +147,7 @@ void display_backlight_pwm_init()
 {
 	clock_enable_pwm();
 
-	PWM(PWM_CONTROLLER_PWM_CSR) = (1 << 31); // Enable PWM
+	PWM(PWM_CONTROLLER_PWM_CSR_0) = (1 << 31); // Enable PWM
 
 	PINMUX_AUX(PINMUX_AUX_LCD_BL_PWM) = (PINMUX_AUX(PINMUX_AUX_LCD_BL_PWM) >> 2) << 2 | 1; // PWM clock source.
 	gpio_config(GPIO_PORT_V, GPIO_PIN_0, GPIO_MODE_SPIO); // Backlight power mode.
@@ -157,7 +161,7 @@ void display_backlight(bool enable)
 
 void display_backlight_brightness(u32 brightness, u32 step_delay)
 {
-	u32 old_value = (PWM(PWM_CONTROLLER_PWM_CSR) >> 16) & 0xFF;
+	u32 old_value = (PWM(PWM_CONTROLLER_PWM_CSR_0) >> 16) & 0xFF;
 	if (brightness == old_value)
 		return;
 
@@ -168,7 +172,7 @@ void display_backlight_brightness(u32 brightness, u32 step_delay)
 	{
 		for (u32 i = old_value; i < brightness + 1; i++)
 		{
-			PWM(PWM_CONTROLLER_PWM_CSR) = (1 << 31) | (i << 16); // Enable PWM
+			PWM(PWM_CONTROLLER_PWM_CSR_0) = (1 << 31) | (i << 16); // Enable PWM
 			usleep(step_delay);
 		}
 	}
@@ -176,12 +180,12 @@ void display_backlight_brightness(u32 brightness, u32 step_delay)
 	{
 		for (u32 i = old_value; i > brightness; i--)
 		{
-			PWM(PWM_CONTROLLER_PWM_CSR) = (1 << 31) | (i << 16); // Enable PWM
+			PWM(PWM_CONTROLLER_PWM_CSR_0) = (1 << 31) | (i << 16); // Enable PWM
 			usleep(step_delay);
 		}
 	}
 	if (!brightness)
-	    PWM(PWM_CONTROLLER_PWM_CSR) = 0;
+		PWM(PWM_CONTROLLER_PWM_CSR_0) = 0;
 }
 
 void display_end()
@@ -250,20 +254,28 @@ void display_color_screen(u32 color)
 	display_backlight(true);
 }
 
-void set_active_framebuffer(u32 *address)
-{
-    cfg_display_framebuffer[19].val = (uintptr_t)address;
-    exec_cfg((u32 *)DISPLAY_A_BASE, cfg_display_framebuffer, 32);
-} 
-
 u32 *display_init_framebuffer()
 {
 	// Sanitize framebuffer area.
-	memset((u32 *)0xC0000000, 0, 0x3C0000);
-	// This configures the framebuffer @ 0xC0000000 with a resolution of 1280x720 (line stride 768).
+	//memset((u32 *)FB_ADDRESS, 0, 0x3C0000);
+	// This configures the framebuffer @ FB_ADDRESS with a resolution of 1280x720 (line stride 720).
 	exec_cfg((u32 *)DISPLAY_A_BASE, cfg_display_framebuffer, 32);
 
 	usleep(35000);
 
-	return (u32 *)0xC0000000;
+	return (u32 *)FB_ADDRESS;
 }
+
+u32 *display_init_framebuffer2()
+{
+	// Sanitize framebuffer area.
+	memset((u32 *)FB_ADDRESS, 0, 0x3C0000);
+	// This configures the framebuffer @ FB_ADDRESS with a resolution of 1280x720 (line stride 720).
+	exec_cfg((u32 *)DISPLAY_A_BASE, cfg_display_framebuffer2, 32);
+
+	usleep(35000);
+
+	return (u32 *)FB_ADDRESS;
+}
+
+#pragma GCC pop_options

@@ -16,10 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #ifndef _DI_H_
 #define _DI_H_
 
 #include "utils/types.h"
+
+#define FB_ADDRESS 0xF0800000
 
 /*! Display registers. */
 #define _DIREG(reg) ((reg) * 4)
@@ -239,6 +242,10 @@
 #define DC_WINBUF_ADDR_H_OFFSET 0x806
 #define DC_WINBUF_ADDR_V_OFFSET 0x808
 #define DC_WINBUF_SURFACE_KIND 0x80B
+#define  PITCH	(0 << 0)
+#define  TILED	(1 << 0)
+#define  BLOCK	(2 << 0)
+#define  BLOCK_HEIGHT(x) (((x) & 0x7) << 4)
 
 /*! Display serial interface registers. */
 #define _DSIREG(reg) ((reg) * 4)
@@ -330,7 +337,7 @@
 #define  DSI_PAD_CONTROL_VS1_PDIO_CLK   (1 <<  8)
 #define  DSI_PAD_CONTROL_VS1_PDIO(x)    (((x) & 0xf) <<  0)
 
-#define DSI_PAD_CONTROL_CD 0x4c
+#define DSI_PAD_CONTROL_CD 0x4C
 #define DSI_VIDEO_MODE_CONTROL 0x4E
 
 #define DSI_PAD_CONTROL_1 0x4F
@@ -347,9 +354,6 @@
 
 #define MIPI_CAL_MIPI_BIAS_PAD_CFG2 0x60
 
-/*! Display backlight related PWM registers. */
-#define PWM_CONTROLLER_PWM_CSR 0x00
-
 void display_init();
 void display_backlight_pwm_init();
 void display_end();
@@ -363,7 +367,6 @@ void display_backlight_brightness(u32 brightness, u32 step_delay);
 
 /*! Init display in full 1280x720 resolution (B8G8R8A8, line stride 768, framebuffer size = 1280*768*4 bytes). */
 u32 *display_init_framebuffer();
-
-void set_active_framebuffer(u32 *address);
+u32 *display_init_framebuffer2();
 
 #endif

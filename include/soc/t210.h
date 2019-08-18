@@ -17,7 +17,7 @@
 #ifndef _T210_H_
 #define _T210_H_
 
-#include "utils/types.h"
+#include "../utils/types.h"
 
 #define BOOTROM_BASE 0x100000
 #define HOST1X_BASE 0x50000000
@@ -107,6 +107,8 @@
 #define APB_MISC_PP_STRAPPING_OPT_A 0x08
 #define APB_MISC_PP_PINMUX_GLOBAL 0x40
 #define APB_MISC_GP_LCD_BL_PWM_CFGPADCTRL 0xA34
+#define APB_MISC_GP_SDMMC1_PAD_CFGPADCTRL 0xA98
+#define APB_MISC_GP_EMMC4_PAD_CFGPADCTRL 0xAB4
 #define APB_MISC_GP_WIFI_EN_CFGPADCTRL 0xB64
 #define APB_MISC_GP_WIFI_RST_CFGPADCTRL 0xB68
 
@@ -176,5 +178,14 @@
 #define I2S5_CTRL 0x4A0
 #define  I2S_CG_SLCG_ENABLE (1 << 0)
 #define  I2S_CTRL_MASTER_EN (1 << 10)
+
+/*! PWM registers. */
+#define PWM_CONTROLLER_PWM_CSR_0 0x00
+#define PWM_CONTROLLER_PWM_CSR_1 0x10
+
+/*! Special registers. */
+#define EMC_SCRATCH0 0x324
+#define  EMC_HEKA_UPD (1 << 30)
+#define  EMC_SEPT_RUN (1 << 31)
 
 #endif

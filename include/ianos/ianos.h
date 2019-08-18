@@ -18,11 +18,8 @@
 #ifndef IANOS_H
 #define IANOS_H
 
-#include <stddef.h>
-
+#include <stdint.h>
 #include "utils/types.h"
-#include "mem/heap.h"
-#include "gfx/gfx.h"
 
 typedef enum
 {
@@ -33,23 +30,6 @@ typedef enum
 	KEEP_IN_RAM = (1 << 31)  // Shared library mask.
 } elfType_t;
 
-// Module Callback
-typedef void (*cbMainModule_t)(const char *s);
-typedef void (*memcpy_t)(void *, void *, size_t);
-typedef void (*memset_t)(void *, int, size_t);
-
-typedef struct _bdkParams_t
-{
-	gfx_con_t *gfxCon;
-	gfx_ctxt_t *gfxCtx;
-	heap_t *sharedHeap;
-	memcpy_t memcpy;
-	memset_t memset;
-} *bdkParams_t;
-
-// Module Entrypoint
-typedef void (*moduleEntrypoint_t)(void *, bdkParams_t);
-
-int ianos_loader(bool sdmount, char *path, elfType_t type, void* config);
+uintptr_t ianos_loader(bool sdmount, char *path, elfType_t type, void* config);
 
 #endif

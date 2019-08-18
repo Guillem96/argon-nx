@@ -21,6 +21,7 @@
 #include "gfx/di.h"
 #include "mem/mc.h"
 #include "mem/sdram.h"
+#include "minerva/minerva.h"
 #include "power/max77620.h"
 #include "power/max7762x.h"
 #include "sec/se.h"
@@ -57,17 +58,18 @@ void _config_oscillators()
 
 void _config_gpios()
 {
-	
-	/* Clear PINMUX_AUX I2C3 registers; required for reliable touch init */
-	PINMUX_AUX(PINMUX_AUX_X_I2C_SCL(I2C_4)) = 0; // actually listed in the TRM as for I2C3
-	PINMUX_AUX(PINMUX_AUX_X_I2C_SDA(I2C_4)) = 0; // actually listed in the TRM as for I2C3
-	
 	PINMUX_AUX(PINMUX_AUX_UART2_TX) = 0;
 	PINMUX_AUX(PINMUX_AUX_UART3_TX) = 0;
 
 	PINMUX_AUX(PINMUX_AUX_GPIO_PE6) = PINMUX_INPUT_ENABLE;
 	PINMUX_AUX(PINMUX_AUX_GPIO_PH6) = PINMUX_INPUT_ENABLE;
 
+#if !defined (DEBUG_UART_PORT) || DEBUG_UART_PORT != UART_B
+	gpio_config(GPIO_PORT_G, GPIO_PIN_0, GPIO_MODE_GPIO);
+#endif
+#if !defined (DEBUG_UART_PORT) || DEBUG_UART_PORT != UART_C
+	gpio_config(GPIO_PORT_D, GPIO_PIN_1, GPIO_MODE_GPIO);
+#endif
 	gpio_config(GPIO_PORT_E, GPIO_PIN_6, GPIO_MODE_GPIO);
 	gpio_config(GPIO_PORT_H, GPIO_PIN_6, GPIO_MODE_GPIO);
 	gpio_output_enable(GPIO_PORT_G, GPIO_PIN_0, GPIO_OUTPUT_DISABLE);
@@ -76,7 +78,6 @@ void _config_gpios()
 	gpio_output_enable(GPIO_PORT_H, GPIO_PIN_6, GPIO_OUTPUT_DISABLE);
 
 	pinmux_config_i2c(I2C_1);
-	pinmux_config_i2c(I2C_3);
 	pinmux_config_i2c(I2C_5);
 	pinmux_config_uart(UART_A);
 
@@ -85,11 +86,6 @@ void _config_gpios()
 	gpio_config(GPIO_PORT_X, GPIO_PIN_7, GPIO_MODE_GPIO);
 	gpio_output_enable(GPIO_PORT_X, GPIO_PIN_6, GPIO_OUTPUT_DISABLE);
 	gpio_output_enable(GPIO_PORT_X, GPIO_PIN_7, GPIO_OUTPUT_DISABLE);
-
-	PINMUX_AUX(PINMUX_AUX_DAP4_SCLK) = PINMUX_PULL_UP | 3;
-	gpio_config(GPIO_PORT_J, GPIO_PIN_7, GPIO_MODE_GPIO);
-	gpio_output_enable(GPIO_PORT_J, GPIO_PIN_7, GPIO_OUTPUT_ENABLE);
-	gpio_write(GPIO_PORT_J, GPIO_PIN_7, GPIO_HIGH);
 }
 
 void _config_pmc_scratch()
@@ -101,6 +97,9 @@ void _config_pmc_scratch()
 
 void _mbist_workaround()
 {
+	CLOCK(CLK_RST_CONTROLLER_CLK_OUT_ENB_V) |= (1 << 10); // Enable AHUB clock.
+	CLOCK(CLK_RST_CONTROLLER_CLK_OUT_ENB_Y) |= (1 <<  6);  // Enable APE clock.
+
 	CLOCK(CLK_RST_CONTROLLER_CLK_SOURCE_SOR1) = (CLOCK(CLK_RST_CONTROLLER_CLK_SOURCE_SOR1) | 0x8000) & 0xFFFFBFFF;
 	CLOCK(CLK_RST_CONTROLLER_PLLD_BASE) |= 0x40800000u;
 	CLOCK(CLK_RST_CONTROLLER_RST_DEV_Y_CLR) = 0x40;
@@ -198,48 +197,52 @@ void config_hw()
 	clock_enable_cl_dvfs();
 
 	clock_enable_i2c(I2C_1);
-	clock_enable_i2c(I2C_3);
 	clock_enable_i2c(I2C_5);
 
-	clock_enable_unk2();
+	clock_enable_tzram();
 
 	i2c_init(I2C_1);
-	i2c_init(I2C_3);
 	i2c_init(I2C_5);
 
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_CNFGBBC, 0x40);
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_ONOFFCNFG1, 0x78); // PWR delay for forced shutdown off.
+	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_CNFGBBC, MAX77620_CNFGBBC_RESISTOR_1K);
+	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_ONOFFCNFG1,
+		(1 << 6) | (3 << MAX77620_ONOFFCNFG1_MRT_SHIFT)); // PWR delay for forced shutdown off.
 
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_CFG0, 0x38);
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_CFG1, 0x3A);
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_CFG2, 0x38);
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_LDO4, 0xF);
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_LDO8, 0xC7);
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_SD0, 0x4F);
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_SD1, 0x29);
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_SD3, 0x1B);
+	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_CFG0,
+		(7 << MAX77620_FPS_TIME_PERIOD_SHIFT));
+	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_CFG1,
+		(7 << MAX77620_FPS_TIME_PERIOD_SHIFT) | (1 << MAX77620_FPS_EN_SRC_SHIFT));
+	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_CFG2,
+		(7 << MAX77620_FPS_TIME_PERIOD_SHIFT));
+	max77620_regulator_config_fps(REGULATOR_LDO4);
+	max77620_regulator_config_fps(REGULATOR_LDO8);
+	max77620_regulator_config_fps(REGULATOR_SD0);
+	max77620_regulator_config_fps(REGULATOR_SD1);
+	max77620_regulator_config_fps(REGULATOR_SD3);
 
-    // Enables LDO6 for touchscreen AVDD supply
-	i2c_send_byte(I2C_5, 0x3C, MAX77620_REG_LDO6_CFG, 0xEA);
-	i2c_send_byte(I2C_5, 0x3C, MAX77620_REG_LDO6_CFG2, 0xDA);
+	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_GPIO3,
+		(4 << MAX77620_FPS_TIME_PERIOD_SHIFT) | (2 << MAX77620_FPS_PD_PERIOD_SHIFT)); // 3.x+
 
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_FPS_GPIO3, 0x22); // 3.x+
+	max77620_regulator_set_voltage(REGULATOR_SD0, 1125000);
 
-	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_SD0, 42); //42 = (1125000uV - 600000) / 12500 -> 1.125V
+	// Fix GPU after warmboot for Linux.
+	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_GPIO5, 2);
+	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_GPIO6, 2);
 
+	// Disable low battery shutdown monitor.
 	max77620_low_battery_monitor_config();
 
 	_config_pmc_scratch(); // Missing from 4.x+
 
-	CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) = (CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) & 0xFFFF8888) | 0x3333;	
- 
- 	CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) = (CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) & 0xFFFF8888) | 0x3333;
+	CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) = (CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) & 0xFFFF8888) | 0x3333;
 
 	sdram_init();
 }
 
 void reconfig_hw_workaround(bool extra_reconfig, u32 magic)
 {
+	minerva_change_freq(FREQ_204);
+
 	// Re-enable clocks to Audio Processing Engine as a workaround to hanging.
 	CLOCK(CLK_RST_CONTROLLER_CLK_OUT_ENB_V) |= (1 << 10); // Enable AHUB clock.
 	CLOCK(CLK_RST_CONTROLLER_CLK_OUT_ENB_Y) |= (1 <<  6);  // Enable APE clock.
