@@ -148,6 +148,7 @@ void gfx_clear_partial_grey(u8 color, u32 pos_x, u32 height)
 void gfx_con_init()
 {
 	g_gfx_con.gfx_ctxt = &g_gfx_ctxt;
+	g_gfx_con.fntsz = 16;
 	g_gfx_con.x = 0;
 	g_gfx_con.y = 0;
 	g_gfx_con.savedx = 0;

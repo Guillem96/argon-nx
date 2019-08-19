@@ -239,9 +239,9 @@ void config_hw()
 	sdram_init();
 }
 
-void reconfig_hw_workaround(bool extra_reconfig, u32 magic)
+void reconfig_hw_workaround(argon_ctxt_t* argon_ctxt, bool extra_reconfig, u32 magic)
 {
-	minerva_change_freq(FREQ_204);
+	minerva_change_freq(argon_ctxt->mtc_conf, FREQ_204);
 
 	// Re-enable clocks to Audio Processing Engine as a workaround to hanging.
 	CLOCK(CLK_RST_CONTROLLER_CLK_OUT_ENB_V) |= (1 << 10); // Enable AHUB clock.

@@ -34,12 +34,10 @@ typedef enum
 	FREQ_1600 = 1600000
 } minerva_freq_t;
 
-mtc_config_t* g_mtc_cfg;
 
 void (*minerva_cfg)(mtc_config_t *mtc_cfg, void *);
-void minerva();
-void minerva_change_freq(minerva_freq_t freq);
-void minerva_periodic_training();
-
+void minerva(mtc_config_t *mtc_cfg);
+void minerva_change_freq(mtc_config_t *mtc_cfg, minerva_freq_t freq);
+void minerva_periodic_training(mtc_config_t *mtc_cfg);
 
 #endif

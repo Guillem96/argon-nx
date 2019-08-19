@@ -23,13 +23,14 @@
 #include "mem/heap.h"
 
 #include "soc/hw_init.h"
-// #include "core/launcher.h"
+
+#include "core/argon-ctxt.h"
+#include "core/launcher.h"
 
 #include "utils/util.h"
 #include "utils/fs_utils.h"
 #include "utils/touch.h"
 #include "utils/btn.h"
-// #include "menu/gui/gui_argon_menu.h"
 
 #include "power/battery.h"
 #include "power/max17050.h"
@@ -41,10 +42,8 @@ extern void pivot_stack(u32 stack_top);
 
 static inline void setup_gfx()
 {
-    u32 *fb = display_init_framebuffer();
-	gfx_init_ctxt((u32*)FB_ADDRESS, 720, 1280, 720);
+    gfx_init_ctxt((u32 *)FB_ADDRESS, 720, 1280, 720);
 	gfx_con_init();
-    // gfx_con_setcol(0xFFCCCCCC, 0xFFCCCCCC, 1);
 }
 
 
@@ -61,12 +60,15 @@ void ipl_main()
     display_init();
     setup_gfx();
     display_backlight_pwm_init();
-    display_backlight_brightness(100, 1000);
+
+    /* Initialize ArgonNX context */
+    argon_ctxt_t argon_ctxt;
+    argon_ctxt_init(&argon_ctxt);
 
     /* Train DRAM */
-    g_gfx_con.mute = 0; /* Silence minerva, comment for debug */
-    minerva();
-    minerva_change_freq(FREQ_1600);
+    g_gfx_con.mute = 1; /* Silence minerva, comment for debug */
+    minerva(argon_ctxt.mtc_conf);
+    minerva_change_freq(argon_ctxt.mtc_conf, FREQ_1600);
     g_gfx_con.mute = 0;
 
     /* Cofigure touch input */
@@ -75,17 +77,13 @@ void ipl_main()
     /* Mount Sd card and launch payload */
     if (sd_mount())
     {
-        // bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
-        // bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
+        bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
+        bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
         
-        // gfx_printf(&g_gfx_con, "Autochainload canceled. Loading menu...\n");
-        // gfx_swap_buffer(&g_gfx_ctxt);
 
-        // if (load_menu)
-        //     gui_init_argon_menu();
+        if (load_menu)
+            lvgl_adapter_init(&argon_ctxt);
 
-        // gfx_swap_buffer(&g_gfx_ctxt);
-        lvgl_adapter_init();
         wait_for_button_and_reboot();
 
     } else {
