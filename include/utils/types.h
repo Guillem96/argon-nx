@@ -26,7 +26,7 @@
 #define OFFSET_OF(t, m) ((u32)&((t *)NULL)->m)
 #define CONTAINER_OF(mp, t, mn) ((t *)((u32)mp - OFFSET_OF(t, mn)))
 
-typedef char s8;
+typedef signed char s8;
 typedef short s16;
 typedef short SHORT;
 typedef int s32;
@@ -50,5 +50,38 @@ typedef volatile unsigned int vu32;
 typedef int bool;
 #define true  1
 #define false 0
+
+#define BOOT_CFG_AUTOBOOT_EN (1 << 0)
+#define BOOT_CFG_FROM_LAUNCH (1 << 1)
+#define BOOT_CFG_SEPT_RUN    (1 << 7)
+
+#define EXTRA_CFG_KEYS    (1 << 0)
+#define EXTRA_CFG_PAYLOAD (1 << 1)
+#define EXTRA_CFG_MODULE  (1 << 2)
+
+typedef struct __attribute__((__packed__)) _boot_cfg_t
+{
+	u8  boot_cfg;
+	u8  autoboot;
+	u8  autoboot_list;
+	u8  extra_cfg;
+	u8  rsvd[128];
+} boot_cfg_t;
+
+typedef struct __attribute__((__packed__)) _ipl_ver_meta_t
+{
+	u32 magic;
+	u32 version;
+	u16 rsvd0;
+	u16 rsvd1;
+} ipl_ver_meta_t;
+
+typedef struct __attribute__((__packed__)) _reloc_meta_t
+{
+	u32 start;
+	u32 stack;
+	u32 end;
+	u32 ep;
+} reloc_meta_t;
 
 #endif

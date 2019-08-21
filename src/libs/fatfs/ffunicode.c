@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------*/
-/* Unicode handling functions for FatFs R0.13a                            */
+/* Unicode handling functions for FatFs R0.13c                            */
 /*------------------------------------------------------------------------*/
 /* This module will occupy a huge memory in the .const section when the    /
 /  FatFs is configured for LFN with DBCS. If the system has any Unicode    /
@@ -7,7 +7,7 @@
 /  that function to avoid silly memory consumption.                        /
 /-------------------------------------------------------------------------*/
 /*
-/ Copyright (C) 2017, ChaN, all right reserved.
+/ Copyright (C) 2018, ChaN, all right reserved.
 /
 / FatFs module is an open source software. Redistribution and use of FatFs in
 / source and binary forms, with or without modification, are permitted provided
@@ -25,14 +25,17 @@
 
 #include "libs/fatfs/ff.h"
 
-#if FF_USE_LFN	/* This module is blanked when non-LFN configuration */
+#if FF_USE_LFN	/* This module will be blanked at non-LFN configuration */
 
-#if FF_DEFINED != 63463	/* Revision ID */
+#if FF_DEFINED != 86604	/* Revision ID */
 #error Wrong include file (ff.h).
 #endif
 
 #define MERGE2(a, b) a ## b
 #define CVTBL(tbl, cp) MERGE2(tbl, cp)
+
+#pragma GCC push_options
+#pragma GCC target ("thumb")
 
 
 /*------------------------------------------------------------------------*/
@@ -622,6 +625,8 @@ DWORD ff_wtoupper (	/* Returns up-converted code point */
 
 	return uni;
 }
+
+#pragma GCC pop_options
 
 
 #endif /* #if FF_USE_LFN */

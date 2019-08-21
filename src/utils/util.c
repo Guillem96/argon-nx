@@ -19,15 +19,24 @@
 #include "utils/util.h"
 #include "utils/btn.h"
 #include "utils/fs_utils.h"
+
 #include "soc/t210.h"
-#include "power/max77620.h"
+#include "soc/bpmp.h"
 #include "soc/pmc.h"
 #include "soc/i2c.h"
+
+#include "power/max77620.h"
+
 #include "panic/panic.h"
+
 #include "gfx/di.h"
 #include "gfx/gfx.h"
+
 #include "mem/heap.h"
+
 #include <string.h>
+
+#include "libs/lvgl/lvgl.h"
 
 u32 get_tmr_s()
 {
@@ -121,6 +130,8 @@ __attribute__((noreturn)) void wait_for_button_and_reboot(void) {
 
 void reboot_normal()
 {
+	bpmp_mmu_disable();
+
 	sd_unmount();
 
 	display_end();
@@ -129,6 +140,7 @@ void reboot_normal()
 
 void reboot_rcm()
 {
+	bpmp_mmu_disable();
 	sd_unmount();
 	display_end();
 
@@ -140,6 +152,7 @@ void reboot_rcm()
 
 void power_off()
 {
+	bpmp_mmu_disable();
 	sd_unmount();
 	//TODO: we should probably make sure all regulators are powered off properly.
 	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_ONOFFCNFG1, MAX77620_ONOFFCNFG1_PWR_OFF);

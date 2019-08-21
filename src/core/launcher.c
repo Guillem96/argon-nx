@@ -25,6 +25,7 @@
 #include "utils/fs_utils.h"
 
 #include "soc/hw_init.h"
+#include "soc/bpmp.h"
 
 #include "gfx/gfx.h"
 
@@ -33,7 +34,7 @@
 #include "mem/heap.h"
 
 // This is a safe and unused DRAM region for our payloads.
-#define IPL_LOAD_ADDR      0x40008000
+#define IPL_LOAD_ADDR      0x40003000
 #define EXT_PAYLOAD_ADDR   0xC03C0000
 #define PATCHED_RELOC_SZ   0x94
 #define RCM_PAYLOAD_ADDR   (EXT_PAYLOAD_ADDR + ALIGN(PATCHED_RELOC_SZ, 0x10))
@@ -108,7 +109,8 @@ int launch_payload(argon_ctxt_t* argon_ctxt, char *path)
 
     display_end();
     argon_ctxt_destroy(argon_ctxt);
-    
+    bpmp_mmu_disable();
+	bpmp_clk_rate_set(BPMP_CLK_NORMAL);
     // Launch our payload.
     (*ext_payload_ptr)();
 

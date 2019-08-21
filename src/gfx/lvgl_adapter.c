@@ -6,43 +6,33 @@
 #include "minerva/minerva.h"
 #include "utils/touch.h"
 #include "utils/util.h"
+#include "utils/fs_utils.h"
 
+#include "mem/heap.h"
+
+static touch_event_t touchpad;
 static bool first_print = false;
 
-void display_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
+void display_flush(lv_disp_drv_t *disp,
+                   const lv_area_t *area,
+                   lv_color_t *color_p)
 {
-    // gfx_set_rect_land_pitch(g_gfx_ctxt.fb, (u32*)color_p, 
-    //                         area->x1, 
-    //                         area->y1,
-    //                         area->x2, area->y2);
-    u32 x, y;
-    for(y = area->y1; y <= area->y2; y++) {
-        for(x = area->x1; x <= area->x2; x++) {
-            g_gfx_ctxt.fb[x * g_gfx_ctxt.stride + y] = (*color_p).full;
-            color_p++;
-        }
-    }
-    if (!first_print) {
+    gfx_set_rect_land_pitch(g_gfx_ctxt.fb, (u32 *)color_p,
+                            area->x1,
+                            area->y1,
+                            area->x2, area->y2);
+
+    if (!first_print)
+    {
         first_print = true;
         display_backlight_brightness(100, 1000);
         display_init_framebuffer();
     }
 
-    lv_disp_flush_ready(disp); /* Indicate you are ready with the flushing*/
+    lv_disp_flush_ready(disp);
 }
 
-void btn_event_cb(lv_obj_t *btn, lv_event_t event)
-{
-
-    if (event == LV_EVENT_CLICKED)
-    {
-        gfx_printf("Clicked\n");
-    }
-}
-
-touch_event_t touchpad;
-
-bool handle_touch(lv_indev_drv_t * indev, lv_indev_data_t * data)
+bool handle_touch(lv_indev_drv_t *indev, lv_indev_data_t *data)
 {
     touch_poll(&touchpad);
 
@@ -65,7 +55,6 @@ bool handle_touch(lv_indev_drv_t * indev, lv_indev_data_t * data)
         if (touchpad.touch)
         {
             data->state = LV_INDEV_STATE_PR;
-            
         }
         else
         {
@@ -80,8 +69,7 @@ bool handle_touch(lv_indev_drv_t * indev, lv_indev_data_t * data)
     return false; /*Return `false` because we are not buffering and no more data to read*/
 }
 
-
-void lvgl_adapter_init(argon_ctxt_t* argon_ctxt)
+void lvgl_adapter_init(argon_ctxt_t *argon_ctxt)
 {
     lv_init();
     g_gfx_con.fillbg = 1;
@@ -93,10 +81,10 @@ void lvgl_adapter_init(argon_ctxt_t* argon_ctxt)
                      LV_HOR_RES_MAX * LV_VER_RES_MAX);
 
     // Initialize framebuffer drawing functions.
-    lv_disp_drv_t disp_drv;			   /*Descriptor of a display driver*/
-    lv_disp_drv_init(&disp_drv);	   /*Basic initialization*/
+    lv_disp_drv_t disp_drv;            /*Descriptor of a display driver*/
+    lv_disp_drv_init(&disp_drv);       /*Basic initialization*/
     disp_drv.flush_cb = display_flush; /*Set your driver function*/
-    disp_drv.buffer = &disp_buf;	   /*Assign the buffer to the display*/
+    disp_drv.buffer = &disp_buf;       /*Assign the buffer to the display*/
     lv_disp_drv_register(&disp_drv);   /*Finally register the driver*/
 
     // Touch support
@@ -107,34 +95,97 @@ void lvgl_adapter_init(argon_ctxt_t* argon_ctxt)
     lv_indev_drv_register(&indev_drv);
     touchpad.touch = false;
 
-    lv_theme_t *th = lv_theme_zen_init(167, NULL);
-    lv_theme_set_current(th);
-
-    lv_obj_t *base_tabs = lv_tabview_create(lv_scr_act(), NULL);
-	lv_obj_align(base_tabs, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 20);
-	lv_obj_t* statustab = lv_tabview_add_tab(base_tabs, "Status");
-	lv_tabview_add_tab(base_tabs, "Network");
-
-    lv_obj_t *btn = lv_btn_create(statustab, NULL); /*Add a button the current screen*/
-    lv_obj_set_pos(btn, 300, 300);					   /*Set its position*/
-    lv_obj_set_size(btn, 100, 50);					   /*Set its size*/
-    lv_obj_set_event_cb(btn, power_off);			   /*Assign a callback to the button*/
-
-    lv_obj_t *label = lv_label_create(btn, NULL); /*Add a label to the button*/
-    lv_label_set_text(label, "Reboot RCM");
-
-
-    
     lv_task_create(minerva_periodic_training,
                    500,
-                   LV_TASK_PRIO_HIGH, 
+                   LV_TASK_PRIO_HIGHEST,
                    argon_ctxt->mtc_conf);
 
-    while (true) 
+    lv_theme_t *th = lv_theme_material_init(167, NULL);
+    lv_theme_set_current(th);
+}
+
+lv_img_dsc_t *bmp_to_lvimg_obj(const char *path)
+{
+	u8 *bitmap = sd_file_read((char*)path);
+	if (!bitmap) 
     {
-        lv_tick_inc(1);
-        lv_task_handler();
-		msleep(1);
-        // break;
+		gfx_printf(path);
+        return NULL;
     }
+
+	struct _bmp_data
+	{
+		u32 size;
+		u32 size_x;
+		u32 size_y;
+		u32 offset;
+	};
+
+	struct _bmp_data bmpData;
+
+	// Get values manually to avoid unaligned access.
+	bmpData.size = bitmap[2] | bitmap[3] << 8 |
+		bitmap[4] << 16 | bitmap[5] << 24;
+	bmpData.offset = bitmap[10] | bitmap[11] << 8 |
+		bitmap[12] << 16 | bitmap[13] << 24;
+	bmpData.size_x = bitmap[18] | bitmap[19] << 8 |
+		bitmap[20] << 16 | bitmap[21] << 24;
+	bmpData.size_y = bitmap[22] | bitmap[23] << 8 |
+		bitmap[24] << 16 | bitmap[25] << 24;
+	// Sanity check.
+	if (bitmap[0] == 'B' &&
+		bitmap[1] == 'M' &&
+		bitmap[28] == 32) // Only 32 bit BMPs allowed.
+	{
+		// Check if non-default Bottom-Top.
+		bool flipped = false;
+		if (bmpData.size_y & 0x80000000)
+		{
+			bmpData.size_y = ~(bmpData.size_y) + 1;
+			flipped = true;
+		}
+
+		lv_img_dsc_t *img_desc = (lv_img_dsc_t *)bitmap;
+		u32 offset_copy = ALIGN((u32)bitmap + sizeof(lv_img_dsc_t), 0x10);
+	
+		img_desc->header.always_zero = 0;
+		img_desc->header.w = bmpData.size_x;
+		img_desc->header.h = bmpData.size_y;
+		img_desc->header.cf = (bitmap[28] == 32) ? LV_IMG_CF_TRUE_COLOR_ALPHA : LV_IMG_CF_TRUE_COLOR;
+		img_desc->data_size = bmpData.size - bmpData.offset;
+		img_desc->data = (u8 *)offset_copy;
+
+		u32 *tmp = malloc(bmpData.size);
+		u32 *tmp2 = (u32 *)offset_copy;
+
+		// Copy the unaligned data to an aligned buffer.
+		memcpy((u8 *)tmp, bitmap + bmpData.offset, img_desc->data_size);
+		u32 j = 0;
+
+		if (!flipped)
+		{
+			for (u32 y = 0; y < bmpData.size_y; y++)
+			{
+				for (u32 x = 0; x < bmpData.size_x; x++)
+					tmp2[j++] = tmp[(bmpData.size_y - 1 - y ) * bmpData.size_x + x];
+			}
+		}
+		else
+		{
+			for (u32 y = 0; y < bmpData.size_y; y++)
+			{
+				for (u32 x = 0; x < bmpData.size_x; x++)
+					tmp2[j++] = tmp[y * bmpData.size_x + x];
+			}
+		}
+		
+		free(tmp);
+	}
+	else
+	{
+		free(bitmap);
+		return NULL;
+	}
+	
+	return (lv_img_dsc_t *)bitmap;
 }

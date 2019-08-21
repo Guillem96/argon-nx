@@ -29,7 +29,7 @@ bool sd_mount()
 
 	if (!sdmmc_storage_init_sd(&g_sd_storage, &g_sd_sdmmc, SDMMC_1, SDMMC_BUS_WIDTH_4, 11))
 	{
-        gfx_printf("%kFailed to init SD card.\nMake sure that it is inserted.\nOr that SD reader is properly seated!%k\n", 0xFFFFDD00, 0xFFCCCCCC);
+		gfx_printf("Failed to init SD card.\nMake sure that it is inserted.\nOr that SD reader is properly seated!");
 	}
 	else
 	{
@@ -42,7 +42,7 @@ bool sd_mount()
 		}
 		else
 		{
-            gfx_printf("%kFailed to mount SD card (FatFS Error %d).\nMake sure that a FAT partition exists..%k\n", 0xFFFFDD00, res, 0xFFCCCCCC);
+			gfx_printf("Failed to mount SD card (FatFS Error %d).\nMake sure that a FAT partition exists..", res);
 		}
 	}
 

@@ -17,7 +17,7 @@
 #ifndef _T210_H_
 #define _T210_H_
 
-#include "../utils/types.h"
+#include "utils/types.h"
 
 #define BOOTROM_BASE 0x100000
 #define HOST1X_BASE 0x50000000

@@ -19,7 +19,7 @@
 #define _SDMMC_H_
 
 #include "utils/types.h"
-#include "storage/sdmmc_driver.h"
+#include "sdmmc_driver.h"
 
 typedef struct _mmc_cid
 {
@@ -47,7 +47,7 @@ typedef struct _mmc_csd
 	u32 read_blkbits;
 	u32 write_blkbits;
 	u32 capacity;
-	u8  write_protect;  
+	u8  write_protect;
 	u16 busspeed;
 } mmc_csd_t;
 

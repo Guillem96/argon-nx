@@ -23,9 +23,12 @@
 #include "mem/heap.h"
 
 #include "soc/hw_init.h"
+#include "soc/bpmp.h"
 
 #include "core/argon-ctxt.h"
 #include "core/launcher.h"
+
+#include "menu/gui/gui_menu.h"
 
 #include "utils/util.h"
 #include "utils/fs_utils.h"
@@ -51,6 +54,7 @@ void ipl_main()
 {
     /* Configure Switch Hardware (thanks to hekate project) */
     config_hw();
+    bpmp_mmu_enable();
 
     /* Init the stack and the heap */
     pivot_stack(0x90010000);
@@ -60,7 +64,7 @@ void ipl_main()
     display_init();
     setup_gfx();
     display_backlight_pwm_init();
-
+    
     /* Initialize ArgonNX context */
     argon_ctxt_t argon_ctxt;
     argon_ctxt_init(&argon_ctxt);
@@ -70,6 +74,8 @@ void ipl_main()
     minerva(argon_ctxt.mtc_conf);
     minerva_change_freq(argon_ctxt.mtc_conf, FREQ_1600);
     g_gfx_con.mute = 0;
+    
+    bpmp_clk_rate_set(BPMP_CLK_SUPER_BOOST);
 
     /* Cofigure touch input */
     touch_power_on();
@@ -78,12 +84,15 @@ void ipl_main()
     if (sd_mount())
     {
         bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
-        bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
-        
-
+        bool load_menu = cancel_auto_chainloading || launch_payload(&argon_ctxt, "argon/payload.bin");
+            
         if (load_menu)
+        {
             lvgl_adapter_init(&argon_ctxt);
-
+            gui_menu_draw(&argon_ctxt);
+            gui_menu_open(&argon_ctxt);
+            gui_menu_destroy(&argon_ctxt);
+        }
         wait_for_button_and_reboot();
 
     } else {

@@ -48,6 +48,7 @@ void minerva(mtc_config_t *mtc_cfg)
 		if (CLOCK(CLK_RST_CONTROLLER_CLK_SOURCE_EMC) == mtc_cfg->mtc_table[curr_ram_idx].clk_src_emc)
 			break;
 	}
+
     mtc_cfg->rate_from = mtc_cfg->mtc_table[curr_ram_idx].rate_khz;
     mtc_cfg->rate_to = 204000;
     mtc_cfg->train_mode = OP_TRAIN;
@@ -72,12 +73,12 @@ void minerva_change_freq(mtc_config_t *mtc_cfg, minerva_freq_t freq)
 	}
 }
 
-void minerva_periodic_training(mtc_config_t *mtc_cfg)
+void minerva_periodic_training(lv_task_t * task)
 {
+    mtc_config_t* mtc_cfg = task->user_data;
 
     if (minerva_cfg && mtc_cfg->rate_from == FREQ_1600)
     {
-        gfx_printf("Periodic");
         mtc_cfg->train_mode = OP_PERIODIC_TRAIN;
         minerva_cfg(mtc_cfg, NULL);
     }

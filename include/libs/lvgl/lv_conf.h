@@ -37,7 +37,7 @@
 
 /* Default display refresh period.
  * Can be changed in the display driver (`lv_disp_drv_t`).*/
-#define LV_DISP_DEF_REFR_PERIOD      33      /*[ms]*/
+#define LV_DISP_DEF_REFR_PERIOD      30      /*[ms]*/
 
 /* Dot Per Inch: used to initialize default sizes.
  * E.g. a button with width = LV_DPI / 2 -> half inch wide
@@ -92,10 +92,10 @@ typedef int16_t lv_coord_t;
  * Can be changed in the Input device driver (`lv_indev_drv_t`)*/
 
 /* Input device read period in milliseconds */
-#define LV_INDEV_DEF_READ_PERIOD          33
+#define LV_INDEV_DEF_READ_PERIOD          50
 
 /* Drag threshold in pixels */
-#define LV_INDEV_DEF_DRAG_LIMIT           10
+#define LV_INDEV_DEF_DRAG_LIMIT           30
 
 /* Drag throw slow-down in [%]. Greater value -> faster slow-down */
 #define LV_INDEV_DEF_DRAG_THROW           20
@@ -226,10 +226,10 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
 #define LV_USE_THEME_TEMPL      0   /*Just for test*/
 #define LV_USE_THEME_DEFAULT    0   /*Built mainly from the built-in styles. Consumes very few RAM*/
 #define LV_USE_THEME_ALIEN      0   /*Dark futuristic theme*/
-#define LV_USE_THEME_NIGHT      0   /*Dark elegant theme*/
+#define LV_USE_THEME_NIGHT      0  /*Dark elegant theme*/
 #define LV_USE_THEME_MONO       0   /*Mono color theme for monochrome displays*/
-#define LV_USE_THEME_MATERIAL   0   /*Flat theme with bold colors and light shadows*/
-#define LV_USE_THEME_ZEN        1   /*Peaceful, mainly light theme */
+#define LV_USE_THEME_MATERIAL   1   /*Flat theme with bold colors and light shadows*/
+#define LV_USE_THEME_ZEN        0   /*Peaceful, mainly light theme */
 #define LV_USE_THEME_NEMO       0   /*Water-like theme based on the movie "Finding Nemo"*/
 
 /*==================
@@ -245,8 +245,8 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
 /* Robot fonts with bpp = 4
  * https://fonts.google.com/specimen/Roboto  */
 #define LV_FONT_ROBOTO_12    0
-#define LV_FONT_ROBOTO_16    1
-#define LV_FONT_ROBOTO_22    0
+#define LV_FONT_ROBOTO_16    0
+#define LV_FONT_ROBOTO_22    1
 #define LV_FONT_ROBOTO_28    0
 
 /*Pixel perfect monospace font
@@ -262,7 +262,7 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
 #define LV_FONT_CUSTOM_DECLARE
 
 /*Always set a default font from the built-in fonts*/
-#define LV_FONT_DEFAULT        &lv_font_roboto_16
+#define LV_FONT_DEFAULT        &lv_font_roboto_22
 
 /* Enable it if you have fonts with a lot of characters.
  * The limit depends on the font size, font face and bpp
@@ -314,7 +314,7 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_ARC      0
 
 /*Bar (dependencies: -)*/
-#define LV_USE_BAR      1
+#define LV_USE_BAR      0
 
 /*Button (dependencies: lv_cont*/
 #define LV_USE_BTN      1
@@ -330,7 +330,7 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_CALENDAR 0
 
 /*Canvas (dependencies: lv_img)*/
-#define LV_USE_CANVAS   1
+#define LV_USE_CANVAS   0
 
 /*Check box (dependencies: lv_btn, lv_label)*/
 #define LV_USE_CB       1
@@ -352,7 +352,7 @@ typedef void * lv_obj_user_data_t;
 #endif
 
 /*Gauge (dependencies:lv_bar, lv_lmeter)*/
-#define LV_USE_GAUGE    1
+#define LV_USE_GAUGE    0
 
 /*Image (dependencies: lv_label*/
 #define LV_USE_IMG      1
@@ -371,7 +371,7 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_LABEL    1
 #if LV_USE_LABEL != 0
 /*Hor, or ver. scroll speed [px/sec] in 'LV_LABEL_LONG_ROLL/ROLL_CIRC' mode*/
-#  define LV_LABEL_DEF_SCROLL_SPEED       25
+#  define LV_LABEL_DEF_SCROLL_SPEED       100
 
 /* Waiting period at beginning/end of animation cycle */
 #  define LV_LABEL_WAIT_CHAR_COUNT        3
@@ -400,7 +400,7 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_LMETER   1
 
 /*Message box (dependencies: lv_rect, lv_btnm, lv_label)*/
-#define LV_USE_MBOX     1
+#define LV_USE_MBOX     0
 
 /*Page (dependencies: lv_cont)*/
 #define LV_USE_PAGE     1
@@ -418,7 +418,7 @@ typedef void * lv_obj_user_data_t;
 #endif
 
 /*Roller (dependencies: lv_ddlist)*/
-#define LV_USE_ROLLER    1
+#define LV_USE_ROLLER    0
 #if LV_USE_ROLLER != 0
 /*Focus animation time [ms] (0: no animation)*/
 #  define LV_ROLLER_DEF_ANIM_TIME     200
@@ -428,16 +428,16 @@ typedef void * lv_obj_user_data_t;
 #endif
 
 /*Slider (dependencies: lv_bar)*/
-#define LV_USE_SLIDER    1
+#define LV_USE_SLIDER    0
 
 /*Spinbox (dependencies: lv_ta)*/
 #define LV_USE_SPINBOX       0
 
 /*Switch (dependencies: lv_slider)*/
-#define LV_USE_SW       1
+#define LV_USE_SW       0
 
 /*Text area (dependencies: lv_label, lv_page)*/
-#define LV_USE_TA       1
+#define LV_USE_TA       0
 #if LV_USE_TA != 0
 #  define LV_TA_DEF_CURSOR_BLINK_TIME 400     /*ms*/
 #  define LV_TA_DEF_PWD_SHOW_TIME     1500    /*ms*/
