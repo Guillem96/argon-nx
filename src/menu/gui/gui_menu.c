@@ -91,13 +91,14 @@
 // }
 
 /* Render functions */
-static void render_tabs(argon_ctxt_t*);
-static void render_payloads_entries(lv_obj_t*, argon_ctxt_t*);
+static bool render_tabs(argon_ctxt_t *);
+static bool render_payloads_tab(lv_obj_t *, argon_ctxt_t *);
+static bool render_payloads_entries(lv_obj_t *, argon_ctxt_t *);
+static bool render_tools_tab(lv_obj_t *, argon_ctxt_t *);
 
 void gui_menu_draw(argon_ctxt_t *argon_ctxt)
 {
     render_tabs(argon_ctxt);
-
 }
 
 void gui_menu_open(argon_ctxt_t *argon_ctxt)
@@ -115,48 +116,103 @@ void gui_menu_destroy(argon_ctxt_t *argon_ctxt)
     argon_ctxt_destroy(argon_ctxt);
 }
 
-static void render_tabs(argon_ctxt_t* argon_ctxt) {
-    custom_gui_t* cg = custom_gui_load();
+static bool render_tabs(argon_ctxt_t *argon_ctxt)
+{
+    custom_gui_t *cg = custom_gui_load();
 
-
+    if (!render_custom_background(cg, lv_scr_act()))
+    {
+        gfx_printf("\nFail drawing bg\n");
+        return false;
+    }
     lv_obj_t *base_tabs = lv_tabview_create(lv_scr_act(), NULL);
+    lv_obj_set_pos(base_tabs, 0, 0);
     lv_tabview_set_btns_pos(base_tabs, LV_TABVIEW_BTNS_POS_BOTTOM);
-    
+    lv_tabview_set_style(base_tabs, LV_TABVIEW_STYLE_BG, &lv_style_transp_tight);
+
     /* Disable animations */
     lv_tabview_set_anim_time(base_tabs, 0);
     lv_tabview_set_sliding(base_tabs, false);
 
-    lv_obj_t* payloads_tab = lv_tabview_add_tab(base_tabs, 
-                                                LV_SYMBOL_DIRECTORY" Payloads");
-    lv_obj_t* settings_tab = lv_tabview_add_tab(base_tabs, 
-                                                LV_SYMBOL_SETTINGS" Settings");
-    
-    if(!render_custom_background(cg, payloads_tab)) 
-    {
-        gfx_printf("\nFail drawing bg\n");
-        return;
-    }
+    /* Render all tabs */
+    render_payloads_tab(base_tabs, argon_ctxt);
+    render_tools_tab(base_tabs, argon_ctxt);
 
-    render_payloads_entries(payloads_tab, argon_ctxt);
-
-    /* Push created items to the pool */
-    gui_menu_pool_push(argon_ctxt->pool, payloads_tab);
-    gui_menu_pool_push(argon_ctxt->pool, settings_tab);
+    return true;
 }
 
-static void render_payloads_entries(lv_obj_t* par_tabview, argon_ctxt_t* argon_ctxt)
+static bool render_payloads_tab(lv_obj_t *par, argon_ctxt_t *ctxt)
 {
-    lv_obj_t *btn ;
+    /* Setting scrollable view */
+    lv_obj_t *payloads_tab = lv_tabview_add_tab(par,
+                                                LV_SYMBOL_DIRECTORY " Payloads");
+    lv_page_set_sb_mode(payloads_tab, LV_SB_MODE_OFF);
+
+    lv_obj_t *page = lv_page_create(payloads_tab, NULL);
+    lv_obj_set_size(page, lv_obj_get_width(payloads_tab) * 0.9,
+                    lv_obj_get_height(payloads_tab));
+    lv_obj_align(page, payloads_tab, LV_ALIGN_CENTER, 0, 0);
+    lv_page_set_style(page, LV_PAGE_STYLE_BG, &lv_style_transp);
+
+    /* Horizontal grid layout */
+    lv_obj_t *cnr = lv_page_get_scrl(page);
+    lv_cont_set_layout(cnr, LV_LAYOUT_ROW_M);
+
+    render_payloads_entries(cnr, ctxt);
+
+    gui_menu_pool_push(ctxt->pool, payloads_tab);
+
+    return true;
+}
+
+static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_ctxt)
+{
+    lv_obj_t *btn;
     lv_obj_t *label;
 
-    for (u32 i = 0; i < 5; i++) {
+    for (u32 i = 0; i < 6; i++)
+    {
         btn = lv_btn_create(par_tabview, NULL);
         lv_obj_set_size(btn, 350, 350);
-        lv_obj_set_pos(btn, i * 400 + 100, 200);
+
         lv_obj_set_event_cb(btn, ctrl_reboot_rcm);
+        
         label = lv_label_create(btn, NULL);
         lv_label_set_text(label, LV_SYMBOL_PLAY);
+
         gui_menu_pool_push(argon_ctxt->pool, label);
-        gui_menu_pool_push(argon_ctxt->pool, btn);   
+        gui_menu_pool_push(argon_ctxt->pool, btn);
     }
+
+    return true;
+}
+
+
+static bool render_tools_tab(lv_obj_t* par, argon_ctxt_t* ctxt)
+{
+    lv_obj_t *settings_tab = lv_tabview_add_tab(par,
+                                                LV_SYMBOL_SETTINGS " Settings");
+    
+    lv_obj_t *btn = lv_btn_create(settings_tab, NULL);
+    lv_obj_set_size(btn, 200, 80);
+    lv_obj_set_event_cb(btn, ctrl_reboot_rcm);
+
+    lv_obj_t* label = lv_label_create(btn, NULL);
+    lv_label_set_text(label, "Reboot RCM");
+
+    btn = lv_btn_create(settings_tab, NULL);
+    lv_obj_set_size(btn, 200, 80);
+    lv_obj_set_event_cb(btn, ctrl_power_off);
+    lv_obj_set_pos(btn, 200, 200);
+
+    label = lv_label_create(btn, NULL);
+    lv_label_set_text(label, "Power of");
+
+    lv_obj_t* line = lv_line_create(settings_tab, NULL);
+
+    static lv_point_t line_points[] = { {20, 400}, {1000, 400} };
+    lv_line_set_points(line, line_points, 2);
+
+    gui_menu_pool_push(ctxt->pool, settings_tab);
+    return true;
 }
