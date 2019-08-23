@@ -1,10 +1,10 @@
 /**
- * @file lv_theme_night.h
+ * @file lv_theme_argon.h
  *
  */
 
-#ifndef LV_THEME_NIGHT_H
-#define LV_THEME_NIGHT_H
+#ifndef LV_THEME_ARGON_H
+#define LV_THEME_ARGON_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +19,7 @@ extern "C" {
 #include "../lv_conf.h"
 #endif
 
-#if LV_USE_THEME_NIGHT
+#if LV_USE_THEME_ARGON
 
 /*********************
  *      DEFINES
@@ -34,18 +34,18 @@ extern "C" {
  **********************/
 
 /**
- * Initialize the night theme
+ * Initialize the argon theme
  * @param hue [0..360] hue value from HSV color space to define the theme's base color
  * @param font pointer to a font (NULL to use the default)
  * @return pointer to the initialized theme
  */
-lv_theme_t * lv_theme_night_init(uint16_t hue, lv_font_t * font);
+lv_theme_t * lv_theme_argon_init(uint16_t hue, lv_font_t * font);
 
 /**
  * Get a pointer to the theme
  * @return pointer to the theme
  */
-lv_theme_t * lv_theme_get_night(void);
+lv_theme_t * lv_theme_get_argon(void);
 
 /**********************
  *      MACROS
@@ -57,4 +57,4 @@ lv_theme_t * lv_theme_get_night(void);
 } /* extern "C" */
 #endif
 
-#endif /*LV_THEME_NIGHT_H*/
+#endif /*LV_THEME_ARGON_H*/

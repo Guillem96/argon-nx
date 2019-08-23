@@ -1016,7 +1016,6 @@ int sdmmc_storage_init_sd(sdmmc_storage_t *storage, sdmmc_t *sdmmc, u32 id, u32 
 	int is_version_1 = 0;
 	
 	// Some cards (Sandisk U1), do not like a fast power cycle. Wait min 100ms.
-	u32 sd_poweroff_time = (u32)get_tmr_ms();
 	msleep(100);
 
 	memset(storage, 0, sizeof(sdmmc_storage_t));

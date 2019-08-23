@@ -100,7 +100,7 @@ void lvgl_adapter_init(argon_ctxt_t *argon_ctxt)
                    LV_TASK_PRIO_HIGHEST,
                    argon_ctxt->mtc_conf);
 
-    lv_theme_t *th = lv_theme_material_init(167, NULL);
+    lv_theme_t *th = lv_theme_argon_init(167, NULL);
     lv_theme_set_current(th);
 }
 
