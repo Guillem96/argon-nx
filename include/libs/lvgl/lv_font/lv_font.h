@@ -142,6 +142,9 @@ LV_FONT_DECLARE(lv_font_unscii_8)
 LV_FONT_DECLARE(lv_font_montserrat_12)
 #endif
 
+#if LV_FONT_MONTSERRAT_40
+LV_FONT_DECLARE(lv_font_montserrat_40)
+#endif
 
 /*Declare the custom (user defined) fonts*/
 #ifdef LV_FONT_CUSTOM_DECLARE
