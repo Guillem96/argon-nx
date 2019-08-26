@@ -24,6 +24,14 @@ extern "C" {
 /*********************
  *      DEFINES
  *********************/
+#define GRAD_1 LV_COLOR_MAKE(0xD3, 0x83, 0x12)
+#define GRAD_2 LV_COLOR_MAKE(0xA8, 0x32, 0x79)
+
+#define GUN_METAL           lv_color_hex(0x293132)
+#define ARGON_ORANGE        lv_color_hex(0xEB8258)
+#define ONYX                lv_color_hex(0x3A2E39)
+#define ARGON_PINK          lv_color_hex(0xB74F6F)
+#define ARGON_DARK_ORANGE   lv_color_hex(0xAD6A5A)
 
 /**********************
  *      TYPEDEFS

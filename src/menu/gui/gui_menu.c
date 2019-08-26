@@ -91,6 +91,8 @@
 // }
 
 /* Render functions */
+static bool render_title(argon_ctxt_t *);
+
 static bool render_tabs(argon_ctxt_t *);
 static bool render_payloads_tab(lv_obj_t *, argon_ctxt_t *);
 static bool render_payloads_entries(lv_obj_t *, argon_ctxt_t *);
@@ -98,6 +100,17 @@ static bool render_tools_tab(lv_obj_t *, argon_ctxt_t *);
 
 void gui_menu_draw(argon_ctxt_t *argon_ctxt)
 {
+    lv_style_scr.body.main_color = GRAD_1;
+    lv_style_scr.body.grad_color = GRAD_2;
+    
+    custom_gui_t *cg = custom_gui_load();
+
+    if (!render_custom_background(cg, lv_scr_act()))
+    {
+        gfx_printf("\nFail drawing bg\n");
+    }
+
+    render_title(argon_ctxt);
     render_tabs(argon_ctxt);
 }
 
@@ -118,13 +131,6 @@ void gui_menu_destroy(argon_ctxt_t *argon_ctxt)
 
 static bool render_tabs(argon_ctxt_t *argon_ctxt)
 {
-    custom_gui_t *cg = custom_gui_load();
-
-    if (!render_custom_background(cg, lv_scr_act()))
-    {
-        gfx_printf("\nFail drawing bg\n");
-        return false;
-    }
     lv_obj_t *base_tabs = lv_tabview_create(lv_scr_act(), NULL);
     lv_obj_set_pos(base_tabs, 0, 0);
     lv_tabview_set_btns_pos(base_tabs, LV_TABVIEW_BTNS_POS_BOTTOM);
@@ -149,8 +155,8 @@ static bool render_payloads_tab(lv_obj_t *par, argon_ctxt_t *ctxt)
     lv_page_set_sb_mode(payloads_tab, LV_SB_MODE_OFF);
 
     lv_obj_t *page = lv_page_create(payloads_tab, NULL);
-    lv_obj_set_size(page, lv_obj_get_width(payloads_tab) * 0.9,
-                    lv_obj_get_height(payloads_tab));
+    lv_obj_set_size(page, lv_obj_get_width(payloads_tab),
+                    LV_VER_RES_MAX);
     lv_obj_align(page, payloads_tab, LV_ALIGN_CENTER, 0, 0);
     lv_page_set_style(page, LV_PAGE_STYLE_BG, &lv_style_transp);
 
@@ -214,5 +220,21 @@ static bool render_tools_tab(lv_obj_t* par, argon_ctxt_t* ctxt)
     lv_line_set_points(line, line_points, 2);
 
     gui_menu_pool_push(ctxt->pool, settings_tab);
+    return true;
+}
+
+static bool render_title(argon_ctxt_t * ctxt)
+{
+    lv_obj_t* title = lv_label_create(lv_scr_act(), NULL);
+    lv_label_set_text(title, "ARGON"LV_SYMBOL_DRIVE"NX");
+    lv_obj_set_width(title, 500);
+    lv_obj_align(title, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 50);
+    
+    static lv_style_t label_style;
+    lv_style_copy(&label_style, &lv_style_plain);
+    label_style.text.color = LV_COLOR_WHITE;
+    lv_obj_set_style(title, &label_style);
+
+    gui_menu_pool_push(ctxt->pool, title);
     return true;
 }

@@ -363,6 +363,9 @@
 #ifndef LV_FONT_ROBOTO_28
 #define LV_FONT_ROBOTO_28    0
 #endif
+#ifndef LV_FONT_MONTSERRAT_12
+#define LV_FONT_MONTSERRAT_12    0
+#endif
 
 /*Pixel perfect monospace font
  * http://pelulamu.net/unscii/ */

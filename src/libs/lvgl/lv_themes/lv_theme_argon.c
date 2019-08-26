@@ -16,16 +16,6 @@
 #define DEF_RADIUS 4
 #define DEF_SHADOW_COLOR GUN_METAL
 
-/* COLOR PALETE */
-#define GRAD_1 lv_color_hex(0xD38312)
-#define GRAD_2 lv_color_hex(0xA83279)
-
-#define GUN_METAL           lv_color_hex(0x293132)
-#define ARGON_ORANGE        lv_color_hex(0xEB8258)
-#define ONYX                lv_color_hex(0x3A2E39)
-#define ARGON_PINK          lv_color_hex(0xB74F6F)
-#define ARGON_DARK_ORANGE   lv_color_hex(0xAD6A5A)
-
 /**********************
  *      TYPEDEFS
  **********************/
@@ -69,6 +59,8 @@ static void basic_init(void)
     bg.body.radius     = 0;
 
     lv_style_copy(&scr, &bg);
+    scr.body.main_color = GRAD_1;
+    scr.body.grad_color = GRAD_2;
     scr.body.padding.bottom = 0;
     scr.body.padding.top    = 0;
     scr.body.padding.left   = 0;
@@ -133,7 +125,7 @@ static void btn_init(void)
     rel.image.color         = lv_color_hsv_to_rgb(_hue, 5, 95);
 
     lv_style_copy(&pr, &rel);
-    pr.body.main_color   = lv_color_hsv_to_rgb(_hue, 90, 60);
+    pr.body.main_color   = GUN_METAL;
     pr.body.grad_color   = pr.body.main_color;
     pr.body.shadow.width = 4;
 
@@ -169,13 +161,13 @@ static void label_init(void)
 
     lv_style_copy(&prim, &def);
     prim.text.font  = _font;
-    prim.text.color = lv_color_hsv_to_rgb(_hue, 80, 10);
+    prim.text.color = LV_COLOR_WHITE;
 
     lv_style_copy(&sec, &prim);
-    sec.text.color = lv_color_hsv_to_rgb(_hue, 80, 75);
+    // sec.text.color = lv_color_hsv_to_rgb(_hue, 80, 75);
 
     lv_style_copy(&hint, &prim);
-    hint.text.color = lv_color_hsv_to_rgb(_hue, 40, 90);
+    // hint.text.color = lv_color_hsv_to_rgb(_hue, 40, 90);
 
     theme.style.label.prim = &prim;
     theme.style.label.sec  = &sec;
@@ -682,18 +674,18 @@ static void tabview_init(void)
     static lv_style_t indic, btn_bg, rel, pr, tgl_rel, tgl_pr;
 
     lv_style_copy(&indic, &def);
-    indic.body.main_color    = lv_color_hsv_to_rgb(_hue, 90, 70);
+    indic.body.main_color    = ARGON_ORANGE;
     indic.body.grad_color    = indic.body.main_color;
     indic.body.radius        = 0;
     indic.body.border.width  = 0;
     indic.body.padding.inner = LV_DPI / 20;
 
     lv_style_copy(&btn_bg, &def);
-    btn_bg.body.main_color     = lv_color_hex3(0xccc);
-    btn_bg.body.grad_color     = btn_bg.body.main_color;
+    btn_bg.body.main_color     = GUN_METAL;
+    btn_bg.body.grad_color     = ONYX;
     btn_bg.body.radius         = 0;
     btn_bg.body.border.width   = 1;
-    btn_bg.body.border.color   = lv_color_hex3(0x888);
+    btn_bg.body.border.color   = ONYX;
     btn_bg.body.border.part    = LV_BORDER_BOTTOM;
     btn_bg.body.border.opa     = LV_OPA_COVER;
     btn_bg.body.shadow.width   = 5;
@@ -702,9 +694,9 @@ static void tabview_init(void)
     btn_bg.body.padding.inner  = 0;
     btn_bg.body.padding.left   = 0;
     btn_bg.body.padding.right  = 0;
-    btn_bg.body.padding.top    = 0;
-    btn_bg.body.padding.bottom = 0;
-    btn_bg.text.color          = lv_color_hex3(0x333);
+    btn_bg.body.padding.top    = 10;
+    btn_bg.body.padding.bottom = 10;
+    btn_bg.text.color          = ARGON_ORANGE;
 
     lv_style_copy(&rel, &lv_style_transp);
     rel.body.padding.top    = LV_DPI / 8;
@@ -712,31 +704,28 @@ static void tabview_init(void)
     rel.text.font           = _font;
 
     lv_style_copy(&pr, &def);
-    pr.body.main_color   = lv_color_hex3(0xbbb);
+    pr.body.main_color   = LV_COLOR_BLACK;
     pr.body.grad_color   = pr.body.main_color;
     pr.body.border.width = 0;
-    pr.body.opa          = LV_OPA_COVER;
+    pr.body.opa          = LV_OPA_10;
     pr.body.radius       = 0;
-    pr.body.border.width = 1;
-    pr.body.border.color = lv_color_hex3(0x888);
-    pr.body.border.part  = LV_BORDER_BOTTOM;
-    pr.body.border.opa   = LV_OPA_COVER;
-    pr.text.color        = lv_color_hex3(0x111);
+    pr.text.color        = LV_COLOR_GRAY;
 
     lv_style_copy(&tgl_rel, &lv_style_transp);
     tgl_rel.glass      = 0;
     tgl_rel.text.font  = _font;
-    tgl_rel.text.color = lv_color_hsv_to_rgb(_hue, 90, 70);
+    tgl_rel.text.color = ARGON_ORANGE;
 
     lv_style_copy(&tgl_pr, &def);
-    tgl_pr.body.main_color   = lv_color_hsv_to_rgb(_hue, 15, 85);
+    tgl_pr.body.main_color   = ARGON_ORANGE;
     tgl_pr.body.grad_color   = tgl_pr.body.main_color;
     tgl_pr.body.border.width = 0;
-    tgl_pr.body.opa          = LV_OPA_COVER;
+    tgl_pr.body.opa          = LV_OPA_10;
     tgl_pr.body.radius       = 0;
-    tgl_pr.text.color        = lv_color_hsv_to_rgb(_hue, 90, 60);
+    tgl_pr.text.color        = ARGON_DARK_ORANGE;
 
-    theme.style.tabview.bg          = theme.style.bg;
+    lv_style_copy(theme.style.tabview.bg, &lv_style_transp);
+    
     theme.style.tabview.indic       = &indic;
     theme.style.tabview.btn.bg      = &btn_bg;
     theme.style.tabview.btn.rel     = &rel;

@@ -243,6 +243,7 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
 #define LV_FONT_ROBOTO_16    0
 #define LV_FONT_ROBOTO_22    1
 #define LV_FONT_ROBOTO_28    0
+#define LV_FONT_MONTSERRAT_12 1
 
 /*Pixel perfect monospace font
  * http://pelulamu.net/unscii/ */

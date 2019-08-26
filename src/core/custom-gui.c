@@ -42,9 +42,7 @@ bool render_custom_background(custom_gui_t* cg, lv_obj_t* par)
 {
     if (cg->custom_bg == NULL)
         return false;
-    // lv_obj_t *cnr = lv_cont_create(par, NULL);
-    // lv_obj_set_size(cnr, LV_HOR_RES, LV_VER_RES);
-
+        
     lv_obj_t *img = lv_img_create(par, NULL);
     lv_img_set_src(img, cg->custom_bg);
     lv_obj_set_pos(img, 0, 0);

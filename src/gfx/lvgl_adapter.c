@@ -72,7 +72,6 @@ bool handle_touch(lv_indev_drv_t *indev, lv_indev_data_t *data)
 void lvgl_adapter_init(argon_ctxt_t *argon_ctxt)
 {
     lv_init();
-    g_gfx_con.fillbg = 1;
 
     static lv_disp_buf_t disp_buf;
     lv_disp_buf_init(&disp_buf,
@@ -100,7 +99,7 @@ void lvgl_adapter_init(argon_ctxt_t *argon_ctxt)
                    LV_TASK_PRIO_HIGHEST,
                    argon_ctxt->mtc_conf);
 
-    lv_theme_t *th = lv_theme_argon_init(167, NULL);
+    lv_theme_t *th = lv_theme_argon_init(10, NULL);
     lv_theme_set_current(th);
 }
 

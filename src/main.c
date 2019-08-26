@@ -25,6 +25,7 @@
 #include "soc/hw_init.h"
 #include "soc/bpmp.h"
 
+#include "core/argon-resources.h"
 #include "core/argon-ctxt.h"
 #include "core/launcher.h"
 
@@ -85,9 +86,10 @@ void ipl_main()
     {
         bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
         bool load_menu = cancel_auto_chainloading || launch_payload(&argon_ctxt, "argon/payload.bin");
-            
+        
         if (load_menu)
         {
+            argon_resources_init();
             lvgl_adapter_init(&argon_ctxt);
             gui_menu_draw(&argon_ctxt);
             gui_menu_open(&argon_ctxt);
