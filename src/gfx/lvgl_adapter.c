@@ -108,7 +108,6 @@ lv_img_dsc_t *bmp_to_lvimg_obj(const char *path)
 	u8 *bitmap = sd_file_read((char*)path);
 	if (!bitmap) 
     {
-		gfx_printf(path);
         return NULL;
     }
 

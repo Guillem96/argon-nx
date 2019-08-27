@@ -13,6 +13,11 @@
 #define MONTSERRAT_40_KERN_PAIR_GLYPH 0xE587
 #define MONTSERRAT_40_KERN_PAIR_VALUE 0xEB7F
 
+// Montserrat Alternate 80 font
+#define MONTSERRAT_ALT_80_GLYPH_BMP 0xEE7B
+#define MONTSERRAT_ALT_80_KERN_PAIR_GLYPH 0x42822
+#define MONTSERRAT_ALT_80_KERN_PAIR_VALUE 0x429C6
+
 void argon_resources_init();
 
 #endif

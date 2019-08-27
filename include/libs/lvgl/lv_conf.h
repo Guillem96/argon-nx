@@ -243,8 +243,9 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
 #define LV_FONT_ROBOTO_16    0
 #define LV_FONT_ROBOTO_22    0
 #define LV_FONT_ROBOTO_28    0
-#define LV_FONT_MONTSERRAT_12 0
+#define LV_FONT_MONTSERRAT_12 1
 #define LV_FONT_MONTSERRAT_40 1
+#define LV_FONT_MA_80 1
 
 /*Pixel perfect monospace font
  * http://pelulamu.net/unscii/ */
@@ -259,7 +260,7 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
 #define LV_FONT_CUSTOM_DECLARE
 
 /*Always set a default font from the built-in fonts*/
-#define LV_FONT_DEFAULT        &lv_font_montserrat_40
+#define LV_FONT_DEFAULT        &lv_font_montserrat_alternate_80
 
 /* Enable it if you have fonts with a lot of characters.
  * The limit depends on the font size, font face and bpp

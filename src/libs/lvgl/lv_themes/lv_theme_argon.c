@@ -66,21 +66,19 @@ static void basic_init(void)
     scr.body.padding.left   = 0;
     scr.body.padding.right  = 0;
 
-    lv_style_copy(&panel, &def);
+    lv_style_copy(&panel, &lv_style_transp);
     panel.body.radius         = DEF_RADIUS;
     panel.body.main_color     = GRAD_1;
     panel.body.grad_color     = GRAD_2;
-    panel.body.border.width   = 1;
-    panel.body.border.color   = GUN_METAL;
-    panel.body.border.opa     = LV_OPA_COVER;
+    panel.body.border.width   = 0;
     panel.body.shadow.color   = DEF_SHADOW_COLOR;
     panel.body.shadow.type    = LV_SHADOW_BOTTOM;
     panel.body.shadow.width   = 4;
-    panel.body.padding.left   = LV_DPI / 8;
-    panel.body.padding.right  = LV_DPI / 8;
-    panel.body.padding.top    = LV_DPI / 8;
-    panel.body.padding.bottom = LV_DPI / 8;
-    panel.body.padding.inner  = LV_DPI / 12;
+    panel.body.padding.left   = LV_DPI / 2;
+    panel.body.padding.right  = LV_DPI / 2;
+    panel.body.padding.top    = LV_DPI / 2;
+    panel.body.padding.bottom = LV_DPI / 2;
+    panel.body.padding.inner  = 22;
     panel.text.color          = lv_color_hex3(0x333);
     panel.image.color         = lv_color_hex3(0x333);
 
@@ -120,10 +118,11 @@ static void btn_init(void)
     rel.body.padding.inner  = LV_DPI / 10;
     rel.body.shadow.color   = DEF_SHADOW_COLOR;
     rel.body.shadow.type    = LV_SHADOW_BOTTOM;
-    rel.body.shadow.width   = 6;
+    rel.body.shadow.width   = 20;
     rel.text.color          = lv_color_hsv_to_rgb(_hue, 5, 95);
     rel.image.color         = lv_color_hsv_to_rgb(_hue, 5, 95);
-
+    rel.text.font           = &lv_font_montserrat_40;
+    
     lv_style_copy(&pr, &rel);
     pr.body.main_color   = GUN_METAL;
     pr.body.grad_color   = pr.body.main_color;
@@ -694,14 +693,15 @@ static void tabview_init(void)
     btn_bg.body.padding.inner  = 0;
     btn_bg.body.padding.left   = 0;
     btn_bg.body.padding.right  = 0;
-    btn_bg.body.padding.top    = 10;
-    btn_bg.body.padding.bottom = 10;
+    btn_bg.body.padding.top    = 5;
+    btn_bg.body.padding.bottom = 5;
     btn_bg.text.color          = ARGON_ORANGE;
+    btn_bg.text.font          = &lv_font_montserrat_40;
 
     lv_style_copy(&rel, &lv_style_transp);
     rel.body.padding.top    = LV_DPI / 8;
     rel.body.padding.bottom = LV_DPI / 8;
-    rel.text.font           = _font;
+    rel.text.font           = &lv_font_montserrat_40;
 
     lv_style_copy(&pr, &def);
     pr.body.main_color   = LV_COLOR_BLACK;
@@ -710,10 +710,11 @@ static void tabview_init(void)
     pr.body.opa          = LV_OPA_10;
     pr.body.radius       = 0;
     pr.text.color        = LV_COLOR_GRAY;
+    pr.text.font         = rel.text.font;
 
     lv_style_copy(&tgl_rel, &lv_style_transp);
     tgl_rel.glass      = 0;
-    tgl_rel.text.font  = _font;
+    tgl_rel.text.font   = &lv_font_montserrat_40;
     tgl_rel.text.color = ARGON_ORANGE;
 
     lv_style_copy(&tgl_pr, &def);

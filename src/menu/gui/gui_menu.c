@@ -22,72 +22,25 @@
 #include "power/battery.h"
 
 #include "core/custom-gui.h"
+#include "core/payloads.h"
 
 #include "utils/util.h"
+#include "utils/dirlist.h"
+
 #include "gfx/gfx.h"
+#include "gfx/lvgl_adapter.h"
 
 #include <string.h>
 
 #define MINOR_VERSION 3
 #define MAJOR_VERSION 0
 
-// static void gui_menu_draw_background(gui_menu_t* menu)
-// {
-//     if(!render_custom_background(menu->custom_gui))
-//         gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
-
-//     /* Render title */
-//     if (!render_custom_title(menu->custom_gui))
-//     {
-//         g_gfx_con.scale = 4;
-//         gfx_con_setpos(&g_gfx_con, 480, 20);
-//         gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
-//     }
-// }
-
-// static u32 get_battery_color(battery_status_t battery_status)
-// {
-//     if (battery_status.charge_status == FAST_CHARGING) {
-//         return 0xFF6ED0F4;
-//     } else if (battery_status.charge_status == CHARGING) {
-//         return 0xFF74CC78;
-//     } else if (battery_status.percent > 50) {
-//         return 0xFF4EAD55;
-//     } else if (battery_status.percent < 50) {
-//         return 0xFFF4C153;
-//     } else {
-//         return 0xFFFF7C7C;
-//     }
-// }
 
 // static void gui_menu_draw_battery()
 // {
 //     battery_status_t battery_status;
 //     battery_get_status(&battery_status);
 //     u32 color = get_battery_color(battery_status);
-
-//     u32 x = 30;
-//     u32 y = 1130;
-//     u32 padding = 6;
-//     u32 battery_width = 70;
-//     u32 battery_height = 30;
-
-//     gfx_draw_color_rect(&g_gfx_ctxt, 0xFFFFFFFF, x - padding / (float)2, y - padding / (float)2,
-//                             battery_height + padding / (float)2,
-//                             battery_width + padding / (float)2);
-//     gfx_draw_color_rect(&g_gfx_ctxt, 0xFFFFFFFF,
-//                             x + battery_height / (float)2 - 6,
-//                             y - padding - 3,
-//                             10, 10);
-
-//     u32 y_offset = battery_width - (battery_width * battery_status.percent / (float)100);
-//     gfx_draw_color_rect(&g_gfx_ctxt, color, x, y + y_offset,
-//                             battery_height - padding / (float)2 ,
-//                             (battery_width * battery_status.percent / (float)100) - padding / (float)2);
-
-//     g_gfx_con.scale = 2;
-//     gfx_con_setpos(&g_gfx_con, 20, 35);
-//     gfx_printf(&g_gfx_con, "%d%%", battery_status.percent);
 // }
 
 /* Render functions */
@@ -95,7 +48,8 @@ static bool render_title(argon_ctxt_t *);
 
 static bool render_tabs(argon_ctxt_t *);
 static bool render_payloads_tab(lv_obj_t *, argon_ctxt_t *);
-static bool render_payloads_entries(lv_obj_t *, argon_ctxt_t *);
+static bool render_single_payload_tab(lv_obj_t *, argon_ctxt_t *, char*, u32);
+static bool render_payloads_entries(lv_obj_t *, argon_ctxt_t *, char*, u32);
 static bool render_tools_tab(lv_obj_t *, argon_ctxt_t *);
 
 void gui_menu_draw(argon_ctxt_t *argon_ctxt)
@@ -149,45 +103,114 @@ static bool render_tabs(argon_ctxt_t *argon_ctxt)
 
 static bool render_payloads_tab(lv_obj_t *par, argon_ctxt_t *ctxt)
 {
-    /* Setting scrollable view */
-    lv_obj_t *payloads_tab = lv_tabview_add_tab(par,
-                                                LV_SYMBOL_DIRECTORY " Payloads");
-    lv_page_set_sb_mode(payloads_tab, LV_SB_MODE_OFF);
+    char* payloads = dirlist(PAYLOADS_DIR, "*.bin", false);
+    u32 i = 0;
+    u32 group = 0;
 
-    lv_obj_t *page = lv_page_create(payloads_tab, NULL);
-    lv_obj_set_size(page, lv_obj_get_width(payloads_tab),
-                    LV_VER_RES_MAX);
-    lv_obj_align(page, payloads_tab, LV_ALIGN_CENTER, 0, 0);
-    lv_page_set_style(page, LV_PAGE_STYLE_BG, &lv_style_transp);
+    while(payloads[i * 256])
+    {
+        if (i % 4 == 0)
+        {
+            render_single_payload_tab(par, ctxt, payloads, group);
+            group++;
+        }
+        i++;
+    }
 
-    /* Horizontal grid layout */
-    lv_obj_t *cnr = lv_page_get_scrl(page);
-    lv_cont_set_layout(cnr, LV_LAYOUT_ROW_M);
-
-    render_payloads_entries(cnr, ctxt);
-
-    gui_menu_pool_push(ctxt->pool, payloads_tab);
+    if (group == 0)
+        render_single_payload_tab(par, ctxt, payloads, group);
 
     return true;
 }
 
-static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_ctxt)
+static bool render_single_payload_tab(lv_obj_t *par, argon_ctxt_t * ctxt, char* payloads, u32 group)
+{
+    /* Setting scrollable view */
+    lv_obj_t* payloads_tab = lv_tabview_add_tab(par,
+                                    LV_SYMBOL_DIRECTORY " Payloads");
+    lv_page_set_sb_mode(payloads_tab, LV_SB_MODE_OFF);
+
+    lv_obj_t*  page = lv_page_create(payloads_tab, NULL);
+    lv_obj_set_size(page, lv_obj_get_width(payloads_tab), 400);
+    lv_obj_align(page, payloads_tab, LV_ALIGN_CENTER, 0, 50);
+
+    /* Horizontal grid layout */
+    lv_obj_t*  cnr = lv_page_get_scrl(page);
+    lv_cont_set_layout(cnr, LV_LAYOUT_PRETTY);
+    lv_obj_set_size(cnr, LV_HOR_RES_MAX, lv_obj_get_height(page));
+
+    lv_cont_set_style(cnr, 
+                    LV_CONT_STYLE_MAIN, 
+                    lv_theme_get_argon()->style.panel);
+    render_payloads_entries(cnr, ctxt, payloads, group);
+
+    gui_menu_pool_push(ctxt->pool, payloads_tab);
+    return true;
+}
+
+static void my_event_cb(lv_obj_t * obj, lv_event_t event)
+{
+    if (event == LV_EVENT_CLICKED)
+    {
+        lv_obj_t label = lv_obj_get_child(obj, NULL)[0];
+    gfx_printf("%s\n", lv_label_get_text(&label));
+    }
+    
+}
+
+static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_ctxt, char* payloads, u32 group)
 {
     lv_obj_t *btn;
     lv_obj_t *label;
+    lv_img_dsc_t* img;
 
-    for (u32 i = 0; i < 6; i++)
+    u32 i = 4 * group;
+
+    static lv_style_t style_pr;
+    lv_style_copy(&style_pr, &lv_style_plain);
+    style_pr.image.color = LV_COLOR_BLACK;
+    style_pr.image.intense = LV_OPA_50;
+    style_pr.text.color = lv_color_hex3(0xaaa);
+
+    static lv_style_t inv_label;
+    lv_style_copy(&style_pr, &lv_style_plain);
+    inv_label.body.opa = LV_OPA_0;
+
+    while (payloads[i * 256] && i < 4 * (group + 1))
     {
-        btn = lv_btn_create(par_tabview, NULL);
-        lv_obj_set_size(btn, 350, 350);
-
-        lv_obj_set_event_cb(btn, ctrl_reboot_rcm);
+        char payload_path[256];
+        payload_full_path(&payloads[i * 256], payload_path);
         
-        label = lv_label_create(btn, NULL);
-        lv_label_set_text(label, LV_SYMBOL_PLAY);
+        char payload_logo[256];
+        payload_logo_path(&payloads[i * 256], payload_logo);
 
-        gui_menu_pool_push(argon_ctxt->pool, label);
+        img = bmp_to_lvimg_obj((const char*)payload_logo);
+
+        if (!img)
+        {
+            btn = lv_btn_create(par_tabview, NULL);
+            lv_obj_set_size(btn, 280, 280);
+            
+            label = lv_label_create(btn, NULL);
+            lv_label_set_text(label, &payloads[i * 256]);
+            gui_menu_pool_push(argon_ctxt->pool, label);
+        }
+        else
+        {   
+            btn = lv_imgbtn_create(par_tabview, NULL);
+            
+            label = lv_label_create(btn, NULL);
+            lv_label_set_text(label, payload_path);
+            lv_obj_set_style(label, &inv_label);
+            lv_imgbtn_set_style(btn, LV_BTN_STATE_PR, &style_pr);
+            lv_imgbtn_set_src(btn, LV_BTN_STATE_REL, img);
+            lv_imgbtn_set_src(btn, LV_BTN_STATE_PR, img);            
+        }
+
+        lv_obj_set_event_cb(btn, my_event_cb);
         gui_menu_pool_push(argon_ctxt->pool, btn);
+
+        i++;
     }
 
     return true;
@@ -226,7 +249,7 @@ static bool render_tools_tab(lv_obj_t* par, argon_ctxt_t* ctxt)
 static bool render_title(argon_ctxt_t * ctxt)
 {
     lv_obj_t* title = lv_label_create(lv_scr_act(), NULL);
-    lv_label_set_text(title, "ARGON"LV_SYMBOL_DRIVE"NX");
+    lv_label_set_text(title, "Argonnx");
     lv_obj_set_width(title, 500);
     lv_obj_align(title, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 50);
     

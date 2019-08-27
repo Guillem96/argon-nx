@@ -369,6 +369,9 @@
 #ifndef LV_FONT_MONTSERRAT_40
 #define LV_FONT_MONTSERRAT_40    0
 #endif
+#ifndef LV_FONT_MA_80
+#define LV_FONT_MA_80    0
+#endif
 /*Pixel perfect monospace font
  * http://pelulamu.net/unscii/ */
 #ifndef LV_FONT_UNSCII_8
