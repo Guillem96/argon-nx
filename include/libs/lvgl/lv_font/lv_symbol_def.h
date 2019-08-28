@@ -62,6 +62,7 @@ extern "C" {
 #define LV_SYMBOL_BATTERY_1       "\xef\x89\x83"
 #define LV_SYMBOL_BATTERY_EMPTY   "\xef\x89\x84"
 #define LV_SYMBOL_BLUETOOTH       "\xef\x8a\x93"
+#define LV_SYMBOL_METEOR          "\xef\x9d\x93"
 
 /** Invalid symbol at (U+F8FF). If written before a string then `lv_img` will show it as a label*/
 #define LV_SYMBOL_DUMMY           "\xEF\xA3\xBF"

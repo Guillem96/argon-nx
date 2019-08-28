@@ -121,7 +121,7 @@ static void btn_init(void)
     rel.body.shadow.width   = 20;
     rel.text.color          = lv_color_hsv_to_rgb(_hue, 5, 95);
     rel.image.color         = lv_color_hsv_to_rgb(_hue, 5, 95);
-    rel.text.font           = &lv_font_montserrat_40;
+    rel.text.font           = &lv_font_montserrat_alternate_20;
     
     lv_style_copy(&pr, &rel);
     pr.body.main_color   = GUN_METAL;
@@ -163,10 +163,7 @@ static void label_init(void)
     prim.text.color = LV_COLOR_WHITE;
 
     lv_style_copy(&sec, &prim);
-    // sec.text.color = lv_color_hsv_to_rgb(_hue, 80, 75);
-
     lv_style_copy(&hint, &prim);
-    // hint.text.color = lv_color_hsv_to_rgb(_hue, 40, 90);
 
     theme.style.label.prim = &prim;
     theme.style.label.sec  = &sec;
@@ -194,8 +191,10 @@ static void img_init(void)
 static void line_init(void)
 {
 #if LV_USE_LINE != 0
-
-    theme.style.line.decor = &def;
+    static lv_style_t line_style;
+    lv_style_copy(&line_style, &def);
+    line_style.line.color = LV_COLOR_GRAY;
+    theme.style.line.decor = &line_style;
 #endif
 }
 
@@ -696,12 +695,12 @@ static void tabview_init(void)
     btn_bg.body.padding.top    = 5;
     btn_bg.body.padding.bottom = 5;
     btn_bg.text.color          = ARGON_ORANGE;
-    btn_bg.text.font          = &lv_font_montserrat_40;
+    btn_bg.text.font          = &lv_font_montserrat_alternate_30;
 
     lv_style_copy(&rel, &lv_style_transp);
     rel.body.padding.top    = LV_DPI / 8;
     rel.body.padding.bottom = LV_DPI / 8;
-    rel.text.font           = &lv_font_montserrat_40;
+    rel.text.font           = &lv_font_montserrat_alternate_30;
 
     lv_style_copy(&pr, &def);
     pr.body.main_color   = LV_COLOR_BLACK;
@@ -714,7 +713,7 @@ static void tabview_init(void)
 
     lv_style_copy(&tgl_rel, &lv_style_transp);
     tgl_rel.glass      = 0;
-    tgl_rel.text.font   = &lv_font_montserrat_40;
+    tgl_rel.text.font   = &lv_font_montserrat_alternate_30;
     tgl_rel.text.color = ARGON_ORANGE;
 
     lv_style_copy(&tgl_pr, &def);

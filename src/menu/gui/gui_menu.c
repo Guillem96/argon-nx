@@ -153,7 +153,7 @@ static void my_event_cb(lv_obj_t * obj, lv_event_t event)
     if (event == LV_EVENT_CLICKED)
     {
         lv_obj_t label = lv_obj_get_child(obj, NULL)[0];
-    gfx_printf("%s\n", lv_label_get_text(&label));
+        gfx_printf("%s\n", lv_label_get_text(&label));
     }
     
 }
@@ -219,43 +219,78 @@ static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_c
 
 static bool render_tools_tab(lv_obj_t* par, argon_ctxt_t* ctxt)
 {
+    static lv_style_t labels_style;
+
     lv_obj_t *settings_tab = lv_tabview_add_tab(par,
-                                                LV_SYMBOL_SETTINGS " Settings");
+                                                LV_SYMBOL_SETTINGS " Tools");
+
+    lv_style_copy(&labels_style, lv_theme_get_current()->style.label.prim);
+    labels_style.text.color = LV_COLOR_WHITE;
     
-    lv_obj_t *btn = lv_btn_create(settings_tab, NULL);
-    lv_obj_set_size(btn, 200, 80);
+    u32 labels_y = 180;
+
+    lv_obj_t* more_to_come = lv_label_create(settings_tab, NULL);
+    lv_label_set_text(more_to_come, "More tools comming soon...");
+    lv_obj_set_pos(more_to_come, LV_HOR_RES_MAX / 2 + 80, LV_VER_RES_MAX / 2 - 20);
+    lv_label_set_style(more_to_come, LV_LABEL_STYLE_MAIN, &labels_style);
+
+    // Power off tools
+    lv_obj_t* power_label = lv_label_create(settings_tab, NULL);
+    lv_label_set_text(power_label, LV_SYMBOL_POWER" Power tools");
+    lv_obj_set_pos(power_label, 80, labels_y);
+    lv_label_set_style(power_label, LV_LABEL_STYLE_MAIN, &labels_style);
+
+    lv_obj_t* btn_cont = lv_cont_create(settings_tab, NULL);
+    lv_obj_set_pos(btn_cont, 80, labels_y + 20);
+    lv_obj_set_size(btn_cont, LV_HOR_RES / 2.5, 400);
+    lv_cont_set_layout(btn_cont, LV_LAYOUT_CENTER);
+
+    lv_obj_t *btn = lv_btn_create(btn_cont, NULL);
+    lv_obj_set_size(btn, 220, 80);
     lv_obj_set_event_cb(btn, ctrl_reboot_rcm);
 
     lv_obj_t* label = lv_label_create(btn, NULL);
     lv_label_set_text(label, "Reboot RCM");
 
-    btn = lv_btn_create(settings_tab, NULL);
-    lv_obj_set_size(btn, 200, 80);
+    btn = lv_btn_create(btn_cont, NULL);
+    lv_obj_set_size(btn, 220, 80);
     lv_obj_set_event_cb(btn, ctrl_power_off);
-    lv_obj_set_pos(btn, 200, 200);
 
     label = lv_label_create(btn, NULL);
     lv_label_set_text(label, "Power of");
 
+    btn = lv_btn_create(btn_cont, NULL);
+    lv_obj_set_size(btn, 220, 80);
+    lv_obj_set_event_cb(btn, ctrl_power_off);
+
+    label = lv_label_create(btn, NULL);
+    lv_label_set_text(label, "Reboot OFW");
+    
     lv_obj_t* line = lv_line_create(settings_tab, NULL);
 
-    static lv_point_t line_points[] = { {20, 400}, {1000, 400} };
+    static lv_point_t line_points[] = { {LV_HOR_RES_MAX / 2., 200}, {LV_HOR_RES_MAX / 2., LV_VER_RES_MAX - 100} };
     lv_line_set_points(line, line_points, 2);
-
+    lv_line_set_style(line, LV_LINE_STYLE_MAIN, lv_theme_get_current()->style.line.decor);
     gui_menu_pool_push(ctxt->pool, settings_tab);
+    gui_menu_pool_push(ctxt->pool, power_label);
+    gui_menu_pool_push(ctxt->pool, btn_cont);
+    gui_menu_pool_push(ctxt->pool, btn);
+    gui_menu_pool_push(ctxt->pool, label);
+
     return true;
 }
 
 static bool render_title(argon_ctxt_t * ctxt)
 {
     lv_obj_t* title = lv_label_create(lv_scr_act(), NULL);
-    lv_label_set_text(title, "Argonnx");
-    lv_obj_set_width(title, 500);
     lv_obj_align(title, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 50);
+    lv_label_set_text(title, "Arg"LV_SYMBOL_METEOR"nnx");
+    lv_obj_set_auto_realign(title, true);
     
     static lv_style_t label_style;
     lv_style_copy(&label_style, &lv_style_plain);
     label_style.text.color = LV_COLOR_WHITE;
+    label_style.text.font = &lv_font_montserrat_alternate_110;
     lv_obj_set_style(title, &label_style);
 
     gui_menu_pool_push(ctxt->pool, title);

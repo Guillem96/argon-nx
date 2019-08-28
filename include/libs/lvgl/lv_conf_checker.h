@@ -351,26 +351,24 @@
 
 /* Robot fonts with bpp = 4
  * https://fonts.google.com/specimen/Roboto  */
-#ifndef LV_FONT_ROBOTO_12
-#define LV_FONT_ROBOTO_12    0
-#endif
-#ifndef LV_FONT_ROBOTO_16
-#define LV_FONT_ROBOTO_16    1
-#endif
-#ifndef LV_FONT_ROBOTO_22
-#define LV_FONT_ROBOTO_22    0
-#endif
-#ifndef LV_FONT_ROBOTO_28
-#define LV_FONT_ROBOTO_28    0
-#endif
+
 #ifndef LV_FONT_MONTSERRAT_12
 #define LV_FONT_MONTSERRAT_12    0
 #endif
-#ifndef LV_FONT_MONTSERRAT_40
-#define LV_FONT_MONTSERRAT_40    0
+#ifndef LV_FONT_MA_20
+#define LV_FONT_MA_20    0
+#endif
+#ifndef LV_FONT_MA_20
+#define LV_FONT_MA_20    0
+#endif
+#ifndef LV_FONT_MA_30
+#define LV_FONT_MA_30    0
 #endif
 #ifndef LV_FONT_MA_80
 #define LV_FONT_MA_80    0
+#endif
+#ifndef LV_FONT_MA_110
+#define LV_FONT_MA_110    0
 #endif
 /*Pixel perfect monospace font
  * http://pelulamu.net/unscii/ */
