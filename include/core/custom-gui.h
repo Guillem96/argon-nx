@@ -19,12 +19,10 @@
 #include "utils/types.h"
 #include "libs/lvgl/lvgl.h"
 
-#define CUSTOM_BG_PATH "argon/rotated-bg.bmp"
-#define CUSTOM_TITLE_PATH "argon/title.bmp"
+#define CUSTOM_BG_PATH "argon/background.bmp"
 
 typedef struct {
     lv_img_dsc_t* custom_bg;
-    u8* title_bmp;
 } custom_gui_t;
 
 
@@ -34,9 +32,5 @@ void custom_gui_end(custom_gui_t*);
 
 /* Renders custom background, returns false if background.bmp does not exist */
 bool render_custom_background(custom_gui_t*, lv_obj_t* par);
-
-/* Renders custom title, returns false if title.bmp does not exist */
-bool render_custom_title(custom_gui_t*);
-
 
 #endif

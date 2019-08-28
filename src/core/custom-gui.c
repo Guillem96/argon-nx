@@ -27,14 +27,12 @@ custom_gui_t* custom_gui_load()
 {
     custom_gui_t* custom_gui = (custom_gui_t*)malloc(sizeof(custom_gui_t));
     custom_gui->custom_bg = bmp_to_lvimg_obj(CUSTOM_BG_PATH);
-    custom_gui->title_bmp = (u8*)sd_file_read(CUSTOM_TITLE_PATH);
     return custom_gui;
 }
 
 void custom_gui_end(custom_gui_t* cg)
 {
     free(cg->custom_bg);
-    free(cg->title_bmp);
     free(cg);
 }
 
@@ -50,13 +48,3 @@ bool render_custom_background(custom_gui_t* cg, lv_obj_t* par)
     return true;
 }
 
-bool render_custom_title(custom_gui_t* cg)
-{  
-    if (cg->title_bmp == NULL)
-        return false;
-
-    u32 bmp_width = (cg->title_bmp[0x12] | (cg->title_bmp[0x13] << 8) | (cg->title_bmp[0x14] << 16) | (cg->title_bmp[0x15] << 24));
-    u32 bmp_height = (cg->title_bmp[0x16] | (cg->title_bmp[0x17] << 8) | (cg->title_bmp[0x18] << 16) | (cg->title_bmp[0x19] << 24));
-    // gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, cg->title_bmp, 420, 10, bmp_width, bmp_height);
-    return true;
-}

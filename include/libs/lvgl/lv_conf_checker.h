@@ -320,24 +320,7 @@
 #ifndef LV_USE_THEME_DEFAULT
 #define LV_USE_THEME_DEFAULT    0   /*Built mainly from the built-in styles. Consumes very few RAM*/
 #endif
-#ifndef LV_USE_THEME_ALIEN
-#define LV_USE_THEME_ALIEN      0   /*Dark futuristic theme*/
-#endif
-#ifndef LV_USE_THEME_NIGHT
-#define LV_USE_THEME_NIGHT      0   /*Dark elegant theme*/
-#endif
-#ifndef LV_USE_THEME_MONO
-#define LV_USE_THEME_MONO       0   /*Mono color theme for monochrome displays*/
-#endif
-#ifndef LV_USE_THEME_MATERIAL
-#define LV_USE_THEME_MATERIAL   0   /*Flat theme with bold colors and light shadows*/
-#endif
-#ifndef LV_USE_THEME_ZEN
-#define LV_USE_THEME_ZEN        0   /*Peaceful, mainly light theme */
-#endif
-#ifndef LV_USE_THEME_NEMO
-#define LV_USE_THEME_NEMO       0   /*Water-like theme based on the movie "Finding Nemo"*/
-#endif
+
 
 /*==================
  *    FONT USAGE

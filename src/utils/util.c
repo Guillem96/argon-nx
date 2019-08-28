@@ -154,6 +154,7 @@ void power_off()
 {
 	bpmp_mmu_disable();
 	sd_unmount();
+	display_end();
 	//TODO: we should probably make sure all regulators are powered off properly.
 	i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_ONOFFCNFG1, MAX77620_ONOFFCNFG1_PWR_OFF);
 }

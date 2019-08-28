@@ -108,6 +108,7 @@ lv_img_dsc_t *bmp_to_lvimg_obj(const char *path)
 	u8 *bitmap = sd_file_read((char*)path);
 	if (!bitmap) 
     {
+        gfx_printf("Not found\n");
         return NULL;
     }
 
@@ -182,6 +183,7 @@ lv_img_dsc_t *bmp_to_lvimg_obj(const char *path)
 	else
 	{
 		free(bitmap);
+        gfx_printf("Failed sanitize\n");
 		return NULL;
 	}
 	

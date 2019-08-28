@@ -70,6 +70,8 @@ void gui_menu_draw(argon_ctxt_t *argon_ctxt)
 
 void gui_menu_open(argon_ctxt_t *argon_ctxt)
 {
+    g_argon_ctxt = argon_ctxt;
+
     while (true)
     {
         lv_tick_inc(1);
@@ -148,16 +150,6 @@ static bool render_single_payload_tab(lv_obj_t *par, argon_ctxt_t * ctxt, char* 
     return true;
 }
 
-static void my_event_cb(lv_obj_t * obj, lv_event_t event)
-{
-    if (event == LV_EVENT_CLICKED)
-    {
-        lv_obj_t label = lv_obj_get_child(obj, NULL)[0];
-        gfx_printf("%s\n", lv_label_get_text(&label));
-    }
-    
-}
-
 static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_ctxt, char* payloads, u32 group)
 {
     lv_obj_t *btn;
@@ -172,9 +164,22 @@ static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_c
     style_pr.image.intense = LV_OPA_50;
     style_pr.text.color = lv_color_hex3(0xaaa);
 
+    static lv_style_t rel_norm_btn;
+    lv_style_copy(&rel_norm_btn, lv_theme_get_argon()->style.btn.rel);
+    rel_norm_btn.body.padding.inner = 25;
+
+    static lv_style_t pr_norm_btn;
+    lv_style_copy(&pr_norm_btn, lv_theme_get_argon()->style.btn.pr);
+    pr_norm_btn.body.padding.inner = 25;
+
     static lv_style_t inv_label;
-    lv_style_copy(&style_pr, &lv_style_plain);
-    inv_label.body.opa = LV_OPA_0;
+    lv_style_copy(&inv_label, &lv_style_transp);
+    inv_label.text.font = NULL;
+
+    static lv_style_t no_img_label;
+    lv_style_copy(&no_img_label, &lv_style_plain);
+    no_img_label.text.font = &lv_font_montserrat_alternate_110;
+    no_img_label.text.color = LV_COLOR_WHITE;
 
     while (payloads[i * 256] && i < 4 * (group + 1))
     {
@@ -190,9 +195,20 @@ static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_c
         {
             btn = lv_btn_create(par_tabview, NULL);
             lv_obj_set_size(btn, 280, 280);
-            
+            lv_btn_set_style(btn, LV_BTN_STYLE_PR, &pr_norm_btn);
+            lv_btn_set_style(btn, LV_BTN_STYLE_REL, &rel_norm_btn);
+
+            label = lv_label_create(btn, NULL);
+            lv_obj_set_style(label, &no_img_label);
+            lv_label_set_text(label, LV_SYMBOL_ROCKET);
+
             label = lv_label_create(btn, NULL);
             lv_label_set_text(label, &payloads[i * 256]);
+
+            label = lv_label_create(btn, NULL);
+            lv_label_set_text(label, payload_path);
+            lv_obj_set_style(label, &inv_label);
+
             gui_menu_pool_push(argon_ctxt->pool, label);
         }
         else
@@ -207,7 +223,7 @@ static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_c
             lv_imgbtn_set_src(btn, LV_BTN_STATE_PR, img);            
         }
 
-        lv_obj_set_event_cb(btn, my_event_cb);
+        lv_obj_set_event_cb(btn, ctrl_lauch_payload);
         gui_menu_pool_push(argon_ctxt->pool, btn);
 
         i++;
@@ -261,7 +277,7 @@ static bool render_tools_tab(lv_obj_t* par, argon_ctxt_t* ctxt)
 
     btn = lv_btn_create(btn_cont, NULL);
     lv_obj_set_size(btn, 220, 80);
-    lv_obj_set_event_cb(btn, ctrl_power_off);
+    lv_obj_set_event_cb(btn, ctrl_reboot_ofw);
 
     label = lv_label_create(btn, NULL);
     lv_label_set_text(label, "Reboot OFW");
@@ -271,11 +287,13 @@ static bool render_tools_tab(lv_obj_t* par, argon_ctxt_t* ctxt)
     static lv_point_t line_points[] = { {LV_HOR_RES_MAX / 2., 200}, {LV_HOR_RES_MAX / 2., LV_VER_RES_MAX - 100} };
     lv_line_set_points(line, line_points, 2);
     lv_line_set_style(line, LV_LINE_STYLE_MAIN, lv_theme_get_current()->style.line.decor);
+    
     gui_menu_pool_push(ctxt->pool, settings_tab);
     gui_menu_pool_push(ctxt->pool, power_label);
     gui_menu_pool_push(ctxt->pool, btn_cont);
     gui_menu_pool_push(ctxt->pool, btn);
     gui_menu_pool_push(ctxt->pool, label);
+    gui_menu_pool_push(ctxt->pool, line);
 
     return true;
 }

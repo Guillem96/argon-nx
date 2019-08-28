@@ -120,7 +120,8 @@ static const lv_font_fmt_txt_glyph_dsc_t glyph_dsc[] = {
     {.bitmap_index = 170499, .adv_w = 512, .box_h = 104, .box_w = 6, .ofs_x = 13, .ofs_y = -22},
     {.bitmap_index = 170811, .adv_w = 563, .box_h = 104, .box_w = 27, .ofs_x = 2, .ofs_y = -22},
     {.bitmap_index = 172215, .adv_w = 1001, .box_h = 17, .box_w = 49, .ofs_x = 7, .ofs_y = 30},
-    {.bitmap_index = 172632, .adv_w = 1760, .box_h = 111, .box_w = 110, .ofs_x = 0, .ofs_y = -14}
+    {.bitmap_index = 172632, .adv_w = 1760, .box_h = 111, .box_w = 110, .ofs_x = 0, .ofs_y = -14},
+    {.bitmap_index = 178737, .adv_w = 1760, .box_h = 111, .box_w = 110, .ofs_x = 0, .ofs_y = -14}
 };
 
 /*---------------------
@@ -130,6 +131,11 @@ static const lv_font_fmt_txt_glyph_dsc_t glyph_dsc[] = {
 
 
 /*Collect the unicode lists and glyph_id offsets*/
+static const uint16_t unicode_list_1[] = {
+    0x0, 0x61e
+};
+
+/*Collect the unicode lists and glyph_id offsets*/
 static const lv_font_fmt_txt_cmap_t cmaps[] =
 {
     {
@@ -137,8 +143,8 @@ static const lv_font_fmt_txt_cmap_t cmaps[] =
         .glyph_id_start = 1, .unicode_list = NULL, .glyph_id_ofs_list = NULL, .list_length = 0
     },
     {
-        .range_start = 63315, .range_length = 1, .type = LV_FONT_FMT_TXT_CMAP_FORMAT0_TINY,
-        .glyph_id_start = 96, .unicode_list = NULL, .glyph_id_ofs_list = NULL, .list_length = 0
+        .range_start = 61749, .range_length = 1567, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY,
+        .glyph_id_start = 96, .unicode_list = unicode_list_1, .glyph_id_ofs_list = NULL, .list_length = 2
     }
 };
 

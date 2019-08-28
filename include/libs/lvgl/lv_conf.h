@@ -224,7 +224,6 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
 #define LV_THEME_LIVE_UPDATE    0   /*1: Allow theme switching at run time. Uses 8..10 kB of RAM*/
 
 #define LV_USE_THEME_DEFAULT    0   /*Built mainly from the built-in styles. Consumes very few RAM*/
-#define LV_USE_THEME_MATERIAL   0   /*Flat theme with bold colors and light shadows*/
 #define LV_USE_THEME_ARGON      1
 
 /*==================
@@ -331,7 +330,7 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_CANVAS   0
 
 /*Check box (dependencies: lv_btn, lv_label)*/
-#define LV_USE_CB       1
+#define LV_USE_CB       0
 
 /*Chart (dependencies: -)*/
 #define LV_USE_CHART    0
@@ -343,7 +342,7 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_CONT     1
 
 /*Drop down list (dependencies: lv_page, lv_label, lv_symbol_def.h)*/
-#define LV_USE_DDLIST    1
+#define LV_USE_DDLIST    0
 #if LV_USE_DDLIST != 0
 /*Open and close default animation time [ms] (0: no animation)*/
 #  define LV_DDLIST_DEF_ANIM_TIME     200
@@ -388,14 +387,14 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_LINE     1
 
 /*List (dependencies: lv_page, lv_btn, lv_label, (lv_img optionally for icons ))*/
-#define LV_USE_LIST     1
+#define LV_USE_LIST     0
 #if LV_USE_LIST != 0
 /*Default animation time of focusing to a list element [ms] (0: no animation)  */
 #  define LV_LIST_DEF_ANIM_TIME  100
 #endif
 
 /*Line meter (dependencies: *;)*/
-#define LV_USE_LMETER   1
+#define LV_USE_LMETER   0
 
 /*Message box (dependencies: lv_rect, lv_btnm, lv_label)*/
 #define LV_USE_MBOX     0
@@ -442,7 +441,7 @@ typedef void * lv_obj_user_data_t;
 #endif
 
 /*Table (dependencies: lv_label)*/
-#define LV_USE_TABLE    1
+#define LV_USE_TABLE    0
 #if LV_USE_TABLE
 #  define LV_TABLE_COL_MAX    12
 #endif
@@ -455,14 +454,14 @@ typedef void * lv_obj_user_data_t;
 #endif
 
 /*Tileview (dependencies: lv_page) */
-#define LV_USE_TILEVIEW     1
+#define LV_USE_TILEVIEW     0
 #if LV_USE_TILEVIEW
 /*Time of slide animation [ms] (0: no animation)*/
 #  define LV_TILEVIEW_DEF_ANIM_TIME   300
 #endif
 
 /*Window (dependencies: lv_cont, lv_btn, lv_label, lv_img, lv_page)*/
-#define LV_USE_WIN      1
+#define LV_USE_WIN      0
 
 /*==================
  * Non-user section

@@ -189,8 +189,8 @@ static const lv_font_fmt_txt_cmap_t cmaps[] =
 /*Collect the kern pair's data in one place*/
 static const lv_font_fmt_txt_kern_pair_t kern_pairs =
 {
-    .glyph_ids = (ARGON_RES_ADDR + MONTSERRAT_ALT_30_KERN_PAIR_GLYPH),
-    .values = (ARGON_RES_ADDR + MONTSERRAT_ALT_30_KERN_PAIR_VALUE),
+    .glyph_ids = (const uint8_t *)(ARGON_RES_ADDR + MONTSERRAT_ALT_30_KERN_PAIR_GLYPH),
+    .values = (const int8_t *)(ARGON_RES_ADDR + MONTSERRAT_ALT_30_KERN_PAIR_VALUE),
     .pair_cnt = 210,
     .glyph_ids_size = 0
 };
@@ -201,7 +201,7 @@ static const lv_font_fmt_txt_kern_pair_t kern_pairs =
 
 /*Store all the custom data of the font*/
 static lv_font_fmt_txt_dsc_t font_dsc = {
-    .glyph_bitmap = (ARGON_RES_ADDR + MONTSERRAT_ALT_30_GLYPH_BMP),
+    .glyph_bitmap = (const uint8_t *)(ARGON_RES_ADDR + MONTSERRAT_ALT_30_GLYPH_BMP),
     .glyph_dsc = glyph_dsc,
     .cmaps = cmaps,
     .cmap_num = 2,

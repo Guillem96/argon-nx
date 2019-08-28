@@ -367,7 +367,6 @@ lv_theme_t * lv_theme_get_current(void);
  *     POST INCLUDE
  *********************/
 #include "lv_theme_default.h"
-#include "lv_theme_material.h"
 #include "lv_theme_argon.h"
 
 #ifdef __cplusplus
