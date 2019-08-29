@@ -95,8 +95,8 @@ Some users reported issuses using SX OS. <small>But with Atmosphere out there...
 
 ## Roadmap
 
-1. Kind of config file
-2. Change to prettier font
+1. Config file to manage tabs titles and argon sd card directory tree.
+2. More tools inside tools tab.
 
 ## Credits
 
