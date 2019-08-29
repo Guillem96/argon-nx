@@ -30,24 +30,24 @@ If `payload.bin` is not present or VOLUME DOWN button is pressed on payload inje
 ```
 argon
   ├───logos
-  │     default.bmp       # Default logo (logo for all payloads)
   │     fusee-primary.bmp # Logo for fusee-primary.bin payload
+  │     ReiNX.bmp # Logo for ReiNX.bin payload
   │
   └───payloads
         fusee-primary.bin
-        ReiNX.bin         # Will be rendered using default logo
+        ReiNX.bin         
+        hekate.bin # Will be rendered using default logo
 ```
 
-- **Custom backgrounds** can be added by placing `background.bmp` file inside `argon` directory. **The background must be smaller or equal than 720x1280**.
-- **Custom titles** can be added by placing `title.bmp` file inside `argon` directory. **There is not a specific size for title**.
-- Take **screenshots** to share your ArgonNX gui.
-- FULL touch support. Thanks to @pixel-stuck
-
+- **Custom backgrounds** can be added by placing `background.bmp` file inside `argon` directory. **The background must be smaller or equal than 1280x720**.
+- Take **screenshots** to share your ArgonNX gui. To capture ArgonNX screen tap anywhere with two fingers.
+- Touch support. Thanks to @pixel-stuck
+- Simple tools. (Don't expect tools like the onew built in hekate, argon tools are much more lightweighted and simple, such as reboot options)
 
 ## About BMP format
 
 The only format supported is **BMP 32 bit ARGB color**.
-The color used for transparency is **#1D1919**.
+ArgonNX recomnds to use a solid background without alpha channel (alpha channel set to 0xFF). Payloads' logos **support alpha channel**.
 
 ## GUI
 
@@ -73,8 +73,11 @@ argon
 |       hekate.bmp
 |       SXOS.bmp
 |
-├─── background.bmp
-└─── title.bmp
+├─── sys
+|       minerva.bso # IMPORTANT if you want a good UX experience
+|       resources.argon # IMPORTANT. Binary file containing all render resources except the background and logos
+|
+└─── background.bmp
 ```
 
 ## Improve performance
@@ -82,9 +85,13 @@ argon
 ArgonNX can use **minerva dram training** to improve performance.
 The use of minerva is optional but recommended. To use minerva just place the compiled `minerva.bso` inside `argon/sys`. The directory `argon/sys` with minerva, is included in `sd-files.zip` in the release section.
 
+To learn more about Minerva Training Cell check its [official repo](https://github.com/CTCaer/minerva_tc).
+
 ## Compatibility
 
-This payload will launch any CFW or payload. 
+This payload will chainload any CFW or payload. 
+
+Some users reported issuses using SX OS. <small>But with Atmosphere out there... who wants SXOS?</small>
 
 ## Roadmap
 
@@ -98,4 +105,5 @@ This payload will launch any CFW or payload.
 * __CTCaer__ for the continued [hekate](https://github.com/CTCaer/hekate) and his **minerva** project.
 * __xalgovia__ and __Retrogamer 74__ for the splash and logos. Also thanks them to use ArgonNX in RetroReloaded.
 * __langerhans__ and  __stuck-pixel__ for their implementation of touch support.
+* __LittlevGL__ for being such a good embedded graphics library.
 * __D3fau4__ for touch support testing.
