@@ -49,6 +49,28 @@ argon
 The only format supported is **BMP 32 bit ARGB color**.
 ArgonNX recomnds to use a solid background without alpha channel (alpha channel set to 0xFF). Payloads' logos **support alpha channel**.
 
+### Generate new logos
+
+Argon provides a useful Command Line Interface (CLI) to create logos for your payloads using a *jpg* or *png* image.
+
+The Argon CLI is written in Python. To use it follow this intructions to intall python3 to your computer. Once you have python3 install juse type the following commands (These will install the requirements for the CLI):
+
+```bash
+$ cd scripts
+$ pip install -r requirements.txt
+$ sudo apt-get install libmagickwand-dev
+```
+> If you are using Windows visit [Wand's installation](http://docs.wand-py.org/en/0.4.1/guide/install.html) page and follow the steps to install libmagikcwand on Windows.
+
+Finally to generate a new logo use the following command.
+
+```bash
+$ cd scripts
+$ python argon.py img-to-logo <path-to-pn-jpg-img>
+```
+
+The CLI generates an `out.bmp` file ready to be renamed as the payload name and moved to the `argon/logos` path. 
+
 ## GUI
 
 This image was captured with the **screenshot** feature.
