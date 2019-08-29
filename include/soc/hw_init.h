@@ -19,8 +19,9 @@
 #define _HW_INIT_H_
 
 #include "utils/types.h"
+#include "core/argon-ctxt.h"
 
 void config_hw();
-void reconfig_hw_workaround(bool extra_reconfig, u32 magic);
+void reconfig_hw_workaround(argon_ctxt_t* argon_ctxt_t, bool extra_reconfig, u32 magic);
 
 #endif

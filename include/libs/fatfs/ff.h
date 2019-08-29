@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------/
-/  FatFs - Generic FAT Filesystem module  R0.13b                              /
+/  FatFs - Generic FAT Filesystem module  R0.13c                              /
 /-----------------------------------------------------------------------------/
 /
 / Copyright (C) 2018, ChaN, all right reserved.
@@ -7,7 +7,6 @@
 / FatFs module is an open source software. Redistribution and use of FatFs in
 / source and binary forms, with or without modification, are permitted provided
 / that the following condition is met:
-
 / 1. Redistributions of source code must retain the above copyright notice,
 /    this condition and the following disclaimer.
 /
@@ -20,13 +19,13 @@
 
 
 #ifndef FF_DEFINED
-#define FF_DEFINED	63463	/* Revision ID */
+#define FF_DEFINED	86604	/* Revision ID */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "utils/types.h"	/* Basic integer types */
+#include "../../utils/types.h"	/* Basic integer types */
 #include "ffconf.h"		/* FatFs configuration options */
 
 #if FF_DEFINED != FFCONF_DEF
@@ -95,8 +94,8 @@ typedef DWORD FSIZE_t;
 /* Filesystem object structure (FATFS) */
 
 typedef struct {
-	BYTE	fs_type;		/* Filesystem type (0:N/A) */
-	BYTE	pdrv;			/* Physical drive number */
+	BYTE	fs_type;		/* Filesystem type (0:not mounted) */
+	BYTE	pdrv;			/* Associated physical drive */
 	BYTE	n_fats;			/* Number of FATs (1 or 2) */
 	BYTE	wflag;			/* win[] flag (b0:dirty) */
 	BYTE	fsi_flag;		/* FSINFO flags (b7:disabled, b0:dirty) */
@@ -133,6 +132,9 @@ typedef struct {
 	DWORD	fatbase;		/* FAT base sector */
 	DWORD	dirbase;		/* Root directory base sector/cluster */
 	DWORD	database;		/* Data base sector */
+#if FF_FS_EXFAT
+	DWORD	bitbase;		/* Allocation bitmap base sector */
+#endif
 	DWORD	winsect;		/* Current sector appearing in the win[] */
 	BYTE	win[FF_MAX_SS];	/* Disk access window for Directory, FAT (and file data at tiny cfg) */
 } FATFS;
@@ -145,7 +147,7 @@ typedef struct {
 	FATFS*	fs;				/* Pointer to the hosting volume of this object */
 	WORD	id;				/* Hosting volume mount ID */
 	BYTE	attr;			/* Object attribute */
-	BYTE	stat;			/* Object chain status (b1-0: =0:not contiguous, =2:contiguous, =3:flagmented in this session, b2:sub-directory stretched) */
+	BYTE	stat;			/* Object chain status (b1-0: =0:not contiguous, =2:contiguous, =3:fragmented in this session, b2:sub-directory stretched) */
 	DWORD	sclust;			/* Object data start cluster (0:no cluster or root directory) */
 	FSIZE_t	objsize;		/* Object size (valid when sclust != 0) */
 #if FF_FS_EXFAT
@@ -175,11 +177,11 @@ typedef struct {
 	DWORD	dir_sect;		/* Sector number containing the directory entry (not used at exFAT) */
 	BYTE*	dir_ptr;		/* Pointer to the directory entry in the win[] (not used at exFAT) */
 #endif
-#if FF_USE_FASTSEEK
-	DWORD*	cltbl;			/* Pointer to the cluster link map table (nulled on open, set by application) */
-#endif
 #if !FF_FS_TINY
 	BYTE	buf[FF_MAX_SS];	/* File private data read/write window */
+#endif
+#if FF_USE_FASTSEEK
+	DWORD*	cltbl;			/* Pointer to the cluster link map table (nulled on open, set by application) */
 #endif
 } FIL;
 
@@ -243,7 +245,12 @@ typedef enum {
 	FR_LOCKED,				/* (16) The operation is rejected according to the file sharing policy */
 	FR_NOT_ENOUGH_CORE,		/* (17) LFN working buffer could not be allocated */
 	FR_TOO_MANY_OPEN_FILES,	/* (18) Number of open files > FF_FS_LOCK */
+#ifdef FF_FASTFS
+	FR_INVALID_PARAMETER,	/* (19) Given parameter is invalid */
+	FR_CLTBL_NO_INIT	    /* (20) The cluster table for fast seek/read/write was not created */
+#else
 	FR_INVALID_PARAMETER	/* (19) Given parameter is invalid */
+#endif
 } FRESULT;
 
 
@@ -255,6 +262,10 @@ FRESULT f_open (FIL* fp, const TCHAR* path, BYTE mode);				/* Open or create a f
 FRESULT f_close (FIL* fp);											/* Close an open file object */
 FRESULT f_read (FIL* fp, void* buff, UINT btr, UINT* br);			/* Read data from the file */
 FRESULT f_write (FIL* fp, const void* buff, UINT btw, UINT* bw);	/* Write data to the file */
+#ifdef FF_FASTFS
+FRESULT f_read_fast (FIL* fp, const void* buff, UINT btr);			/* Fast read data from the file */
+FRESULT f_write_fast (FIL* fp, const void* buff, UINT btw);         /* Fast write data to the file */
+#endif
 FRESULT f_lseek (FIL* fp, FSIZE_t ofs);								/* Move file pointer of the file object */
 FRESULT f_truncate (FIL* fp);										/* Truncate the file */
 FRESULT f_sync (FIL* fp);											/* Flush cached data of the writing file */
@@ -276,6 +287,9 @@ FRESULT f_getfree (const TCHAR* path, DWORD* nclst, FATFS** fatfs);	/* Get numbe
 FRESULT f_getlabel (const TCHAR* path, TCHAR* label, DWORD* vsn);	/* Get volume label */
 FRESULT f_setlabel (const TCHAR* label);							/* Set volume label */
 FRESULT f_forward (FIL* fp, UINT(*func)(const BYTE*,UINT), UINT btf, UINT* bf);	/* Forward data to the stream */
+#ifdef FF_FASTFS
+DWORD  *f_expand_cltbl (FIL* fp, UINT tblsz, FSIZE_t ofs);			/* Expand file and populate cluster table */
+#endif
 FRESULT f_expand (FIL* fp, FSIZE_t szf, BYTE opt);					/* Allocate a contiguous block to the file */
 FRESULT f_mount (FATFS* fs, const TCHAR* path, BYTE opt);			/* Mount/Unmount a logical drive */
 FRESULT f_mkfs (const TCHAR* path, BYTE opt, DWORD au, void* work, UINT len);	/* Create a FAT volume */
@@ -372,5 +386,4 @@ int ff_del_syncobj (FF_SYNC_t sobj);	/* Delete a sync object */
 #ifdef __cplusplus
 }
 #endif
-
 #endif /* FF_DEFINED */

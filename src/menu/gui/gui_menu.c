@@ -17,17 +17,18 @@
 
 #include "menu/gui/gui_menu.h"
 #include "menu/gui/gui_menu_pool.h"
-
-#include "utils/touch.h"
-#include "utils/btn.h"
-
-#include "gfx/gfx.h"
-
-#include "mem/heap.h"
+#include "menu/gui/gui_menu_controllers.h"
 
 #include "power/battery.h"
 
 #include "core/custom-gui.h"
+#include "core/payloads.h"
+
+#include "utils/util.h"
+#include "utils/dirlist.h"
+
+#include "gfx/gfx.h"
+#include "gfx/lvgl_adapter.h"
 
 #include <string.h>
 
@@ -35,170 +36,281 @@
 #define MAJOR_VERSION 0
 
 
-/* Render the menu */
-static void gui_menu_render_menu(gui_menu_t*);
-static void gui_menu_draw_background(gui_menu_t*);
-static void gui_menu_draw_entries(gui_menu_t*);
+// static void gui_menu_draw_battery()
+// {
+//     battery_status_t battery_status;
+//     battery_get_status(&battery_status);
+//     u32 color = get_battery_color(battery_status);
+// }
 
-/* Update menu after an input */
-static int gui_menu_update(gui_menu_t*);
+/* Render functions */
+static bool render_title(argon_ctxt_t *);
 
-/* Handle input */
-static int handle_touch_input(gui_menu_t*);
+static bool render_tabs(argon_ctxt_t *);
+static bool render_payloads_tab(lv_obj_t *, argon_ctxt_t *);
+static bool render_single_payload_tab(lv_obj_t *, argon_ctxt_t *, char*, u32);
+static bool render_payloads_entries(lv_obj_t *, argon_ctxt_t *, char*, u32);
+static bool render_tools_tab(lv_obj_t *, argon_ctxt_t *);
 
-gui_menu_t *gui_menu_create(const char *title)
+void gui_menu_draw(argon_ctxt_t *argon_ctxt)
 {
-	gui_menu_t *menu = (gui_menu_t *)malloc(sizeof(gui_menu_t));
-    menu->custom_gui = custom_gui_load();
-	strcpy(menu->title, title);
-	menu->next_entry = 0;
-	menu->selected_index = 0;
-    gui_menu_push_to_pool((void*)menu);
-	return menu;
-}
-
-
-void gui_menu_append_entry(gui_menu_t *menu, gui_menu_entry_t *menu_entry)
-{
-	if (menu->next_entry == MAX_ENTRIES)
-		return;
-
-	menu->entries[menu->next_entry] = menu_entry;
-	menu->next_entry++;
-}
-
-static void gui_menu_draw_background(gui_menu_t* menu)
-{
-    if(!render_custom_background(menu->custom_gui))
-        gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
+    lv_style_scr.body.main_color = GRAD_1;
+    lv_style_scr.body.grad_color = GRAD_2;
     
-    /* Render title */
-    if (!render_custom_title(menu->custom_gui)) 
+    custom_gui_t *cg = custom_gui_load();
+
+    if (!render_custom_background(cg, lv_scr_act()))
     {
-        g_gfx_con.scale = 4;
-        gfx_con_setpos(&g_gfx_con, 480, 20);
-        gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
+        gfx_printf("\nFail drawing bg\n");
+    }
+
+    render_title(argon_ctxt);
+    render_tabs(argon_ctxt);
+}
+
+void gui_menu_open(argon_ctxt_t *argon_ctxt)
+{
+    g_argon_ctxt = argon_ctxt;
+
+    while (true)
+    {
+        lv_tick_inc(1);
+        lv_task_handler();
+        msleep(1);
     }
 }
 
-
-static u32 get_battery_color(battery_status_t battery_status)
+void gui_menu_destroy(argon_ctxt_t *argon_ctxt)
 {
-    if (battery_status.charge_status == FAST_CHARGING) {
-        return 0xFF6ED0F4;
-    } else if (battery_status.charge_status == CHARGING) {
-        return 0xFF74CC78;
-    } else if (battery_status.percent > 50) {
-        return 0xFF4EAD55;
-    } else if (battery_status.percent < 50) {
-        return 0xFFF4C153;
-    } else {
-        return 0xFFFF7C7C;
-    }
+    argon_ctxt_destroy(argon_ctxt);
 }
 
-static void gui_menu_draw_battery()
+static bool render_tabs(argon_ctxt_t *argon_ctxt)
 {
-    battery_status_t battery_status;
-    battery_get_status(&battery_status);
-    u32 color = get_battery_color(battery_status);
+    lv_obj_t *base_tabs = lv_tabview_create(lv_scr_act(), NULL);
+    lv_obj_set_pos(base_tabs, 0, 0);
+    lv_tabview_set_btns_pos(base_tabs, LV_TABVIEW_BTNS_POS_BOTTOM);
+    lv_tabview_set_style(base_tabs, LV_TABVIEW_STYLE_BG, &lv_style_transp_tight);
 
-    u32 x = 30;
-    u32 y = 1130;
-    u32 padding = 6;
-    u32 battery_width = 70;
-    u32 battery_height = 30;
+    /* Disable animations */
+    lv_tabview_set_anim_time(base_tabs, 0);
+    lv_tabview_set_sliding(base_tabs, false);
 
-    gfx_draw_color_rect(&g_gfx_ctxt, 0xFFFFFFFF, x - padding / (float)2, y - padding / (float)2, 
-                            battery_height + padding / (float)2, 
-                            battery_width + padding / (float)2);
-    gfx_draw_color_rect(&g_gfx_ctxt, 0xFFFFFFFF, 
-                            x + battery_height / (float)2 - 6, 
-                            y - padding - 3, 
-                            10, 10);
-    
-    u32 y_offset = battery_width - (battery_width * battery_status.percent / (float)100);
-    gfx_draw_color_rect(&g_gfx_ctxt, color, x, y + y_offset, 
-                            battery_height - padding / (float)2 , 
-                            (battery_width * battery_status.percent / (float)100) - padding / (float)2);
+    /* Render all tabs */
+    render_payloads_tab(base_tabs, argon_ctxt);
+    render_tools_tab(base_tabs, argon_ctxt);
 
-    g_gfx_con.scale = 2;
-    gfx_con_setpos(&g_gfx_con, 20, 35);
-    gfx_printf(&g_gfx_con, "%d%%", battery_status.percent);
+    return true;
 }
 
-static void gui_menu_render_menu(gui_menu_t* menu) 
+static bool render_payloads_tab(lv_obj_t *par, argon_ctxt_t *ctxt)
 {
-    gui_menu_draw_background(menu);
-    gui_menu_draw_entries(menu);
-    gui_menu_draw_battery();
-    gfx_swap_buffer(&g_gfx_ctxt);
-}
+    char* payloads = dirlist(PAYLOADS_DIR, "*.bin", false);
+    u32 i = 0;
+    u32 group = 0;
 
-static void gui_menu_draw_entries(gui_menu_t *menu)
-{
-    for (s16 i = 0; i < menu->next_entry; i++)
-        gui_menu_render_entry(menu->entries[i]);
-}
-
-
-static int gui_menu_update(gui_menu_t *menu)
-{
-    u32 res = 0;
-
-    gui_menu_draw_background(menu);
-    gui_menu_draw_entries(menu);
-    gui_menu_draw_battery();
-
-    res = handle_touch_input(menu);
-
-    gfx_swap_buffer(&g_gfx_ctxt);
-
-    return res;
-}
-
-int gui_menu_open(gui_menu_t *menu)
-{   
-    gfx_con_setcol(&g_gfx_con, 0xFFF9F9F9, 0, 0xFF191414);
-    /* 
-     * Render and flush at first render because blocking input won't allow us 
-     * flush buffers
-     */
-    gui_menu_render_menu(menu);
-
-	while (gui_menu_update(menu))
-    ;
-
-	return 0;
-}
-
-void gui_menu_destroy(gui_menu_t *menu)
-{
-	for (int i = 0; i < menu->next_entry; i++)
-		gui_menu_entry_destroy(menu->entries[i]);
-    custom_gui_end(menu->custom_gui);
-	free(menu->entries);
-	free(menu);
-}
-
-
-static int handle_touch_input(gui_menu_t *menu)
-{
-    gui_menu_entry_t *entry = NULL;
-    touch_event_t event = touch_wait();
-    
-    /* After touch input check if any entry has ben tapped */
-    for(u32 i = 0; i < menu->next_entry; i++)
+    while(payloads[i * 256])
     {
-        entry = menu->entries[i];
-
-        if (entry->handler != NULL 
-            && is_rect_touched(&event, entry->x, entry->y, entry->width, entry->height))
+        if (i % 4 == 0)
         {
-            if (entry->handler(entry->param) != 0)
-                return 0;
+            render_single_payload_tab(par, ctxt, payloads, group);
+            group++;
         }
+        i++;
     }
 
-    return 1;
+    if (group == 0)
+        render_single_payload_tab(par, ctxt, payloads, group);
+
+    return true;
+}
+
+static bool render_single_payload_tab(lv_obj_t *par, argon_ctxt_t * ctxt, char* payloads, u32 group)
+{
+    /* Setting scrollable view */
+    lv_obj_t* payloads_tab = lv_tabview_add_tab(par,
+                                    LV_SYMBOL_DIRECTORY " Payloads");
+    lv_page_set_sb_mode(payloads_tab, LV_SB_MODE_OFF);
+
+    lv_obj_t*  page = lv_page_create(payloads_tab, NULL);
+    lv_obj_set_size(page, lv_obj_get_width(payloads_tab), 400);
+    lv_obj_align(page, payloads_tab, LV_ALIGN_CENTER, 0, 50);
+
+    /* Horizontal grid layout */
+    lv_obj_t*  cnr = lv_page_get_scrl(page);
+    lv_cont_set_layout(cnr, LV_LAYOUT_PRETTY);
+    lv_obj_set_size(cnr, LV_HOR_RES_MAX, lv_obj_get_height(page));
+
+    lv_cont_set_style(cnr, 
+                    LV_CONT_STYLE_MAIN, 
+                    lv_theme_get_argon()->style.panel);
+    render_payloads_entries(cnr, ctxt, payloads, group);
+
+    gui_menu_pool_push(ctxt->pool, payloads_tab);
+    return true;
+}
+
+static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_ctxt, char* payloads, u32 group)
+{
+    lv_obj_t *btn;
+    lv_obj_t *label;
+    lv_img_dsc_t* img;
+
+    u32 i = 4 * group;
+
+    static lv_style_t style_pr;
+    lv_style_copy(&style_pr, &lv_style_plain);
+    style_pr.image.color = LV_COLOR_BLACK;
+    style_pr.image.intense = LV_OPA_50;
+    style_pr.text.color = lv_color_hex3(0xaaa);
+
+    static lv_style_t rel_norm_btn;
+    lv_style_copy(&rel_norm_btn, lv_theme_get_argon()->style.btn.rel);
+    rel_norm_btn.body.padding.inner = 25;
+
+    static lv_style_t pr_norm_btn;
+    lv_style_copy(&pr_norm_btn, lv_theme_get_argon()->style.btn.pr);
+    pr_norm_btn.body.padding.inner = 25;
+
+    static lv_style_t inv_label;
+    lv_style_copy(&inv_label, &lv_style_transp);
+    inv_label.text.font = NULL;
+
+    static lv_style_t no_img_label;
+    lv_style_copy(&no_img_label, &lv_style_plain);
+    no_img_label.text.font = &lv_font_montserrat_alternate_110;
+    no_img_label.text.color = LV_COLOR_WHITE;
+
+    while (payloads[i * 256] && i < 4 * (group + 1))
+    {
+        char payload_path[256];
+        payload_full_path(&payloads[i * 256], payload_path);
+        
+        char payload_logo[256];
+        payload_logo_path(&payloads[i * 256], payload_logo);
+
+        img = bmp_to_lvimg_obj((const char*)payload_logo);
+
+        if (!img)
+        {
+            btn = lv_btn_create(par_tabview, NULL);
+            lv_obj_set_size(btn, 280, 280);
+            lv_btn_set_style(btn, LV_BTN_STYLE_PR, &pr_norm_btn);
+            lv_btn_set_style(btn, LV_BTN_STYLE_REL, &rel_norm_btn);
+
+            label = lv_label_create(btn, NULL);
+            lv_obj_set_style(label, &no_img_label);
+            lv_label_set_text(label, LV_SYMBOL_ROCKET);
+
+            label = lv_label_create(btn, NULL);
+            lv_label_set_text(label, &payloads[i * 256]);
+
+            label = lv_label_create(btn, NULL);
+            lv_label_set_text(label, payload_path);
+            lv_obj_set_style(label, &inv_label);
+
+            gui_menu_pool_push(argon_ctxt->pool, label);
+        }
+        else
+        {   
+            btn = lv_imgbtn_create(par_tabview, NULL);
+            
+            label = lv_label_create(btn, NULL);
+            lv_label_set_text(label, payload_path);
+            lv_obj_set_style(label, &inv_label);
+            lv_imgbtn_set_style(btn, LV_BTN_STATE_PR, &style_pr);
+            lv_imgbtn_set_src(btn, LV_BTN_STATE_REL, img);
+            lv_imgbtn_set_src(btn, LV_BTN_STATE_PR, img);            
+        }
+
+        lv_obj_set_event_cb(btn, ctrl_lauch_payload);
+        gui_menu_pool_push(argon_ctxt->pool, btn);
+
+        i++;
+    }
+
+    return true;
+}
+
+
+static bool render_tools_tab(lv_obj_t* par, argon_ctxt_t* ctxt)
+{
+    static lv_style_t labels_style;
+
+    lv_obj_t *settings_tab = lv_tabview_add_tab(par,
+                                                LV_SYMBOL_SETTINGS " Tools");
+
+    lv_style_copy(&labels_style, lv_theme_get_current()->style.label.prim);
+    labels_style.text.color = LV_COLOR_WHITE;
+    
+    u32 labels_y = 180;
+
+    lv_obj_t* more_to_come = lv_label_create(settings_tab, NULL);
+    lv_label_set_text(more_to_come, "More tools comming soon...");
+    lv_obj_set_pos(more_to_come, LV_HOR_RES_MAX / 2 + 80, LV_VER_RES_MAX / 2 - 20);
+    lv_label_set_style(more_to_come, LV_LABEL_STYLE_MAIN, &labels_style);
+
+    // Power off tools
+    lv_obj_t* power_label = lv_label_create(settings_tab, NULL);
+    lv_label_set_text(power_label, LV_SYMBOL_POWER" Power tools");
+    lv_obj_set_pos(power_label, 80, labels_y);
+    lv_label_set_style(power_label, LV_LABEL_STYLE_MAIN, &labels_style);
+
+    lv_obj_t* btn_cont = lv_cont_create(settings_tab, NULL);
+    lv_obj_set_pos(btn_cont, 80, labels_y + 20);
+    lv_obj_set_size(btn_cont, LV_HOR_RES / 2.5, 400);
+    lv_cont_set_layout(btn_cont, LV_LAYOUT_CENTER);
+
+    lv_obj_t *btn = lv_btn_create(btn_cont, NULL);
+    lv_obj_set_size(btn, 220, 80);
+    lv_obj_set_event_cb(btn, ctrl_reboot_rcm);
+
+    lv_obj_t* label = lv_label_create(btn, NULL);
+    lv_label_set_text(label, "Reboot RCM");
+
+    btn = lv_btn_create(btn_cont, NULL);
+    lv_obj_set_size(btn, 220, 80);
+    lv_obj_set_event_cb(btn, ctrl_power_off);
+
+    label = lv_label_create(btn, NULL);
+    lv_label_set_text(label, "Power of");
+
+    btn = lv_btn_create(btn_cont, NULL);
+    lv_obj_set_size(btn, 220, 80);
+    lv_obj_set_event_cb(btn, ctrl_reboot_ofw);
+
+    label = lv_label_create(btn, NULL);
+    lv_label_set_text(label, "Reboot OFW");
+    
+    lv_obj_t* line = lv_line_create(settings_tab, NULL);
+
+    static lv_point_t line_points[] = { {LV_HOR_RES_MAX / 2., 200}, {LV_HOR_RES_MAX / 2., LV_VER_RES_MAX - 100} };
+    lv_line_set_points(line, line_points, 2);
+    lv_line_set_style(line, LV_LINE_STYLE_MAIN, lv_theme_get_current()->style.line.decor);
+    
+    gui_menu_pool_push(ctxt->pool, settings_tab);
+    gui_menu_pool_push(ctxt->pool, power_label);
+    gui_menu_pool_push(ctxt->pool, btn_cont);
+    gui_menu_pool_push(ctxt->pool, btn);
+    gui_menu_pool_push(ctxt->pool, label);
+    gui_menu_pool_push(ctxt->pool, line);
+
+    return true;
+}
+
+static bool render_title(argon_ctxt_t * ctxt)
+{
+    lv_obj_t* title = lv_label_create(lv_scr_act(), NULL);
+    lv_obj_align(title, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 50);
+    lv_label_set_text(title, "Arg"LV_SYMBOL_METEOR"nnx");
+    lv_obj_set_auto_realign(title, true);
+    
+    static lv_style_t label_style;
+    lv_style_copy(&label_style, &lv_style_plain);
+    label_style.text.color = LV_COLOR_WHITE;
+    label_style.text.font = &lv_font_montserrat_alternate_110;
+    lv_obj_set_style(title, &label_style);
+
+    gui_menu_pool_push(ctxt->pool, title);
+    return true;
 }

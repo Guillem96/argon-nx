@@ -17,34 +17,33 @@
 #include "menu/gui/gui_menu_pool.h"
 #include "mem/heap.h"
 
-void gui_menu_pool_init()
+void gui_menu_pool_init(gui_menu_pool_t* pool)
 {
-    g_menu_pool = (gui_menu_pool_t *)malloc(sizeof(gui_menu_pool_t));
-    g_menu_pool->max_items = 0x16;
-    g_menu_pool->current_items = 0;
-    g_menu_pool->menus = (gui_menu_t **)malloc(sizeof(gui_menu_t *) * g_menu_pool->max_items);
+    pool->max_items = 0x16;
+    pool->current_items = 0;
+    pool->menus = (lv_obj_t **)malloc(sizeof(lv_obj_t *) * pool->max_items);
 }
 
-void gui_menu_push_to_pool(gui_menu_t *menu)
+void gui_menu_pool_push(gui_menu_pool_t* pool, lv_obj_t *obj)
 {
-    if (menu != NULL)
+    if (obj != NULL)
     {
-        if (g_menu_pool->current_items == g_menu_pool->max_items - 1)
+        if (pool->current_items == pool->max_items - 1)
         {
             // Resize the pool
-            u32 new_size = g_menu_pool->max_items << 1;
-            g_menu_pool->menus = (gui_menu_t **)m_realloc(g_menu_pool->menus, sizeof(gui_menu_t *) * g_menu_pool->max_items, new_size);
-            g_menu_pool->max_items = new_size;
+            u32 new_size = pool->max_items << 1;
+            pool->menus = (lv_obj_t **)m_realloc(pool->menus, sizeof(lv_obj_t *) * pool->max_items, new_size);
+            pool->max_items = new_size;
         }
-        g_menu_pool->menus[g_menu_pool->current_items] = menu;
-        g_menu_pool->current_items++;
+        pool->menus[pool->current_items] = obj;
+        pool->current_items++;
     }
 }
 
-void gui_menu_pool_cleanup()
+void gui_menu_pool_cleanup(gui_menu_pool_t* pool)
 {
-    for (int i = 0; i < g_menu_pool->current_items; ++i)
-        gui_menu_destroy(g_menu_pool->menus[i]);
-    free(g_menu_pool->menus);
-    free(g_menu_pool);
+    for (int i = 0; i < pool->current_items; ++i)
+        free(pool->menus[i]);
+    free(pool->menus);
+    free(pool);
 }

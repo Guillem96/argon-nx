@@ -10,8 +10,15 @@
 #include <string.h>
 #include "libs/fatfs/diskio.h"		/* FatFs lower layer API */
 #include "storage/sdmmc.h"
-#include "utils/fs_utils.h"
 
+#define SDMMC_UPPER_BUFFER 0xB8000000
+#define DRAM_START         0x80000000
+
+extern sdmmc_storage_t g_sd_storage;
+
+/*-----------------------------------------------------------------------*/
+/* Get Drive Status                                                      */
+/*-----------------------------------------------------------------------*/
 DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
@@ -19,6 +26,9 @@ DSTATUS disk_status (
 	return 0;
 }
 
+/*-----------------------------------------------------------------------*/
+/* Inidialize a Drive                                                    */
+/*-----------------------------------------------------------------------*/
 DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
@@ -26,6 +36,9 @@ DSTATUS disk_initialize (
 	return 0;
 }
 
+/*-----------------------------------------------------------------------*/
+/* Read Sector(s)                                                        */
+/*-----------------------------------------------------------------------*/
 DRESULT disk_read (
 	BYTE pdrv,		/* Physical drive nmuber to identify the drive */
 	BYTE *buff,		/* Data buffer to store read data */
@@ -33,9 +46,9 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
-	if ((u32)buff >= 0x90000000)
+	if ((u32)buff >= DRAM_START)
 		return sdmmc_storage_read(&g_sd_storage, sector, count, buff) ? RES_OK : RES_ERROR;
-	u8 *buf = (u8 *)0x98000000; //TODO: define this somewhere.
+	u8 *buf = (u8 *)SDMMC_UPPER_BUFFER;
 	if (sdmmc_storage_read(&g_sd_storage, sector, count, buf))
 	{
 		memcpy(buff, buf, 512 * count);
@@ -44,6 +57,9 @@ DRESULT disk_read (
 	return RES_ERROR;
 }
 
+/*-----------------------------------------------------------------------*/
+/* Write Sector(s)                                                       */
+/*-----------------------------------------------------------------------*/
 DRESULT disk_write (
 	BYTE pdrv,			/* Physical drive nmuber to identify the drive */
 	const BYTE *buff,	/* Data to be written */
@@ -51,15 +67,18 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
-	if ((u32)buff >= 0x90000000)
+	if ((u32)buff >= DRAM_START)
 		return sdmmc_storage_write(&g_sd_storage, sector, count, (void *)buff) ? RES_OK : RES_ERROR;
-	u8 *buf = (u8 *)0x98000000; //TODO: define this somewhere.
+	u8 *buf = (u8 *)SDMMC_UPPER_BUFFER; //TODO: define this somewhere.
 	memcpy(buf, buff, 512 * count);
 	if (sdmmc_storage_write(&g_sd_storage, sector, count, buf))
 		return RES_OK;
 	return RES_ERROR;
 }
 
+/*-----------------------------------------------------------------------*/
+/* Miscellaneous Functions                                               */
+/*-----------------------------------------------------------------------*/
 DRESULT disk_ioctl (
 	BYTE pdrv,		/* Physical drive nmuber (0..) */
 	BYTE cmd,		/* Control code */

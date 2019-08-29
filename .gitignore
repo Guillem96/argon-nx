@@ -6,3 +6,6 @@
 build/
 output/
 logo_bmp.h
+
+# Cli files
+venv/

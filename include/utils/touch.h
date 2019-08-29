@@ -22,6 +22,8 @@
 #include "utils/util.h"
 #include "utils/types.h"
 
+#define STMFTS_I2C_ADDR 0x49
+
 /* I2C commands */
 #define STMFTS_READ_INFO			    0x80
 #define STMFTS_READ_STATUS			    0x84
@@ -80,16 +82,31 @@
 /* TOUCH SUPPORT ONLY WORKS WHEN A GC IS INSIDE NINTENDO SWITCH */
 
 
-typedef struct {
-    u8 raw[4];
-    u8 type;
-    u16 x;
-    u16 y;
+typedef struct _touch_event {
+	u8   raw[8];
+	u16  type; // Event type.
+	u16  x;    // Horizontal coordinates.
+	u16  y;    // Vertical coordinates.
+	u8   z;
+	u8   fingers;
+	bool touch;
 } touch_event_t;
+
+typedef struct _touch_info {
+	u16 chip_id;
+	u16 fw_ver;
+	u16 config_id;
+	u16 config_ver;
+} touch_info_t;
+
+void touch_poll(touch_event_t *event);
+touch_event_t touch_poll_wait();
+touch_info_t touch_get_info();
 
 
 /* Init touch support */
 int touch_power_on();
+void touch_power_off();
 
 /* Wait for touch input */
 touch_event_t touch_wait();

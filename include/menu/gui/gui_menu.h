@@ -18,30 +18,16 @@
 #define _MENU_H_
 
 #include "utils/types.h"
-#include "menu/gui/gui_menu_entry.h"
 #include "core/custom-gui.h"
-
-#define MAX_ENTRIES 0x10
-
-typedef struct
-{
-	char title[0x100];
-	int next_entry;
-	int selected_index;
-    custom_gui_t* custom_gui;
-	gui_menu_entry_t *entries[MAX_ENTRIES];
-} gui_menu_t;
-
-/* Allocate menu to heap */
-gui_menu_t *gui_menu_create(const char *title);
-
-/* Add an entry to menu */
-void gui_menu_append_entry(gui_menu_t *menu, gui_menu_entry_t *menu_entry);
+#include "core/argon-ctxt.h"
 
 /* Handle all menu related stuff */
-int gui_menu_open(gui_menu_t *menu);
+void gui_menu_open(argon_ctxt_t* argon_ctxt);
+
+/* Handle all menu related stuff */
+void gui_menu_draw(argon_ctxt_t* argon_ctxt);
 
 /* Deallocate a menu from heap */
-void gui_menu_destroy(gui_menu_t *menu);
+void gui_menu_destroy(argon_ctxt_t* argon_ctxt);
 
 #endif
