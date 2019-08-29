@@ -8,6 +8,8 @@
 #include "utils/util.h"
 #include "utils/fs_utils.h"
 
+#include "core/custom-gui.h"
+
 #include "mem/heap.h"
 
 static touch_event_t touchpad;
@@ -35,6 +37,9 @@ void display_flush(lv_disp_drv_t *disp,
 bool handle_touch(lv_indev_drv_t *indev, lv_indev_data_t *data)
 {
     touch_poll(&touchpad);
+
+    if (touchpad.fingers >= 2)
+		take_screenshot();
 
     switch (touchpad.type & STMFTS_MASK_EVENT_ID)
     {

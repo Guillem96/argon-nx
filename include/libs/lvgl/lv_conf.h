@@ -397,7 +397,7 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_LMETER   0
 
 /*Message box (dependencies: lv_rect, lv_btnm, lv_label)*/
-#define LV_USE_MBOX     0
+#define LV_USE_MBOX     1
 
 /*Page (dependencies: lv_cont)*/
 #define LV_USE_PAGE     1

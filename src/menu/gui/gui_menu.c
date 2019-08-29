@@ -135,11 +135,12 @@ static bool render_single_payload_tab(lv_obj_t *par, argon_ctxt_t * ctxt, char* 
     lv_obj_t*  page = lv_page_create(payloads_tab, NULL);
     lv_obj_set_size(page, lv_obj_get_width(payloads_tab), 400);
     lv_obj_align(page, payloads_tab, LV_ALIGN_CENTER, 0, 50);
-
+    lv_page_set_scrl_width(page, 0);
+    
     /* Horizontal grid layout */
     lv_obj_t*  cnr = lv_page_get_scrl(page);
     lv_cont_set_layout(cnr, LV_LAYOUT_PRETTY);
-    lv_obj_set_size(cnr, LV_HOR_RES_MAX, lv_obj_get_height(page));
+    lv_obj_set_size(cnr, LV_HOR_RES_MAX * .95, lv_obj_get_height(page));
 
     lv_cont_set_style(cnr, 
                     LV_CONT_STYLE_MAIN, 

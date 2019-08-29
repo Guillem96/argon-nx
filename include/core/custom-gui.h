@@ -33,4 +33,6 @@ void custom_gui_end(custom_gui_t*);
 /* Renders custom background, returns false if background.bmp does not exist */
 bool render_custom_background(custom_gui_t*, lv_obj_t* par);
 
+void take_screenshot();
+
 #endif

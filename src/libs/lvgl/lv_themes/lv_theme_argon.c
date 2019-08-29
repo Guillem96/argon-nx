@@ -78,8 +78,8 @@ static void basic_init(void)
     panel.body.padding.right  = LV_DPI / 2;
     panel.body.padding.top    = LV_DPI / 2;
     panel.body.padding.bottom = LV_DPI / 2;
-    panel.body.padding.inner  = 22;
-    panel.text.color          = lv_color_hex3(0x333);
+    panel.body.padding.inner  = 15;
+    panel.text.color          = LV_COLOR_WHITE;
     panel.image.color         = lv_color_hex3(0x333);
 
     lv_style_copy(&sb, &def);
@@ -119,7 +119,7 @@ static void btn_init(void)
     rel.body.shadow.color   = DEF_SHADOW_COLOR;
     rel.body.shadow.type    = LV_SHADOW_BOTTOM;
     rel.body.shadow.width   = 20;
-    rel.text.color          = lv_color_hsv_to_rgb(_hue, 5, 95);
+    rel.text.color          = LV_COLOR_WHITE;
     rel.image.color         = lv_color_hsv_to_rgb(_hue, 5, 95);
     rel.text.font           = &lv_font_montserrat_alternate_20;
     
@@ -142,7 +142,7 @@ static void btn_init(void)
     ina.body.main_color   = lv_color_hex3(0xccc);
     ina.body.grad_color   = ina.body.main_color;
     ina.body.shadow.width = 0;
-    ina.text.color        = lv_color_hsv_to_rgb(_hue, 95, 5);
+    ina.text.color        = LV_COLOR_WHITE;
     ina.image.color       = lv_color_hsv_to_rgb(_hue, 95, 5);
 
     theme.style.btn.rel     = &rel;
@@ -447,7 +447,7 @@ static void btnm_init(void)
     bg.body.padding.top    = 0;
     bg.body.padding.bottom = 0;
     bg.body.padding.inner  = 0;
-    bg.text.color          = lv_color_hex3(0x555);
+    bg.text.color          = LV_COLOR_WHITE;
 
     lv_style_copy(&rel, theme.style.panel);
     rel.body.border.part  = LV_BORDER_FULL | LV_BORDER_INTERNAL;
@@ -511,12 +511,12 @@ static void mbox_init(void)
     lv_style_copy(&rel, &lv_style_transp);
     rel.glass      = 0;
     rel.text.font  = _font;
-    rel.text.color = lv_color_hsv_to_rgb(_hue, 85, 75);
+    rel.text.color = LV_COLOR_WHITE;
 
     lv_style_copy(&pr, theme.style.btnm.btn.pr);
-    pr.text.color = lv_color_hsv_to_rgb(_hue, 85, 60);
+    pr.text.color = LV_COLOR_GRAY;
 
-    theme.style.mbox.bg      = theme.style.panel;
+    theme.style.mbox.bg = theme.style.panel;
     theme.style.mbox.btn.bg  = &lv_style_transp;
     theme.style.mbox.btn.rel = &rel;
     theme.style.mbox.btn.pr  = &pr;

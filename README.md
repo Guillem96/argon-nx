@@ -49,35 +49,49 @@ argon
 The only format supported is **BMP 32 bit ARGB color**.
 ArgonNX recomnds to use a solid background without alpha channel (alpha channel set to 0xFF). Payloads' logos **support alpha channel**.
 
-### Generate new logos
+### Generate new logos and background
 
-Argon provides a useful Command Line Interface (CLI) to create logos for your payloads using a *jpg* or *png* image.
+Argon provides a useful Command Line Interface (CLI) to create new logos and backgrounds for your payloads using a *jpg* or *png* image.
 
-The Argon CLI is written in Python. To install python follow the instructions listed [here](https://realpython.com/installing-python/). Once you have python3 installed just type the following commands (These will install the requirements for the CLI):
+The Argon CLI is written in Python. To install python follow the instructions listed [here](https://realpython.com/installing-python/). Once you have python3 installed just type the following commands (These will install the requirements for running the CLI):
 
 ```bash
 $ cd scripts
 $ pip install -r requirements.txt
 $ sudo apt-get install libmagickwand-dev
 ```
+
 > If you are using Windows visit [Wand's installation page](http://docs.wand-py.org/en/0.4.1/guide/install.html) and follow the steps to install libmagikcwand on Windows.
 
-Finally to generate a new logo use the following command.
+To generate a new logo use the following command.
 
 ```bash
 $ cd scripts
 $ python argon.py img-to-logo <path-to-png-jpg-img>
 ```
 
-The CLI generates an `out.bmp` file ready to be renamed as the payload name and moved to the `argon/logos` path. 
+To generate a new background from a previous image use the following command.
+
+```bash
+$ cd scripts
+$ python argon.py generate-background <path-to-png-jpg-img>
+```
+
+The CLI stores the outputs of the commands at the recently created (also by the CLI) `sd-files/argon` directory (This directory simulates an sd-card argon structure).
 
 ## GUI
 
-This image was captured with the **screenshot** feature.
+These image were captured with the **screenshot** feature.
 
-<img src="img/example.png" alt="example" width="700">
+<img src="img/example1.png" alt="example" width="700">
 
-Find these logos [here](img/example-logos) and the background and title [here](sd-card-example/).
+<img src="img/example2.png" alt="example" width="700">
+
+<img src="img/example3.png" alt="example" width="700">
+
+<img src="img/example4.png" alt="example" width="700">
+
+Find these logos [here](img/example-custom/logos) and backgrounds [here](img/example-custom/backgrounds).
 
 The layout of files on the sd card for this image:
 ```
