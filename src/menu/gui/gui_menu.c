@@ -32,38 +32,27 @@
 
 #include <string.h>
 
-#define MINOR_VERSION 3
-#define MAJOR_VERSION 0
-
-
-// static void gui_menu_draw_battery()
-// {
-//     battery_status_t battery_status;
-//     battery_get_status(&battery_status);
-//     u32 color = get_battery_color(battery_status);
-// }
 
 /* Render functions */
 static bool render_title(argon_ctxt_t *);
 
 static bool render_tabs(argon_ctxt_t *);
+
 static bool render_payloads_tab(lv_obj_t *, argon_ctxt_t *);
 static bool render_single_payload_tab(lv_obj_t *, argon_ctxt_t *, char*, u32);
 static bool render_payloads_entries(lv_obj_t *, argon_ctxt_t *, char*, u32);
+
 static bool render_tools_tab(lv_obj_t *, argon_ctxt_t *);
 
 void gui_menu_draw(argon_ctxt_t *argon_ctxt)
-{
-    lv_style_scr.body.main_color = GRAD_1;
-    lv_style_scr.body.grad_color = GRAD_2;
-    
+{   
     custom_gui_t *cg = custom_gui_load();
 
-    if (!render_custom_background(cg, lv_scr_act()))
-    {
-        gfx_printf("\nFail drawing bg\n");
-    }
-
+    /* Deafult background is a beautiful gradient */
+    lv_style_scr.body.main_color = GRAD_1;
+    lv_style_scr.body.grad_color = GRAD_2;
+       
+    render_custom_background(cg, lv_scr_act());
     render_title(argon_ctxt);
     render_tabs(argon_ctxt);
 }
@@ -87,6 +76,7 @@ void gui_menu_destroy(argon_ctxt_t *argon_ctxt)
 
 static bool render_tabs(argon_ctxt_t *argon_ctxt)
 {
+    /* Create tabview container */
     lv_obj_t *base_tabs = lv_tabview_create(lv_scr_act(), NULL);
     lv_obj_set_pos(base_tabs, 0, 0);
     lv_tabview_set_btns_pos(base_tabs, LV_TABVIEW_BTNS_POS_BOTTOM);
@@ -108,7 +98,7 @@ static bool render_payloads_tab(lv_obj_t *par, argon_ctxt_t *ctxt)
     char* payloads = dirlist(PAYLOADS_DIR, "*.bin", false);
     u32 i = 0;
     u32 group = 0;
-
+    
     while(payloads[i * 256])
     {
         if (i % 4 == 0)
@@ -146,7 +136,9 @@ static bool render_single_payload_tab(lv_obj_t *par, argon_ctxt_t * ctxt, char* 
                     LV_CONT_STYLE_MAIN, 
                     lv_theme_get_argon()->style.panel);
     render_payloads_entries(cnr, ctxt, payloads, group);
-
+    
+    gui_menu_pool_push(ctxt->pool, page);
+    gui_menu_pool_push(ctxt->pool, cnr);
     gui_menu_pool_push(ctxt->pool, payloads_tab);
     return true;
 }
@@ -158,7 +150,8 @@ static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_c
     lv_img_dsc_t* img;
 
     u32 i = 4 * group;
-
+    
+    /* Declare styles for payloads */
     static lv_style_t style_pr;
     lv_style_copy(&style_pr, &lv_style_plain);
     style_pr.image.color = LV_COLOR_BLACK;
@@ -185,15 +178,17 @@ static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_c
     while (payloads[i * 256] && i < 4 * (group + 1))
     {
         char payload_path[256];
-        payload_full_path(&payloads[i * 256], payload_path);
-        
         char payload_logo[256];
+        
+        payload_full_path(&payloads[i * 256], payload_path);
         payload_logo_path(&payloads[i * 256], payload_logo);
-
+        
+        /* Try to get payload logo */
         img = bmp_to_lvimg_obj((const char*)payload_logo);
 
         if (!img)
         {
+            /* If user has not defined a logo for the payload */
             btn = lv_btn_create(par_tabview, NULL);
             lv_obj_set_size(btn, 280, 280);
             lv_btn_set_style(btn, LV_BTN_STYLE_PR, &pr_norm_btn);
@@ -205,30 +200,28 @@ static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_c
 
             label = lv_label_create(btn, NULL);
             lv_label_set_text(label, &payloads[i * 256]);
-
-            label = lv_label_create(btn, NULL);
-            lv_label_set_text(label, payload_path);
-            lv_obj_set_style(label, &inv_label);
-
-            gui_menu_pool_push(argon_ctxt->pool, label);
         }
         else
         {   
+            /* If user has defined a logo */
             btn = lv_imgbtn_create(par_tabview, NULL);
-            
-            label = lv_label_create(btn, NULL);
-            lv_label_set_text(label, payload_path);
-            lv_obj_set_style(label, &inv_label);
             lv_imgbtn_set_style(btn, LV_BTN_STATE_PR, &style_pr);
             lv_imgbtn_set_src(btn, LV_BTN_STATE_REL, img);
             lv_imgbtn_set_src(btn, LV_BTN_STATE_PR, img);            
         }
-
+        
+        /* Workaround: Payload path as invisible label so later we can get the path on the callback */
+        label = lv_label_create(btn, NULL);
+        lv_label_set_text(label, payload_path);
+        lv_obj_set_style(label, &inv_label);
+        
         lv_obj_set_event_cb(btn, ctrl_lauch_payload);
-        gui_menu_pool_push(argon_ctxt->pool, btn);
-
+        
         i++;
     }
+    
+    gui_menu_pool_push(argon_ctxt->pool, btn);
+    gui_menu_pool_push(argon_ctxt->pool, label);
 
     return true;
 }
