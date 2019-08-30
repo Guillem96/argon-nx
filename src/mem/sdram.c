@@ -36,7 +36,7 @@
 
 u32 get_sdram_id()
 {
-	return (fuse_read_odm(4) & 0x38) >> 3;
+	return (fuse_read_odm(4) & 0x1F) >> 3;
 }
 
 static void _sdram_config(const sdram_params_t *params)

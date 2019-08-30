@@ -19,16 +19,22 @@
 #include <string.h>
 
 #include "libs/fatfs/ff.h"
+
 #include "utils/types.h"
 #include "utils/util.h"
 #include "utils/fs_utils.h"
-#include "gfx/gfx.h"
+
 #include "soc/hw_init.h"
+#include "soc/bpmp.h"
+
+#include "gfx/gfx.h"
+
+#include "gfx/di.h"
+
 #include "mem/heap.h"
-#include "menu/gui/gui_menu_pool.h"
 
 // This is a safe and unused DRAM region for our payloads.
-#define IPL_LOAD_ADDR      0x40008000
+#define IPL_LOAD_ADDR      0x40003000
 #define EXT_PAYLOAD_ADDR   0xC03C0000
 #define PATCHED_RELOC_SZ   0x94
 #define RCM_PAYLOAD_ADDR   (EXT_PAYLOAD_ADDR + ALIGN(PATCHED_RELOC_SZ, 0x10))
@@ -57,12 +63,12 @@ void reloc_patcher(u32 payload_size)
 	}
 }
 
-int launch_payload(char *path)
+int launch_payload(argon_ctxt_t* argon_ctxt, char *path)
 {
     FIL fp;
     if (f_open(&fp, path, FA_READ))
     {
-        gfx_printf(&g_gfx_con, "Cannot find %s\n", path);
+        gfx_printf("Cannot find %s\n", path);
         return 1;
     }
 
@@ -78,7 +84,7 @@ int launch_payload(char *path)
     if (f_read(&fp, buf, size, NULL))
     {
         f_close(&fp);
-        gfx_printf(&g_gfx_con, "Error loading %s\n", path);
+        gfx_printf("Error loading %s\n", path);
         return 1;
     }
 
@@ -91,19 +97,20 @@ int launch_payload(char *path)
     if (size < 0x30000)
     {
         reloc_patcher(ALIGN(size, 0x10));
-        reconfig_hw_workaround(false, byte_swap_32(*(u32 *)(buf + size - sizeof(u32))));
+        reconfig_hw_workaround(argon_ctxt, false, byte_swap_32(*(u32 *)(buf + size - sizeof(u32))));
     }
     else
     {
         reloc_patcher(0x7000);
         if (*(vu32 *)CBFS_SDRAM_EN_ADDR != 0x4452414D)
             return 1;
-        reconfig_hw_workaround(true, 0);
+        reconfig_hw_workaround(argon_ctxt, true, 0);
     }
 
-    gui_menu_pool_cleanup();
-    gfx_end_ctxt(&g_gfx_ctxt);
-    
+    display_end();
+    argon_ctxt_destroy(argon_ctxt);
+    bpmp_mmu_disable();
+	bpmp_clk_rate_set(BPMP_CLK_NORMAL);
     // Launch our payload.
     (*ext_payload_ptr)();
 

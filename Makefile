@@ -4,42 +4,43 @@ endif
 
 include $(DEVKITARM)/base_rules
 
-TARGET 					:= argon-nx
-BLVERSION_MAJOR := 0
-BLVERSION_MINOR := 3
-BUILD 					:= build
-OUTPUT 					:= output
-SOURCEDIR 			:= src
-DATA						:= data
-SOURCES		      := src \
-										src/core \
-										src/ianos \
-										src/gfx \
-										src/libs/fatfs src/libs/elfload src/libs/compr \
-										src/mem \
-										src/menu/gui \
-										src/minerva \
-										src/panic \
-										src/power \
-										src/sec \
-										src/soc \
-										src/storage \
-										src/utils
+TARGET          := argon-nx
+BUILD           := build
+OUTPUT          := output
+SOURCEDIR       := src
+DATA            := data
+SOURCES         := src \
+					src/ianos \
+					src/libs/fatfs src/libs/elfload src/libs/compr src/libs/lvgl \
+					src/libs/lvgl/lv_core src/libs/lvgl/lv_draw src/libs/lvgl/lv_font src/libs/lvgl/lv_hal \
+					src/libs/lvgl/lv_misc src/libs/lvgl/lv_objx src/libs/lvgl/lv_themes \
+					src/core \
+					src/gfx \
+					src/mem \
+					src/menu/gui \
+					src/minerva \
+					src/panic \
+					src/power \
+					src/sec \
+					src/soc \
+					src/storage \
+					src/utils
 
-INCLUDES				:= include
-VPATH = $(dir $(wildcard ./$(SOURCEDIR)/*/)) $(dir $(wildcard ./$(SOURCEDIR)/*/*/))
-CFILES			:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
-SFILES			:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-BINFILES		:=  $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+INCLUDES        := include
+VPATH           = $(dir $(wildcard ./$(SOURCEDIR)/*/)) $(dir $(wildcard ./$(SOURCEDIR)/*/*/))
+VPATH 			+= $(dir $(wildcard ./$(SOURCEDIR)/*/*/*/)) $(dir $(wildcard ./$(SOURCEDIR)/*/*/*/*/))
+CFILES          := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+SFILES          := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
+BINFILES        := $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
-OFILES_BIN		:= $(addsuffix .o,$(BINFILES))
-OFILES_SRC		:= $(SFILES:.s=.o) $(CFILES:.c=.o)
-HFILES_BIN		:= $(addsuffix .h,$(subst .,_,$(BINFILES)))
+OFILES_BIN      := $(addsuffix .o,$(BINFILES))
+OFILES_SRC      := $(SFILES:.s=.o) $(CFILES:.c=.o)
+HFILES_BIN      := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 
-OBJS 					= $(addprefix $(BUILD)/$(TARGET)/, $(OFILES_BIN) $(OFILES_SRC))
+OBJS            = $(addprefix $(BUILD)/$(TARGET)/, $(OFILES_BIN) $(OFILES_SRC))
 
 
-INCLUDE				:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+INCLUDE         :=$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 										$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 										-I$(BUILD)/$(TARGET)
 
@@ -72,7 +73,6 @@ $(MODULEDIRS):
 
 $(TARGET).bin: $(BUILD)/$(TARGET)/$(TARGET).elf $(MODULEDIRS)
 	$(OBJCOPY) -S -O binary $< $(OUTPUT)/$@
-	@printf ICTC$(BLVERSION_MAJOR)$(BLVERSION_MINOR) >> $(OUTPUT)/$@
 
 $(BUILD)/$(TARGET)/$(TARGET).elf: $(OBJS)
 	$(CC) $(LDFLAGS) -T $(SOURCEDIR)/link.ld $^ -o $@
@@ -83,8 +83,10 @@ $(BUILD)/$(TARGET)/%.o: %.c
 $(BUILD)/$(TARGET)/%.o: %.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OFILES_SRC)	: $(HFILES_BIN)
+$(OFILES_SRC): $(HFILES_BIN)
 
 $(BUILD)/$(TARGET)/%.bmp.o %_bmp.h:	data/%.bmp
 	@echo $(notdir $<)
 	@$(bin2o)
+
+print-%  : ; @echo $* = $($*)

@@ -19,16 +19,16 @@
 #define ELFLOAD_H
 #include <stddef.h>
 
-#include "libs/elfload/elfarch.h"
-#include "libs/elfload/elf.h"
+#include "elfarch.h"
+#include "elf.h"
 
 #include "utils/types.h"
 
 #ifdef DEBUG
 #include "gfx/gfx.h"
-extern gfx_con_t gfx_con;
+extern gfx_con_t g_gfx_con;
 #define EL_DEBUG(format, ...) \
-	gfx_printf(&gfx_con, format __VA_OPT__(, ) __VA_ARGS__)
+	gfx_printf(format __VA_OPT__(, ) __VA_ARGS__)
 #else
 #define EL_DEBUG(...) \
 	do                \

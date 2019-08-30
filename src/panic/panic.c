@@ -89,16 +89,14 @@ void check_and_display_panic(void) {
     }
 }
 
-void panic(u32 code) {
-    /* Set panic code. */
-    if (g_panic_code == 0) {
-        g_panic_code = code;
-        PMC(APBDEV_PMC_SCRATCH200) = code;
-    }
-
-    fuse_disable_program();
-    PMC(APBDEV_PMC_CRYPTO_OP) = 1; /* Disable all SE operations. */
-
-    check_and_display_panic();
-    while(true);
+void panic(u32 val)
+{
+   // Set panic code.
+   PMC(APBDEV_PMC_SCRATCH200) = val;
+   //PMC(APBDEV_PMC_CRYPTO_OP) = PMC_CRYPTO_OP_SE_DISABLE;
+   TMR(TIMER_WDT4_UNLOCK_PATTERN) = TIMER_MAGIC_PTRN;
+   TMR(TIMER_TMR9_TMR_PTV) = TIMER_EN | TIMER_PER_EN;
+   TMR(TIMER_WDT4_CONFIG)  = TIMER_SRC(9) | TIMER_PER(1) | TIMER_PMCRESET_EN;
+   TMR(TIMER_WDT4_COMMAND) = TIMER_START_CNT;
+   while (true);
 }

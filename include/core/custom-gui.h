@@ -17,13 +17,12 @@
 #define _CUSTOM_GUI_H_
 
 #include "utils/types.h"
+#include "libs/lvgl/lvgl.h"
 
 #define CUSTOM_BG_PATH "argon/background.bmp"
-#define CUSTOM_TITLE_PATH "argon/title.bmp"
 
 typedef struct {
-    u8* custom_bg;
-    u8* title_bmp;
+    lv_img_dsc_t* custom_bg;
 } custom_gui_t;
 
 
@@ -32,12 +31,8 @@ custom_gui_t* custom_gui_load();
 void custom_gui_end(custom_gui_t*);
 
 /* Renders custom background, returns false if background.bmp does not exist */
-bool render_custom_background(custom_gui_t*);
+bool render_custom_background(custom_gui_t*, lv_obj_t* par);
 
-/* Renders custom title, returns false if title.bmp does not exist */
-bool render_custom_title(custom_gui_t*);
-
-/* Tool to take screenshots */
-int screenshot(void* params);
+void take_screenshot();
 
 #endif

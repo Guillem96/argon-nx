@@ -4,7 +4,7 @@ endif
 
 include $(DEVKITARM)/base_rules
 
-TARGET := minerva
+TARGET := libsys_minerva
 BUILD := ../../build/$(TARGET)
 OUTPUT := ../../output
 VPATH = $(dir $(wildcard ./*/)) $(dir $(wildcard ./*/*/))

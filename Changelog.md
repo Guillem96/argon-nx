@@ -21,11 +21,16 @@
 - Correctly deallocate argon-nx from memory when launching payloads.
 - Improve system stability to enhance user experience.
 
-## v0.4
+## v1.0-alpha
 
--  Show battery status. Shows the percentage and a color depending if the switch is charging or not:
-    - *Light blue*: Fast Charging
-    - *Light green*: Charging
-    - *Green*: Battery over 50%
-    - *Orange*: Battery under 50%
-    - *Red*: Battery under 20% 
+- ArgonNX's UI has been rewritten using [LittlevGL]() library. This rewrite has a lot of benefits. Some benefits include:
+    - Prettier font
+    - Faster rendering
+    - Better touch support
+    - In general terms improves UX
+- Now payloads are listed inside tabviews where each tab contains a group of 4 payloads.
+- New tab of tools. By now tools only are related to reboot stuff (reboot to rcm, power off, reboot to ofw)
+- Background size back to 1280*720. No more weird image flippings.
+- ArgonNX Command Line Interface to simplify the process to create logos and backgrounds.
+- Now there is no need to declare a `default.bmp` logo inside the `argon/logos` directory.
+- Improve system stability to enhance user experience.

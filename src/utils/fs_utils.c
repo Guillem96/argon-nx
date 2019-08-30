@@ -21,6 +21,7 @@
 #include "mem/heap.h"
 #include "gfx/gfx.h"
 #include <string.h>
+#include <stdarg.h>
 
 bool sd_mount()
 {
@@ -29,7 +30,7 @@ bool sd_mount()
 
 	if (!sdmmc_storage_init_sd(&g_sd_storage, &g_sd_sdmmc, SDMMC_1, SDMMC_BUS_WIDTH_4, 11))
 	{
-        gfx_printf(&g_gfx_con, "%kFailed to init SD card.\nMake sure that it is inserted.\nOr that SD reader is properly seated!%k\n", 0xFFFFDD00, 0xFFCCCCCC);
+		gfx_printf("Failed to init SD card.\nMake sure that it is inserted.\nOr that SD reader is properly seated!");
 	}
 	else
 	{
@@ -42,7 +43,7 @@ bool sd_mount()
 		}
 		else
 		{
-            gfx_printf(&g_gfx_con, "%kFailed to mount SD card (FatFS Error %d).\nMake sure that a FAT partition exists..%k\n", 0xFFFFDD00, res, 0xFFCCCCCC);
+			gfx_printf("Failed to mount SD card (FatFS Error %d).\nMake sure that a FAT partition exists..", res);
 		}
 	}
 
@@ -94,7 +95,7 @@ int sd_save_to_file(void *buf, u32 size, const char *filename)
 	res = f_open(&fp, filename, FA_CREATE_ALWAYS | FA_WRITE);
 	if (res)
 	{
-        gfx_printf(&g_gfx_con, "%kError (%d) creating file\n%s.\n%k\n", 0xFFFFDD00, res, filename, 0xFFCCCCCC);
+        gfx_printf("%kError (%d) creating file\n%s.\n%k\n", 0xFFFFDD00, res, filename, 0xFFCCCCCC);
 		return 1;
 	}
 
@@ -139,4 +140,132 @@ void flipVertically(unsigned char* pixels_buffer, const unsigned int width, cons
 
     free(temp_row);
     temp_row = NULL;
+}
+
+char **sout_buf;
+
+static void _s_putc(char c)
+{
+	**sout_buf = c;
+	*sout_buf += 1;
+}
+
+static void _s_puts(const char *s)
+{
+	for (; *s; s++)
+		_s_putc(*s);
+}
+
+static void _s_putn(u32 v, int base, char fill, int fcnt)
+{
+	char buf[65];
+	static const char digits[] = "0123456789ABCDEFghijklmnopqrstuvwxyz";
+	char *p;
+	int c = fcnt;
+
+	if (base > 36)
+		return;
+
+	p = buf + 64;
+	*p = 0;
+	do
+	{
+		c--;
+		*--p = digits[v % base];
+		v /= base;
+	} while (v);
+
+	if (fill != 0)
+	{
+		while (c > 0)
+		{
+			*--p = fill;
+			c--;
+		}
+	}
+
+	_s_puts(p);
+}
+
+static void _s_putp(u32 *v, int base, char fill, int fcnt)
+{
+	_s_putn(*v, base, fill, fcnt);
+}
+
+void s_printf(char *out_buf, const char *fmt, ...)
+{
+	va_list ap;
+	int fill, fcnt;
+
+	sout_buf = &out_buf;
+
+	va_start(ap, fmt);
+	while(*fmt)
+	{
+		if(*fmt == '%')
+		{
+			fmt++;
+			fill = 0;
+			fcnt = 0;
+			if ((*fmt >= '0' && *fmt <= '9') || *fmt == ' ')
+			{
+				fcnt = *fmt;
+				fmt++;
+				if (*fmt >= '0' && *fmt <= '9')
+				{
+					fill = fcnt;
+					fcnt = *fmt - '0';
+					fmt++;
+				}
+				else
+				{
+					fill = ' ';
+					fcnt -= '0';
+				}
+			}
+			switch(*fmt)
+			{
+			case 'c':
+				_s_putc(va_arg(ap, u32));
+				break;
+			case 's':
+				_s_puts(va_arg(ap, char *));
+				break;
+			case 'd':
+				_s_putn(va_arg(ap, u32), 10, fill, fcnt);
+				break;
+			case 'p':
+			case 'P':
+				_s_putp(va_arg(ap, u32*), 16, fill, fcnt);
+				break;
+			case 'x':
+			case 'X':
+				_s_putn(va_arg(ap, u32), 16, fill, fcnt);
+				break;
+			case 'k':
+				//gfx_con.fgcol = va_arg(ap, u32);
+				break;
+			case 'K':
+				//gfx_con.bgcol = va_arg(ap, u32);
+				//gfx_con.fillbg = 1;
+				break;
+			case '%':
+				_s_putc('%');
+				break;
+			case '\0':
+				goto out;
+			default:
+				_s_putc('%');
+				_s_putc(*fmt);
+				break;
+			}
+		}
+		else
+			_s_putc(*fmt);
+		fmt++;
+	}
+
+out:
+	**sout_buf = '\0';
+	va_end(ap);
 }

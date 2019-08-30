@@ -18,40 +18,44 @@
 
 #include "gfx/di.h"
 #include "gfx/gfx.h"
+#include "gfx/lvgl_adapter.h"
 
 #include "mem/heap.h"
 
 #include "soc/hw_init.h"
+#include "soc/bpmp.h"
 
+#include "core/argon-resources.h"
+#include "core/argon-ctxt.h"
 #include "core/launcher.h"
+
+#include "menu/gui/gui_menu.h"
 
 #include "utils/util.h"
 #include "utils/fs_utils.h"
 #include "utils/touch.h"
 #include "utils/btn.h"
 
-#include "menu/gui/gui_argon_menu.h"
+#include "power/battery.h"
+#include "power/max17050.h"
 
 #include "minerva/minerva.h"
 
-#include "power/battery.h"
-#include "power/max17050.h"
 
 extern void pivot_stack(u32 stack_top);
 
 static inline void setup_gfx()
 {
-    u32 *fb = display_init_framebuffer();
-    gfx_init_ctxt(&g_gfx_ctxt, fb, 1280, 720, 720);
-    gfx_clear_buffer(&g_gfx_ctxt);
-    gfx_con_init(&g_gfx_con, &g_gfx_ctxt);
-    gfx_con_setcol(&g_gfx_con, 0xFFCCCCCC, 1, BLACK);
+    gfx_init_ctxt((u32 *)FB_ADDRESS, 720, 1280, 720);
+	gfx_con_init();
 }
+
 
 void ipl_main()
 {
     /* Configure Switch Hardware (thanks to hekate project) */
     config_hw();
+    bpmp_mmu_enable();
 
     /* Init the stack and the heap */
     pivot_stack(0x90010000);
@@ -61,13 +65,18 @@ void ipl_main()
     display_init();
     setup_gfx();
     display_backlight_pwm_init();
-    display_backlight_brightness(100, 1000);
-
+    
+    /* Initialize ArgonNX context */
+    argon_ctxt_t argon_ctxt;
+    argon_ctxt_init(&argon_ctxt);
 
     /* Train DRAM */
     g_gfx_con.mute = 1; /* Silence minerva, comment for debug */
-    minerva();
+    minerva(argon_ctxt.mtc_conf);
+    minerva_change_freq(argon_ctxt.mtc_conf, FREQ_1600);
     g_gfx_con.mute = 0;
+    
+    bpmp_clk_rate_set(BPMP_CLK_SUPER_BOOST);
 
     /* Cofigure touch input */
     touch_power_on();
@@ -76,24 +85,23 @@ void ipl_main()
     if (sd_mount())
     {
         bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
-        bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
+        bool load_menu = cancel_auto_chainloading || launch_payload(&argon_ctxt, "argon/payload.bin");
         
-        gfx_printf(&g_gfx_con, "Autochainload canceled. Loading menu...\n");
-        gfx_swap_buffer(&g_gfx_ctxt);
-
         if (load_menu)
-            gui_init_argon_menu();
-
-        gfx_swap_buffer(&g_gfx_ctxt);
-        
+        {
+            argon_resources_init();
+            lvgl_adapter_init(&argon_ctxt);
+            gui_menu_draw(&argon_ctxt);
+            gui_menu_open(&argon_ctxt);
+            gui_menu_destroy(&argon_ctxt);
+        }
         wait_for_button_and_reboot();
 
     } else {
-        gfx_printf(&g_gfx_con, "No sd card found...\n");
+        gfx_printf("No sd card found...\n");
     }
 
     /* If payload launch fails wait for user input to reboot the switch */
-    gfx_printf(&g_gfx_con, "Press power button to reboot into RCM...\n\n");
-    gfx_swap_buffer(&g_gfx_ctxt);
+    gfx_printf("Press power button to reboot into RCM...\n\n");
     wait_for_button_and_reboot();
 }

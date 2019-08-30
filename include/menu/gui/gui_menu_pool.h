@@ -17,23 +17,22 @@
 #ifndef _GUI_MENU_POOL_H_
 #define _GUI_MENU_POOL_H_
 
-#include "menu/gui/gui_menu.h"
+#include "libs/lvgl/lvgl.h"
 
 typedef struct {
     int max_items;
     int current_items;
-    gui_menu_t** menus;
+    lv_obj_t** menus;
 } gui_menu_pool_t;
 
-gui_menu_pool_t* g_menu_pool;
 
 /* Initializes the pool */
-void gui_menu_pool_init();
+void gui_menu_pool_init(gui_menu_pool_t* pool);
 
-/* Add a menu and its entries to the pool */
-void gui_menu_push_to_pool(gui_menu_t * menu);
+/* Add a lv object to the pool */
+void gui_menu_pool_push(gui_menu_pool_t* pool, lv_obj_t* item);
 
 /* Deallocate all entries and menus */
-void gui_menu_pool_cleanup();
+void gui_menu_pool_cleanup(gui_menu_pool_t* pool);
 
 #endif
