@@ -27,9 +27,10 @@
     - Prettier font
     - Faster rendering
     - Better touch support
-    - In general temrms improves UX
-- Now payloads are listed inside tabviews contining groups of 4 payloads.
+    - In general terms improves UX
+- Now payloads are listed inside tabviews where each tab contains a group of 4 payloads.
 - New tab of tools. By now tools only are related to reboot stuff (reboot to rcm, power off, reboot to ofw)
 - Background size back to 1280*720. No more weird image flippings.
 - ArgonNX Command Line Interface to simplify the process to create logos and backgrounds.
 - Now there is no need to declare a `default.bmp` logo inside the `argon/logos` directory.
+- Improve system stability to enhance user experience.
