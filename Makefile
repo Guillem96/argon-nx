@@ -51,7 +51,7 @@ LDFLAGS = $(ARCH) -nostartfiles -lgcc -Wl,--nmagic,--gc-sections
 
 .PHONY: all clean
 
-all: directories $(TARGET).bin
+all: directories external $(TARGET).bin
 	@echo $(HFILES_BIN)
 	@echo -n "Payload size is "
 	@wc -c < $(OUTPUT)/$(TARGET).bin
@@ -67,6 +67,24 @@ clean:
 	@rm -rf $(BUILD)
 	@rm -rf $(OUTPUT)
 	@rm -rf logo_bmp.h
+
+external: directories
+	$(MAKE) -C modules/minerva
+
+release: directories all
+	mkdir -p argon/logos
+	mkdir -p argon/payloads
+	mkdir -p argon/sys
+
+	cp output/argon-nx.bin argon-nx.bin
+	cp output/libsys_minerva.bso argon/sys/minerva.bso
+	cp img/example-custom/logos/* argon/logos
+	cp img/example-custom/backgrounds/default.bmp argon/background.bmp
+
+	zip -r argon-nx.zip argon argon-nx.bin
+
+	rm -rf argon
+	rm argon-nx.bin
 
 $(MODULEDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)

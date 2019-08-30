@@ -10,3 +10,6 @@ logo_bmp.h
 # Cli files
 venv/
 scripts/sd-files/
+
+# Release files
+argon-nx.zip
