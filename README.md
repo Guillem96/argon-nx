@@ -109,7 +109,7 @@ You can find the logos used in the pictures inside [this directory](img/example-
 
 ## ArgonNX sd card tree
 
-The layout of files on the sd card for this image:
+How a full running ArgonNX example looks inside the sd card:
 
 ```
 argon
