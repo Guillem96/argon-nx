@@ -26,7 +26,8 @@ If `payload.bin` is not present or VOLUME DOWN button is pressed on payload inje
 
 - **Autolaunch/autochainload** the payload named `payload.bin` inside `argon` directory in your sd card root.
 - If `argon/payload.bin` is not found or `VOLUME_DOWN_BUTTON` is held during ArgonNX injection, ArgonNX will list all the payloads located at `argon/payloads`, so you can select one of them to launch it.
-- **Customize payloads' logos**. **Logos must be smaller or equal than 200x200**. Example:
+- **Customize payloads' logos**. **Logos must be smaller or equal than 280x280** (See About BMP format section). Example:
+
 ```
 argon
   ├───logos
@@ -40,18 +41,21 @@ argon
 ```
 
 - **Custom backgrounds** can be added by placing `background.bmp` file inside `argon` directory. **The background must be smaller or equal than 1280x720**.
-- Take **screenshots** to share your ArgonNX gui. To capture ArgonNX screen tap anywhere with two fingers.
+- Take **screenshots** to share your ArgonNX gui. To capture ArgonNX screen tap anywhere with two or more fingers.
 - Touch support. Thanks to @pixel-stuck
 - Simple tools. (Don't expect tools like the onew built in hekate, argon tools are much more lightweighted and simple, such as reboot options)
+- Command Line Interface (CLI) to facilitate the procedure to create bmp files for custom logos and backgrounds.
 
 ## About BMP format
 
 The only format supported is **BMP 32 bit ARGB color**.
-ArgonNX recomnds to use a solid background without alpha channel (alpha channel set to 0xFF). Payloads' logos **support alpha channel**.
+ArgonNX recommends using a solid background without alpha channel (alpha channel set to 0xFF). Payloads' logos **support alpha channel**.
 
 ### Generate new logos and background
 
-Argon provides a useful Command Line Interface (CLI) to create new logos and backgrounds for your payloads using a *jpg* or *png* image.
+ArgonNX provides a useful Command Line Interface (CLI) to create new logos and backgrounds for your payloads using a *jpg* or *png* images.
+
+#### CLI installation
 
 The Argon CLI is written in Python. To install python follow the instructions listed [here](https://realpython.com/installing-python/). Once you have python3 installed just type the following commands (These will install the requirements for running the CLI):
 
@@ -63,6 +67,8 @@ $ sudo apt-get install libmagickwand-dev
 
 > If you are using Windows visit [Wand's installation page](http://docs.wand-py.org/en/0.4.1/guide/install.html) and follow the steps to install libmagikcwand on Windows.
 
+#### CLI Usage
+
 To generate a new logo use the following command.
 
 ```bash
@@ -70,7 +76,7 @@ $ cd scripts
 $ python argon.py img-to-logo <path-to-png-jpg-img>
 ```
 
-To generate a new background from a previous image use the following command.
+To generate a new background use the following command.
 
 ```bash
 $ cd scripts
@@ -79,9 +85,15 @@ $ python argon.py generate-background <path-to-png-jpg-img>
 
 The CLI stores the outputs of the commands at the recently created (also by the CLI) `sd-files/argon` directory (This directory simulates an sd-card argon structure).
 
+To learn more about the CLI options type:
+
+```bash
+$ python argon.py --help
+```
+
 ## GUI
 
-These image were captured with the **screenshot** feature.
+These images were captured with the **screenshot** feature.
 
 <img src="img/example1.png" alt="example" width="700">
 
@@ -91,9 +103,14 @@ These image were captured with the **screenshot** feature.
 
 <img src="img/example4.png" alt="example" width="700">
 
-Find these logos [here](img/example-custom/logos) and backgrounds [here](img/example-custom/backgrounds).
+As you can see in the pictures, payloads are displayed in groups of 4 and each group is displayed in a different *payloads* tab.
+
+You can find the logos used in the pictures inside [this directory](img/example-custom/logos) and backgrounds [here](img/example-custom/backgrounds).
+
+## ArgonNX sd card tree
 
 The layout of files on the sd card for this image:
+
 ```
 argon
 ├─── payloads
@@ -118,7 +135,7 @@ argon
 
 ## Improve performance
 
-ArgonNX can use **minerva dram training** to improve performance.
+ArgonNX can use **minerva training cell** to improve performance.
 The use of minerva is optional but recommended. To use minerva just place the compiled `minerva.bso` inside `argon/sys`. The directory `argon/sys` with minerva, is included in `sd-files.zip` in the release section.
 
 To learn more about Minerva Training Cell check its [official repo](https://github.com/CTCaer/minerva_tc).
@@ -127,7 +144,7 @@ To learn more about Minerva Training Cell check its [official repo](https://gith
 
 This payload will chainload any CFW or payload. 
 
-Some users reported issuses using SX OS. <small>But with Atmosphere out there... who wants SXOS?</small>
+Some users reported issuses when chainloading SX OS. <small>But with Atmosphere out there... who wants SXOS?</small> 🙄
 
 ## Roadmap
 
