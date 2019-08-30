@@ -5,8 +5,6 @@ endif
 include $(DEVKITARM)/base_rules
 
 TARGET          := argon-nx
-BLVERSION_MAJOR := 0
-BLVERSION_MINOR := 3
 BUILD           := build
 OUTPUT          := output
 SOURCEDIR       := src
@@ -75,7 +73,6 @@ $(MODULEDIRS):
 
 $(TARGET).bin: $(BUILD)/$(TARGET)/$(TARGET).elf $(MODULEDIRS)
 	$(OBJCOPY) -S -O binary $< $(OUTPUT)/$@
-	@printf ICTC$(BLVERSION_MAJOR)$(BLVERSION_MINOR) >> $(OUTPUT)/$@
 
 $(BUILD)/$(TARGET)/$(TARGET).elf: $(OBJS)
 	$(CC) $(LDFLAGS) -T $(SOURCEDIR)/link.ld $^ -o $@
