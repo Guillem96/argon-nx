@@ -10,25 +10,25 @@ OUTPUT          := output
 SOURCEDIR       := src
 DATA            := data
 SOURCES         := src \
-					src/ianos \
-					src/libs/fatfs src/libs/elfload src/libs/compr src/libs/lvgl \
-					src/libs/lvgl/lv_core src/libs/lvgl/lv_draw src/libs/lvgl/lv_font src/libs/lvgl/lv_hal \
-					src/libs/lvgl/lv_misc src/libs/lvgl/lv_objx src/libs/lvgl/lv_themes \
-					src/core \
-					src/gfx \
-					src/mem \
-					src/menu/gui \
-					src/minerva \
-					src/panic \
-					src/power \
-					src/sec \
-					src/soc \
-					src/storage \
-					src/utils
+			src/ianos \
+			src/libs/fatfs src/libs/elfload src/libs/compr src/libs/lvgl \
+			src/libs/lvgl/lv_core src/libs/lvgl/lv_draw src/libs/lvgl/lv_font src/libs/lvgl/lv_hal \
+			src/libs/lvgl/lv_misc src/libs/lvgl/lv_objx src/libs/lvgl/lv_themes \
+			src/core \
+			src/gfx \
+			src/mem \
+			src/menu/gui \
+			src/minerva \
+			src/panic \
+			src/power \
+			src/sec \
+			src/soc \
+			src/storage \
+			src/utils
 
 INCLUDES        := include
 VPATH           = $(dir $(wildcard ./$(SOURCEDIR)/*/)) $(dir $(wildcard ./$(SOURCEDIR)/*/*/))
-VPATH 			+= $(dir $(wildcard ./$(SOURCEDIR)/*/*/*/)) $(dir $(wildcard ./$(SOURCEDIR)/*/*/*/*/))
+VPATH 		+= $(dir $(wildcard ./$(SOURCEDIR)/*/*/*/)) $(dir $(wildcard ./$(SOURCEDIR)/*/*/*/*/))
 CFILES          := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 SFILES          := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 BINFILES        := $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
@@ -41,8 +41,8 @@ OBJS            = $(addprefix $(BUILD)/$(TARGET)/, $(OFILES_BIN) $(OFILES_SRC))
 
 
 INCLUDE         :=$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
-										$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-										-I$(BUILD)/$(TARGET)
+		  $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+		  -I$(BUILD)/$(TARGET)
 
 ARCH := -march=armv4t -mtune=arm7tdmi -mthumb -mthumb-interwork
 CFLAGS = $(INCLUDE) $(ARCH) -O2 -nostdlib -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-inline -std=gnu11 -Wall
@@ -80,6 +80,7 @@ release: directories all
 	cp output/libsys_minerva.bso argon/sys/minerva.bso
 	cp img/example-custom/logos/* argon/logos
 	cp img/example-custom/backgrounds/default.bmp argon/background.bmp
+	cp modules/resources.argon argon/sys/resources.argon
 
 	zip -r argon-nx.zip argon argon-nx.bin
 
