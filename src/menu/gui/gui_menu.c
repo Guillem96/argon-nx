@@ -145,9 +145,9 @@ static bool render_single_payload_tab(lv_obj_t *par, argon_ctxt_t * ctxt, char* 
 
 static bool render_payloads_entries(lv_obj_t *par_tabview, argon_ctxt_t *argon_ctxt, char* payloads, u32 group)
 {
-    lv_obj_t *btn;
-    lv_obj_t *label;
-    lv_img_dsc_t* img;
+    lv_obj_t *btn = NULL;
+    lv_obj_t *label = NULL;
+    lv_img_dsc_t* img = NULL;
 
     u32 i = 4 * group;
     
