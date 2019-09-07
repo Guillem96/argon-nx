@@ -34,3 +34,12 @@
 - ArgonNX Command Line Interface to simplify the process to create logos and backgrounds.
 - Now there is no need to declare a `default.bmp` logo inside the `argon/logos` directory.
 - Improve system stability to enhance user experience.
+
+## v1.1-alpha
+
+- Fixing critical bug. Now launches using any payload sender.
+- Argon now is composed by 2 payloads (2 stages).
+    1. First stage configures hardware
+    2. Loads the GUI
+- Bootlogo/splash and wait until GUI is loaded.
+- Improve system stability to enhance user experience.

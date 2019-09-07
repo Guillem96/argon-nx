@@ -5,7 +5,6 @@
 # Build files
 build/
 output/
-logo_bmp.h
 
 # Cli files
 venv/
@@ -13,3 +12,6 @@ scripts/sd-files/
 
 # Release files
 argon-nx.zip
+
+# Helpers
+new-gui.sh
