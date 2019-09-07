@@ -1,0 +1,16 @@
+version: '3'
+services:
+  gui:
+    build: argon-nx-gui
+    volumes:
+    - ./output:/output
+  first-stage:
+    build: argon-first-stage
+    volumes:
+    - ./output:/output
+  minerva:
+    build: modules/minerva
+    volumes:
+    - ./output:/output
+volumes:
+  output: {}

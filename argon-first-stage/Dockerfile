@@ -2,6 +2,6 @@
 # Run docker image using: docker run -a stdout -a stderr -v $(pwd)/output:/argon-nx/output argon-nx-builder
 
 FROM devkitpro/devkitarm
-WORKDIR /argon-nx
+WORKDIR /argon-first-stage
 COPY . .
 ENTRYPOINT ["make"]

@@ -1,4 +1,4 @@
 FROM devkitpro/devkitarm
-WORKDIR /argon-nx-gui
+WORKDIR /modules/minerva
 COPY . .
 ENTRYPOINT ["make"]
