@@ -4,15 +4,13 @@ endif
 
 include $(DEVKITARM)/base_rules
 
-TARGET          := argon-nx-gui
+TARGET          := argon-nx
 BUILD           := build
 OUTPUT          := ../output
 SOURCEDIR       := src
 SOURCES         := src \
 			src/ianos \
-			src/libs/fatfs src/libs/elfload src/libs/compr src/libs/lvgl \
-			src/libs/lvgl/lv_core src/libs/lvgl/lv_draw src/libs/lvgl/lv_font src/libs/lvgl/lv_hal \
-			src/libs/lvgl/lv_misc src/libs/lvgl/lv_objx src/libs/lvgl/lv_themes \
+			src/libs/fatfs src/libs/elfload src/libs/compr \
 			src/core \
 			src/gfx \
 			src/mem \
@@ -61,26 +59,10 @@ directories:
 clean:
 	@rm -rf $(OBJS)
 	@rm -rf $(BUILD)
-	@rm -rf $(OUTPUT)
+	@rm -f $(OUTPUT)/$(TARGET).bin
 
 external: directories
 	$(MAKE) -C ../modules/minerva
-
-release: directories external all
-	mkdir -p ../argon/logos
-	mkdir -p ../argon/payloads
-	mkdir -p ../argon/sys
-
-	cp ../output/argon-nx.bin ../argon-nx.bin
-	cp ../output/libsys_minerva.bso ../argon/sys/minerva.bso
-	cp ../img/example-custom/logos/* ../argon/logos
-	cp ../img/example-custom/backgrounds/default.bmp ../argon/background.bmp
-	cp ../modules/resources.argon ../argon/sys/resources.argon
-
-	zip -r ../argon-nx.zip ../argon ../argon-nx.bin
-
-	rm -rf ../argon
-	rm ../argon-nx.bin
 
 $(MODULEDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
@@ -98,9 +80,5 @@ $(BUILD)/$(TARGET)/%.o: %.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OFILES_SRC): $(HFILES_BIN)
-
-$(BUILD)/$(TARGET)/%.bmp.o %_bmp.h:	data/%.bmp
-	@echo $(notdir $<)
-	@$(bin2o)
 
 print-%  : ; @echo $* = $($*)

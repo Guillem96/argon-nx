@@ -34,7 +34,6 @@
 
 #include <string.h>
 
-#include "libs/lvgl/lvgl.h"
 
 u32 get_tmr_s()
 {
@@ -70,7 +69,7 @@ void usleep(u32 microseconds)
 
 void exec_cfg(u32 *base, const cfg_op_t *ops, u32 num_ops)
 {
-    for (u32 i = 0; i < num_ops; i++)
+    for(u32 i = 0; i < num_ops; i++)
         base[ops[i].off] = ops[i].val;
 }
 
@@ -97,7 +96,7 @@ u32 memcmp32sparse(const u32 *buf1, const u32 *buf2, u32 len)
         while (len32)
         {
             len32 -= 32;
-            if (buf1[len32] != buf2[len32])
+            if(buf1[len32] != buf2[len32])
                 return 1;
         }
     }
@@ -106,7 +105,7 @@ u32 memcmp32sparse(const u32 *buf1, const u32 *buf2, u32 len)
         while (len32)
         {
             len32 -= 32;
-            if (buf1[len32] != buf2[len32])
+            if(buf1[len32] != buf2[len32])
                 return 1;
             if (len32 < 32)
                 return 0;
@@ -116,14 +115,11 @@ u32 memcmp32sparse(const u32 *buf1, const u32 *buf2, u32 len)
     return 0;
 }
 
-__attribute__((noreturn)) void wait_for_button_and_reboot(void)
-{
+__attribute__((noreturn)) void wait_for_button_and_reboot(void) {
     u32 button;
-    while (true)
-    {
+    while (true) {
         button = btn_read();
-        if (button & BTN_POWER)
-        {
+        if (button & BTN_POWER) {
             reboot_rcm();
         }
     }
@@ -160,15 +156,15 @@ void power_off()
     i2c_send_byte(I2C_5, MAX77620_I2C_ADDR, MAX77620_REG_ONOFFCNFG1, MAX77620_ONOFFCNFG1_PWR_OFF);
 }
 
-char *str_replace(char *orig, char *rep, char *with)
-{
-    char *result;  // the return string
-    char *ins;     // the next insert point
-    char *tmp;     // varies
-    int len_rep;   // length of rep (the string to remove)
-    int len_with;  // length of with (the string to replace rep with)
+
+char *str_replace(char *orig, char *rep, char *with) {
+    char *result; // the return string
+    char *ins;    // the next insert point
+    char *tmp;    // varies
+    int len_rep;  // length of rep (the string to remove)
+    int len_with; // length of with (the string to replace rep with)
     int len_front; // distance between rep and end of last rep
-    int count;     // number of replacements
+    int count;    // number of replacements
 
     // sanity checks and initialization
     if (!orig || !rep)
@@ -182,8 +178,7 @@ char *str_replace(char *orig, char *rep, char *with)
 
     // count the number of replacements needed
     ins = orig;
-    for (count = 0; (tmp = strstr(ins, rep)); ++count)
-    {
+    for (count = 0; (tmp = strstr(ins, rep)); ++count) {
         ins = tmp + len_rep;
     }
 
@@ -197,8 +192,7 @@ char *str_replace(char *orig, char *rep, char *with)
     //    tmp points to the end of the result string
     //    ins points to the next occurrence of rep in orig
     //    orig points to the remainder of orig after "end of rep"
-    while (count--)
-    {
+    while (count--) {
         ins = strstr(orig, rep);
         len_front = ins - orig;
         tmp = strncpy(tmp, orig, len_front) + len_front;
@@ -213,10 +207,11 @@ void panic(u32 val)
 {
     // Set panic code.
     PMC(APBDEV_PMC_SCRATCH200) = val;
+    //PMC(APBDEV_PMC_CRYPTO_OP) = PMC_CRYPTO_OP_SE_DISABLE;
     TMR(TIMER_WDT4_UNLOCK_PATTERN) = TIMER_MAGIC_PTRN;
     TMR(TIMER_TMR9_TMR_PTV) = TIMER_EN | TIMER_PER_EN;
-    TMR(TIMER_WDT4_CONFIG) = TIMER_SRC(9) | TIMER_PER(1) | TIMER_PMCRESET_EN;
+    TMR(TIMER_WDT4_CONFIG)  = TIMER_SRC(9) | TIMER_PER(1) | TIMER_PMCRESET_EN;
     TMR(TIMER_WDT4_COMMAND) = TIMER_START_CNT;
-    while (true)
+    while (1)
         ;
 }
