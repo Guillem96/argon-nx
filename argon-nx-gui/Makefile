@@ -6,9 +6,8 @@ include $(DEVKITARM)/base_rules
 
 TARGET          := argon-nx
 BUILD           := build
-OUTPUT          := output
+OUTPUT          := ../output
 SOURCEDIR       := src
-DATA            := data
 SOURCES         := src \
 			src/ianos \
 			src/libs/fatfs src/libs/elfload src/libs/compr src/libs/lvgl \
@@ -31,13 +30,11 @@ VPATH           = $(dir $(wildcard ./$(SOURCEDIR)/*/)) $(dir $(wildcard ./$(SOUR
 VPATH 		+= $(dir $(wildcard ./$(SOURCEDIR)/*/*/*/)) $(dir $(wildcard ./$(SOURCEDIR)/*/*/*/*/))
 CFILES          := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 SFILES          := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-BINFILES        := $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
-OFILES_BIN      := $(addsuffix .o,$(BINFILES))
 OFILES_SRC      := $(SFILES:.s=.o) $(CFILES:.c=.o)
 HFILES_BIN      := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 
-OBJS            = $(addprefix $(BUILD)/$(TARGET)/, $(OFILES_BIN) $(OFILES_SRC))
+OBJS            = $(addprefix $(BUILD)/$(TARGET)/, $(OFILES_SRC))
 
 
 INCLUDE         :=$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
@@ -51,7 +48,7 @@ LDFLAGS = $(ARCH) -nostartfiles -lgcc -Wl,--nmagic,--gc-sections
 
 .PHONY: all clean
 
-all: directories external $(TARGET).bin
+all: directories $(TARGET).bin
 	@echo $(HFILES_BIN)
 	@echo -n "Payload size is "
 	@wc -c < $(OUTPUT)/$(TARGET).bin
@@ -66,26 +63,25 @@ clean:
 	@rm -rf $(OBJS)
 	@rm -rf $(BUILD)
 	@rm -rf $(OUTPUT)
-	@rm -rf logo_bmp.h
 
 external: directories
-	$(MAKE) -C modules/minerva
+	$(MAKE) -C ../modules/minerva
 
-release: directories all
-	mkdir -p argon/logos
-	mkdir -p argon/payloads
-	mkdir -p argon/sys
+release: directories external all
+	mkdir -p ../argon/logos
+	mkdir -p ../argon/payloads
+	mkdir -p ../argon/sys
 
-	cp output/argon-nx.bin argon-nx.bin
-	cp output/libsys_minerva.bso argon/sys/minerva.bso
-	cp img/example-custom/logos/* argon/logos
-	cp img/example-custom/backgrounds/default.bmp argon/background.bmp
-	cp modules/resources.argon argon/sys/resources.argon
+	cp ../output/argon-nx.bin ../argon-nx.bin
+	cp ../output/libsys_minerva.bso ../argon/sys/minerva.bso
+	cp ../img/example-custom/logos/* ../argon/logos
+	cp ../img/example-custom/backgrounds/default.bmp ../argon/background.bmp
+	cp ../modules/resources.argon ../argon/sys/resources.argon
 
-	zip -r argon-nx.zip argon argon-nx.bin
+	zip -r ../argon-nx.zip ../argon ../argon-nx.bin
 
-	rm -rf argon
-	rm argon-nx.bin
+	rm -rf ../argon
+	rm ../argon-nx.bin
 
 $(MODULEDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
