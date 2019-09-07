@@ -107,15 +107,12 @@ void take_screenshot()
     bmp->res_v    = 2834;
     bmp->rsvd2    = 0;
 
-    sd_mount();
-
     char path[0x80];
 
     strcpy(path, "argon/screenshots");
     f_mkdir(path);
     s_printf(path + strlen(path), "/screen_%08X.bmp", get_tmr_us());
     sd_save_to_file(bitmap, file_size, path);
-    sd_unmount(false);
 
     free(bitmap);
     free(fb);

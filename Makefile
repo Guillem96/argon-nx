@@ -1,11 +1,12 @@
 
 .PHONY: all clean
 
-directories:
-	@mkdir -p output
 
 all: directories primary gui
 	$(MAKE) -C modules/minerva
+
+directories:
+	@mkdir -p output
 
 gui:
 	$(MAKE) -C argon-nx-gui

@@ -16,8 +16,6 @@
 #ifndef _LAUNCHER_H_
 #define _LAUNCHER_H_
 
-#include "argon-ctxt.h"
-
-int launch_payload(argon_ctxt_t*, char*);
+int launch_payload(char*);
 
 #endif

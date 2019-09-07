@@ -78,7 +78,7 @@
 bpmp_mmu_entry_t mmu_entries[] =
 {
 	{ 0x80000000,    0xFFFFFFFF, MMU_EN_READ | MMU_EN_WRITE | MMU_EN_EXEC | MMU_EN_CACHED, true },
-	{ 0x40003000, 0x40040000, MMU_EN_READ | MMU_EN_WRITE | MMU_EN_EXEC | MMU_EN_CACHED, true }
+	{ 0x40008000, 0x40040000, MMU_EN_READ | MMU_EN_WRITE | MMU_EN_EXEC | MMU_EN_CACHED, true }
 };
 
 void bpmp_mmu_maintenance(u32 op)

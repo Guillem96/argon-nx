@@ -15,7 +15,6 @@ SOURCES         := src \
 			src/gfx \
 			src/mem \
 			src/menu/gui \
-			src/minerva \
 			src/power \
 			src/sec \
 			src/soc \

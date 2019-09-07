@@ -30,7 +30,6 @@ void minerva(mtc_config_t *mtc_cfg)
     mtc_cfg->mtc_table = NULL;
     mtc_cfg->sdram_id = (fuse_read_odm(4) >> 3) & 0x1F;
     u32 ep_addr = ianos_loader(false, "argon/sys/minerva.bso", DRAM_LIB, (void *)mtc_cfg);
-    gfx_printf("%d\n", ep_addr);
     minerva_cfg = (void *)ep_addr;
 
     if (!minerva_cfg)

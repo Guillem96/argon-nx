@@ -53,25 +53,20 @@ static inline void setup_gfx()
 
 void ipl_main()
 {
-    /* Configure Switch Hardware (thanks to hekate project) */
-    config_hw();
+    /* Load needed hw*/
     bpmp_mmu_enable();
 
-    /* Init the stack and the heap */
-    pivot_stack(0x90010000);
     heap_init(0x90020000);
 
     /* Init display and gfx module */
-    display_init();
     setup_gfx();
-    display_backlight_pwm_init();
     
     /* Initialize ArgonNX context */
     argon_ctxt_t argon_ctxt;
     argon_ctxt_init(&argon_ctxt);
 
     /* Train DRAM */
-    g_gfx_con.mute = 1; /* Silence minerva, comment for debug */
+    g_gfx_con.mute = 0; /* Silence minerva, comment for debug */
     minerva(argon_ctxt.mtc_conf);
     minerva_change_freq(argon_ctxt.mtc_conf, FREQ_1600);
     g_gfx_con.mute = 0;

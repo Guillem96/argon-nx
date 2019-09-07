@@ -25,7 +25,6 @@
 #include "soc/bpmp.h"
 
 #include "core/launcher.h"
-#include "core/argon-ctxt.h"
 
 #include "utils/util.h"
 #include "utils/fs_utils.h"
@@ -33,15 +32,11 @@
 
 #include "power/max17050.h"
 
-#include "minerva/minerva.h"
-
 
 extern void pivot_stack(u32 stack_top);
 
 static inline void setup_gfx()
 {
-            display_init_framebuffer();
-
     gfx_init_ctxt((u32 *)FB_ADDRESS, 720, 1280, 720);
     memset((u32 *)FB_ADDRESS, 0, 0x3C0000);
 	gfx_con_init();
@@ -56,6 +51,7 @@ static void error_end(const char* error_msg)
     gfx_printf("Press power button to reboot into RCM...\n\n");
     wait_for_button_and_reboot();
 }
+
 
 void ipl_main()
 {
@@ -72,16 +68,7 @@ void ipl_main()
     setup_gfx();
     display_backlight_pwm_init();
     display_backlight_brightness(100, 1000);
-    
-    /* Initialize ArgonNX context */
-    argon_ctxt_t argon_ctxt;
-    argon_ctxt_init(&argon_ctxt);
 
-    /* Train DRAM */
-    g_gfx_con.mute = 1; /* Silence minerva, comment for debug */
-    minerva(argon_ctxt.mtc_conf);
-    minerva_change_freq(argon_ctxt.mtc_conf, FREQ_1600);
-    g_gfx_con.mute = 0;
     
     bpmp_clk_rate_set(BPMP_CLK_SUPER_BOOST);
     
@@ -93,15 +80,16 @@ void ipl_main()
         if (splash)
         {
             gfx_render_splash(splash);
+            display_init_framebuffer();
+            msleep(1000);
         } 
         else 
         {
             error_end("No splash found\n");
         }
 
-        launch_payload(&argon_ctxt, "argon/sys/argon-nx-gui.bin");
+        launch_payload("argon/sys/argon-nx-gui.bin");
         error_end("Fail chainloading GUI\n");
-
     } else {
         error_end("No sd card found...\n");
     }

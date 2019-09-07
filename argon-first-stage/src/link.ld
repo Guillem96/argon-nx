@@ -1,9 +1,12 @@
 ENTRY(_start)
 
 SECTIONS {
-	PROVIDE(__ipl_start = 0x40003000);
+	PROVIDE(__ipl_start = 0x40008000);
 	. = __ipl_start;
 	.text : {
+		*(.text._start);
+		*(._boot_cfg);
+		*(._ipl_version);
 		*(.text*);
 	}
 	.data : {

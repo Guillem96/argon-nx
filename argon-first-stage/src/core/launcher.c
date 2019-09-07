@@ -63,56 +63,29 @@ void reloc_patcher(u32 payload_size)
 	}
 }
 
-int launch_payload(argon_ctxt_t* argon_ctxt, char *path)
+int launch_payload(char *path)
 {
-    FIL fp;
-    if (f_open(&fp, path, FA_READ))
+    u8 *gui = sd_file_read(path);
+    if (!gui)
     {
         gfx_printf("Cannot find %s\n", path);
         return 1;
     }
 
-    // Read and copy the payload to our chosen address
-    void *buf;
-    u32 size = f_size(&fp);
-
-    if (size < 0x30000)
-        buf = (void *)RCM_PAYLOAD_ADDR;
-    else
-        buf = (void *)COREBOOT_ADDR;
-
-    if (f_read(&fp, buf, size, NULL))
-    {
-        f_close(&fp);
-        gfx_printf("Error loading %s\n", path);
-        return 1;
-    }
-
-    f_close(&fp);	
     free(path);
     path = NULL;
 
     sd_unmount();
+    
+    void (*gui_ptr)() = (void *)gui;
 
-    if (size < 0x30000)
-    {
-        reloc_patcher(ALIGN(size, 0x10));
-        reconfig_hw_workaround(argon_ctxt, false, byte_swap_32(*(u32 *)(buf + size - sizeof(u32))));
-    }
-    else
-    {
-        reloc_patcher(0x7000);
-        if (*(vu32 *)CBFS_SDRAM_EN_ADDR != 0x4452414D)
-            return 1;
-        reconfig_hw_workaround(argon_ctxt, true, 0);
-    }
-
-    display_end();
-    argon_ctxt_destroy(argon_ctxt);
     bpmp_mmu_disable();
 	bpmp_clk_rate_set(BPMP_CLK_NORMAL);
+    
+    msleep(100);
+
     // Launch our payload.
-    (*ext_payload_ptr)();
+    (*gui_ptr)();
 
 	return 1;
 }
