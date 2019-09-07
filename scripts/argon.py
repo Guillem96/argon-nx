@@ -22,6 +22,12 @@ def add_corners(im, rad):
     return im
 
 
+def to_bmp(img, size):
+    img.resize(*size)
+    img.alpha_channel = True
+    return img.convert('BMP')
+
+
 @click.group()
 def main():
     pass
@@ -63,14 +69,22 @@ def img_to_logo(img_path, round):
 def generate_background(img_path):
     out_path = str(dst_path.joinpath('background.bmp'))
     with WI(filename=img_path) as img:
-        img.resize(1280, 720)
-        img.alpha_channel = True
-        with img.convert('BMP') as i:
-            i.save(filename=out_path)
+        im = to_bmp(img, (1280, 720))
+        i.save(filename=out_path)
 
     print('Convertion done. Check your new background here: {}'.format(out_path))
 
 
+@main.command()
+@click.argument('img-path', type=click.Path(exists=True, dir_okay=False))
+def generate_splash(img_path):
+    out_path = str(dst_path.joinpath('splash.bmp'))
+    with WI(filename=img_path) as img:
+        im = to_bmp(img, (1280, 720))
+        im.save(filename=out_path)
+
+    print('Convertion done. Check your new splash here: {}'.format(out_path))
+ 
 if __name__ == '__main__':
     dst_path = Path(DST_PATH)
     logos_dst_path = dst_path.joinpath('logos')

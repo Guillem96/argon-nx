@@ -61,9 +61,6 @@ clean:
 	@rm -rf $(BUILD)
 	@rm -f $(OUTPUT)/$(TARGET).bin
 
-external: directories
-	$(MAKE) -C ../modules/minerva
-
 $(MODULEDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 

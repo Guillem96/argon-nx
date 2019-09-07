@@ -18,6 +18,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include "gfx/gfx.h"
+#include "mem/heap.h"
 
 static const u8 _gfx_font[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Char 032 ( )
@@ -521,4 +522,61 @@ void gfx_render_bmp_argb(const u32 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 
 		for (u32 x = pos_x; x < (pos_x + size_x); x++)
 			g_gfx_ctxt.fb[x + y * g_gfx_ctxt.stride] = buf[(size_y + pos_y - 1 - y ) * size_x + x - pos_x];
 	}
+}
+
+void gfx_render_splash(u8 *bitmap)
+{
+    bmp_data_t bmp_data;
+    u8 *image = NULL;
+    bool image_found = false;
+
+    if (bitmap != NULL)
+    {
+        // Get values manually to avoid unaligned access.
+        bmp_data.size = bitmap[2] | bitmap[3] << 8 |
+                        bitmap[4] << 16 | bitmap[5] << 24;
+        bmp_data.offset = bitmap[10] | bitmap[11] << 8 |
+                          bitmap[12] << 16 | bitmap[13] << 24;
+        bmp_data.size_x = bitmap[18] | bitmap[19] << 8 |
+                          bitmap[20] << 16 | bitmap[21] << 24;
+        bmp_data.size_y = bitmap[22] | bitmap[23] << 8 |
+                          bitmap[24] << 16 | bitmap[25] << 24;
+        // Sanity check.
+        if (bitmap[0] == 'B' &&
+            bitmap[1] == 'M' &&
+            bitmap[28] == 32 && //
+            bmp_data.size_x <= g_gfx_ctxt.width &&
+            bmp_data.size_y <= g_gfx_ctxt.height)
+        {
+            if ((bmp_data.size - bmp_data.offset) <= 0x400000)
+            {
+                // Avoid unaligned access from BM 2-byte MAGIC and remove header.
+                image = (u8 *)malloc(0x400000);
+                memcpy(image, bitmap + bmp_data.offset, bmp_data.size - bmp_data.offset);
+                bmp_data.pos_x = (g_gfx_ctxt.height - bmp_data.size_x) >> 1;
+                bmp_data.pos_y = (g_gfx_ctxt.width - bmp_data.size_y) >> 1;
+
+                // Get background color from 1st pixel.
+				if (bmp_data.size_x < g_gfx_ctxt.height || bmp_data.size_y < g_gfx_ctxt.width)
+                    gfx_clear_color(*(u32 *)image);
+                    
+                image_found = true;
+            }
+        }
+		else
+		{
+			gfx_printf("Sanity check failed...\n");
+		}
+    }
+    if (image_found)
+    {
+		u32* buf = (u32*)image;
+		gfx_render_bmp_argb(buf, bmp_data.size_x, bmp_data.size_y, 0, 0);
+    } 
+	else
+	{
+		gfx_printf("Error rendering BMP file\n");
+	}
+	
+    free(image);
 }

@@ -61,26 +61,7 @@ directories:
 clean:
 	@rm -rf $(OBJS)
 	@rm -rf $(BUILD)
-	@rm -rf $(OUTPUT)
-
-external: directories
-	$(MAKE) -C ../modules/minerva
-
-release: directories external all
-	mkdir -p ../argon/logos
-	mkdir -p ../argon/payloads
-	mkdir -p ../argon/sys
-
-	cp ../output/argon-nx.bin ../argon-nx.bin
-	cp ../output/libsys_minerva.bso ../argon/sys/minerva.bso
-	cp ../img/example-custom/logos/* ../argon/logos
-	cp ../img/example-custom/backgrounds/default.bmp ../argon/background.bmp
-	cp ../modules/resources.argon ../argon/sys/resources.argon
-
-	zip -r ../argon-nx.zip ../argon ../argon-nx.bin
-
-	rm -rf ../argon
-	rm ../argon-nx.bin
+	@rm -rf $(OUTPUT)/$(TARGET).bin
 
 $(MODULEDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
@@ -98,9 +79,5 @@ $(BUILD)/$(TARGET)/%.o: %.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OFILES_SRC): $(HFILES_BIN)
-
-$(BUILD)/$(TARGET)/%.bmp.o %_bmp.h:	data/%.bmp
-	@echo $(notdir $<)
-	@$(bin2o)
 
 print-%  : ; @echo $* = $($*)

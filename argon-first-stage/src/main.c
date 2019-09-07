@@ -40,11 +40,22 @@ extern void pivot_stack(u32 stack_top);
 
 static inline void setup_gfx()
 {
-    display_init_framebuffer();
+            display_init_framebuffer();
+
     gfx_init_ctxt((u32 *)FB_ADDRESS, 720, 1280, 720);
+    memset((u32 *)FB_ADDRESS, 0, 0x3C0000);
 	gfx_con_init();
 }
 
+static void error_end(const char* error_msg)
+{
+    display_init_framebuffer();
+    gfx_clear_grey(0x0);
+    gfx_printf("%s\n", error_msg);
+    
+    gfx_printf("Press power button to reboot into RCM...\n\n");
+    wait_for_button_and_reboot();
+}
 
 void ipl_main()
 {
@@ -76,13 +87,23 @@ void ipl_main()
     
     /* Mount Sd card and launch payload */
     if (sd_mount())
-    {
-        launch_payload(&argon_ctxt, "argon/sys/argon-nx-gui.bin");
-    } else {
-        gfx_printf("No sd card found...\n");
-    }
+    {  
 
-    /* If payload launch fails wait for user input to reboot the switch */
-    gfx_printf("Press power button to reboot into RCM...\n\n");
-    wait_for_button_and_reboot();
+        u8* splash = sd_file_read("argon/splash.bmp");
+        if (splash)
+        {
+            gfx_render_splash(splash);
+        } 
+        else 
+        {
+            error_end("No splash found\n");
+        }
+
+        launch_payload(&argon_ctxt, "argon/sys/argon-nx-gui.bin");
+        error_end("Fail chainloading GUI\n");
+
+    } else {
+        error_end("No sd card found...\n");
+    }
+    error_end("");
 }
