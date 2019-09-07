@@ -81,6 +81,7 @@ def generate_splash(img_path):
     out_path = str(dst_path.joinpath('splash.bmp'))
     with WI(filename=img_path) as img:
         im = to_bmp(img, (1280, 720))
+        im.rotate(270)
         im.save(filename=out_path)
 
     print('Convertion done. Check your new splash here: {}'.format(out_path))
