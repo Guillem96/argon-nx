@@ -267,7 +267,7 @@ static bool render_tools_tab(lv_obj_t* par, argon_ctxt_t* ctxt)
     lv_obj_set_event_cb(btn, ctrl_power_off);
 
     label = lv_label_create(btn, NULL);
-    lv_label_set_text(label, "Power of");
+    lv_label_set_text(label, "Power Off");
 
     btn = lv_btn_create(btn_cont, NULL);
     lv_obj_set_size(btn, 220, 80);
