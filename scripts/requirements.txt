@@ -1,3 +1,3 @@
 Click==7.0
-Pillow==6.2.0
+Pillow==8.3.2
 Wand==0.5.6
